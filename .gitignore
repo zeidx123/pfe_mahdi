@@ -11,6 +11,7 @@
 .DS_Store
 .idea/
 .vscode/
+.serena/
 *.iml
 
 # Backend build output and runtime uploads
