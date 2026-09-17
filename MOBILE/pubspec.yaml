@@ -1,0 +1,45 @@
+name: gesticollecte_mobile
+description: Application mobile GestiCollecte pour les chauffeurs.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # HTTP
+  dio: ^5.4.0
+
+  # Stockage local (JWT token)
+  shared_preferences: ^2.2.3
+  image_picker: ^1.1.2
+
+  # GPS — geolocator 13.0.1 compatible with Flutter 3.24.0
+  geolocator: 13.0.1
+
+  # Carte OpenStreetMap (gratuit, sans clé API)
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+
+  # WebSocket STOMP
+  stomp_dart_client: ^3.0.1
+
+  # Icônes
+  flutter_svg: ^2.0.9
+  cupertino_icons: ^1.0.8
+
+  # Permissions — v13 compatible avec geolocator 14
+  permission_handler: ^11.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/

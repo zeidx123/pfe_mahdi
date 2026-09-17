@@ -1,0 +1,38 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+
+# IDE and operating-system files
+.DS_Store
+.idea/
+.vscode/
+*.iml
+
+# Backend build output and runtime uploads
+BACK/target/
+BACK/uploads/
+
+# Frontend dependencies and build output
+FRONT/node_modules/
+FRONT/dist/
+FRONT/dist-ssr/
+
+# Flutter/Dart generated files and build output
+MOBILE/.dart_tool/
+MOBILE/.flutter-plugins
+MOBILE/.flutter-plugins-dependencies
+MOBILE/.pub-cache/
+MOBILE/.pub/
+MOBILE/build/
+MOBILE/android/.gradle/
+MOBILE/ios/Flutter/.last_build_id
+
+# Locally generated binaries, sample uploads, and analysis caches
+*.apk
+CV_*.pdf
+graphify-out/
