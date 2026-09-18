@@ -47,6 +47,7 @@ class _AssistantPageState extends State<AssistantPage> {
   }
 
   void _startNewChat() {
+    if (_loading) return;
     setState(() {
       _conversationId = null;
       _messages.clear();
@@ -57,6 +58,7 @@ class _AssistantPageState extends State<AssistantPage> {
   }
 
   void _loadConversation(Map<String, dynamic> conv) {
+    if (_loading) return;
     setState(() {
       _conversationId = conv['id'];
       _messages.clear();
@@ -66,7 +68,9 @@ class _AssistantPageState extends State<AssistantPage> {
           'sender': m['sender'] ?? 'USER',
           'content': m['content'] ?? '',
           'sources': m['sources'] ?? [],
-          'timestamp': DateTime.tryParse(m['timestamp'] ?? '') ?? DateTime.now(),
+          'status': m['status'],
+          'timestamp':
+              DateTime.tryParse(m['timestamp'] ?? '') ?? DateTime.now(),
         });
       }
     });
@@ -108,7 +112,7 @@ class _AssistantPageState extends State<AssistantPage> {
             'sender': 'ASSISTANT',
             'content': data['answer'],
             'sources': data['sources'] ?? [],
-            'relevantContextFound': data['relevantContextFound'] ?? true,
+            'status': data['status'] ?? 'INSUFFICIENT_INFORMATION',
             'timestamp': DateTime.now(),
           });
         });
@@ -116,9 +120,14 @@ class _AssistantPageState extends State<AssistantPage> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Erreur de connexion avec l'Assistant IA.")),
-      );
+      setState(() => _messages.add({
+            'sender': 'ASSISTANT',
+            'status': 'PROVIDER_UNAVAILABLE',
+            'content':
+                'Le service est indisponible. Aucun conseil de procédure n’a été généré. Réessayez votre question.',
+            'sources': [],
+            'timestamp': DateTime.now(),
+          }));
     } finally {
       if (mounted) {
         setState(() {
@@ -126,6 +135,19 @@ class _AssistantPageState extends State<AssistantPage> {
         });
       }
     }
+  }
+
+  String _statusLabel(dynamic value) => switch (value) {
+        'ANSWERED' => 'Réponse fondée sur les documents',
+        'SOURCE_EXCERPTS' => 'Extraits de sources — réponse IA indisponible',
+        'PROVIDER_UNAVAILABLE' => 'Service indisponible',
+        _ => 'Informations insuffisantes dans les sources',
+      };
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -146,7 +168,7 @@ class _AssistantPageState extends State<AssistantPage> {
           IconButton(
             icon: const Icon(Icons.add_comment_rounded),
             tooltip: "Nouveau Chat",
-            onPressed: _startNewChat,
+            onPressed: _loading ? null : _startNewChat,
           ),
           Builder(
             builder: (ctx) => IconButton(
@@ -165,16 +187,21 @@ class _AssistantPageState extends State<AssistantPage> {
           children: [
             UserAccountsDrawerHeader(
               decoration: const BoxDecoration(color: Color(0xFF1E3A8A)),
-              accountName: const Text("Historique des Chats", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              accountEmail: const Text("Assistant RAG SmartWaste", style: TextStyle(color: Colors.white70)),
+              accountName: const Text("Historique des Chats",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              accountEmail: const Text("Assistant RAG SmartWaste",
+                  style: TextStyle(color: Colors.white70)),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: Colors.white,
-                child: Icon(Icons.forum_rounded, color: Colors.blue.shade900, size: 30),
+                child: Icon(Icons.forum_rounded,
+                    color: Colors.blue.shade900, size: 30),
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.add_circle_outline_rounded, color: Color(0xFF1E3A8A)),
-              title: const Text("Démarrer un nouveau chat", style: TextStyle(fontWeight: FontWeight.bold)),
+              leading: const Icon(Icons.add_circle_outline_rounded,
+                  color: Color(0xFF1E3A8A)),
+              title: const Text("Démarrer un nouveau chat",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               onTap: _startNewChat,
             ),
             const Divider(),
@@ -186,7 +213,10 @@ class _AssistantPageState extends State<AssistantPage> {
                   const SizedBox(width: 8),
                   Text(
                     "CONVERSATIONS PRÉCÉDENTES (${_historyConversations.length})",
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey),
+                    style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey),
                   ),
                 ],
               ),
@@ -196,7 +226,8 @@ class _AssistantPageState extends State<AssistantPage> {
                   ? const Center(child: CircularProgressIndicator())
                   : _historyConversations.isEmpty
                       ? const Center(
-                          child: Text("Aucune conversation archivée", style: TextStyle(color: Colors.grey)),
+                          child: Text("Aucune conversation archivée",
+                              style: TextStyle(color: Colors.grey)),
                         )
                       : ListView.separated(
                           itemCount: _historyConversations.length,
@@ -205,25 +236,33 @@ class _AssistantPageState extends State<AssistantPage> {
                             final conv = _historyConversations[index];
                             final isCurrent = conv['id'] == _conversationId;
                             final title = conv['title'] ?? 'Discussion';
-                            final msgCount = (conv['messages'] as List?)?.length ?? 0;
+                            final msgCount =
+                                (conv['messages'] as List?)?.length ?? 0;
 
                             return ListTile(
                               selected: isCurrent,
                               selectedTileColor: Colors.blue.shade50,
                               leading: Icon(
                                 Icons.chat_bubble_outline_rounded,
-                                color: isCurrent ? const Color(0xFF1E3A8A) : Colors.black54,
+                                color: isCurrent
+                                    ? const Color(0xFF1E3A8A)
+                                    : Colors.black54,
                               ),
                               title: Text(
                                 title,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-                                  color: isCurrent ? const Color(0xFF1E3A8A) : Colors.black87,
+                                  fontWeight: isCurrent
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isCurrent
+                                      ? const Color(0xFF1E3A8A)
+                                      : Colors.black87,
                                 ),
                               ),
-                              subtitle: Text("$msgCount message(s)", style: const TextStyle(fontSize: 11)),
+                              subtitle: Text("$msgCount message(s)",
+                                  style: const TextStyle(fontSize: 11)),
                               onTap: () => _loadConversation(conv),
                             );
                           },
@@ -248,7 +287,9 @@ class _AssistantPageState extends State<AssistantPage> {
                       SizedBox(width: 6),
                       Text(
                         "Questions fréquentes Chauffeur :",
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E3A8A)),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E3A8A)),
                       ),
                     ],
                   ),
@@ -283,34 +324,47 @@ class _AssistantPageState extends State<AssistantPage> {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Row(
-                    mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+                    mainAxisAlignment: isUser
+                        ? MainAxisAlignment.end
+                        : MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (!isUser)
                         CircleAvatar(
                           backgroundColor: Colors.blue.shade800,
                           radius: 16,
-                          child: const Icon(Icons.smart_toy, size: 18, color: Colors.white),
+                          child: const Icon(Icons.smart_toy,
+                              size: 18, color: Colors.white),
                         ),
                       if (!isUser) const SizedBox(width: 8),
-
                       Flexible(
                         child: Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: isUser ? const Color(0xFF2563EB) : Colors.grey.shade100,
+                            color: isUser
+                                ? const Color(0xFF2563EB)
+                                : Colors.grey.shade100,
                             borderRadius: BorderRadius.only(
                               topLeft: const Radius.circular(16),
                               topRight: const Radius.circular(16),
                               bottomLeft: Radius.circular(isUser ? 16 : 4),
                               bottomRight: Radius.circular(isUser ? 4 : 16),
                             ),
-                            border: isUser ? null : Border.all(color: Colors.grey.shade300),
+                            border: isUser
+                                ? null
+                                : Border.all(color: Colors.grey.shade300),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              if (!isUser && msg['status'] != null)
+                                Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Text(_statusLabel(msg['status']),
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1E3A8A)))),
+                              SelectableText(
                                 msg['content'] ?? '',
                                 style: TextStyle(
                                   color: isUser ? Colors.white : Colors.black87,
@@ -324,19 +378,24 @@ class _AssistantPageState extends State<AssistantPage> {
                                 const Divider(height: 20),
                                 const Row(
                                   children: [
-                                    Icon(Icons.library_books_rounded, size: 16, color: Color(0xFF1E3A8A)),
+                                    Icon(Icons.library_books_rounded,
+                                        size: 16, color: Color(0xFF1E3A8A)),
                                     SizedBox(width: 6),
                                     Text(
                                       "Ressources documentaires consultées :",
-                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1E3A8A)),
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF1E3A8A)),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
                                 Column(
                                   children: sources.map((src) {
-                                    final docName = src['documentName'] ?? 'Document';
-                                    final page = src['pageNumber'] ?? 1;
+                                    final docName =
+                                        src['documentName'] ?? 'Document';
+                                    final page = src['pageNumber'];
                                     final section = src['sectionTitle'] ?? '';
                                     final snippet = src['snippet'] ?? '';
 
@@ -346,36 +405,46 @@ class _AssistantPageState extends State<AssistantPage> {
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: Colors.blue.shade200),
+                                        border: Border.all(
+                                            color: Colors.blue.shade200),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withOpacity(0.02),
+                                            color:
+                                                Colors.black.withOpacity(0.02),
                                             blurRadius: 3,
                                             offset: const Offset(0, 1),
                                           ),
                                         ],
                                       ),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Row(
                                             children: [
-                                              const Icon(Icons.picture_as_pdf_rounded, size: 16, color: Colors.redAccent),
+                                              const Icon(
+                                                  Icons.picture_as_pdf_rounded,
+                                                  size: 16,
+                                                  color: Colors.redAccent),
                                               const SizedBox(width: 6),
                                               Expanded(
                                                 child: Text(
-                                                  "$docName — Page $page",
+                                                  page is num && page > 0
+                                                      ? "$docName — Page $page"
+                                                      : "$docName",
                                                   style: const TextStyle(
                                                     fontSize: 12,
                                                     fontWeight: FontWeight.bold,
                                                     color: Color(0xFF0F172A),
                                                   ),
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
                                               ),
                                             ],
                                           ),
-                                          if (section.isNotEmpty && section != 'Général') ...[
+                                          if (section.isNotEmpty &&
+                                              section != 'Général') ...[
                                             const SizedBox(height: 4),
                                             Text(
                                               "Section : $section",
@@ -388,10 +457,8 @@ class _AssistantPageState extends State<AssistantPage> {
                                           ],
                                           if (snippet.isNotEmpty) ...[
                                             const SizedBox(height: 4),
-                                            Text(
+                                            SelectableText(
                                               "\"$snippet\"",
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
                                                 fontSize: 11,
                                                 color: Colors.grey.shade700,
@@ -409,13 +476,13 @@ class _AssistantPageState extends State<AssistantPage> {
                           ),
                         ),
                       ),
-
                       if (isUser) const SizedBox(width: 8),
                       if (isUser)
                         CircleAvatar(
                           backgroundColor: Colors.blue.shade100,
                           radius: 16,
-                          child: const Icon(Icons.person, size: 18, color: Color(0xFF1E3A8A)),
+                          child: const Icon(Icons.person,
+                              size: 18, color: Color(0xFF1E3A8A)),
                         ),
                     ],
                   ),
@@ -433,10 +500,12 @@ class _AssistantPageState extends State<AssistantPage> {
                   SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.blue.shade800),
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.blue.shade800),
                   ),
                   const SizedBox(width: 8),
-                  const Text("Recherche dans les documents officiels...", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  const Text("Recherche dans les documents officiels...",
+                      style: TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ),
             ),
@@ -446,7 +515,12 @@ class _AssistantPageState extends State<AssistantPage> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: Colors.white,
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, -2))],
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, -2))
+              ],
             ),
             child: Row(
               children: [
@@ -455,7 +529,8 @@ class _AssistantPageState extends State<AssistantPage> {
                     controller: _controller,
                     decoration: InputDecoration(
                       hintText: "Posez votre question à l'assistant...",
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide(color: Colors.grey.shade300),
@@ -469,7 +544,7 @@ class _AssistantPageState extends State<AssistantPage> {
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.send, color: Color(0xFF1E3A8A)),
-                  onPressed: () => _sendQuestion(),
+                  onPressed: _loading ? null : () => _sendQuestion(),
                 ),
               ],
             ),

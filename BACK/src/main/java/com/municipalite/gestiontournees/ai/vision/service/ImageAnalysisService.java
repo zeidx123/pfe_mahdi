@@ -2,227 +2,188 @@ package com.municipalite.gestiontournees.ai.vision.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.municipalite.gestiontournees.ai.common.AiServiceException;
 import com.municipalite.gestiontournees.ai.common.GeminiClient;
 import com.municipalite.gestiontournees.ai.config.AiProperties;
 import com.municipalite.gestiontournees.ai.vision.model.AiProblem;
 import com.municipalite.gestiontournees.ai.vision.model.ImageAnalysis;
 import com.municipalite.gestiontournees.ai.vision.repository.AiProblemRepository;
 import com.municipalite.gestiontournees.ai.vision.repository.ImageAnalysisRepository;
-import com.municipalite.gestiontournees.pointcollecte.model.PointCollecte;
-import com.municipalite.gestiontournees.pointcollecte.repository.PointCollecteRepository;
-import com.municipalite.gestiontournees.tournee.model.Tournee;
-import com.municipalite.gestiontournees.tournee.repository.TourneeRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.imageio.ImageIO;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
-/**
- * Service pour l'Agent IA d'Analyse des Photos des Points de Collecte.
- */
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class ImageAnalysisService {
-
+    public static final String PROMPT_VERSION = "point-cleanliness-v1";
+    public static final Set<String> OBSERVATION_LABELS = Set.of("CLEANED", "NOT_CLEANED", "OBSTRUCTED", "CANNOT_DETERMINE");
     private final GeminiClient geminiClient;
     private final AiProperties aiProperties;
     private final ImageAnalysisRepository imageAnalysisRepository;
     private final AiProblemRepository aiProblemRepository;
-    private final TourneeRepository tourneeRepository;
-    private final PointCollecteRepository pointCollecteRepository;
-
     @Qualifier("aiObjectMapper")
     private final ObjectMapper objectMapper;
 
-    /**
-     * Analyser une photo prise par un chauffeur à un point de collecte.
-     */
-    public ImageAnalysis analyzeImage(MultipartFile file, String pointCollecteId, String tourneeId, String chauffeurId, Double latitude, Double longitude) {
-        String savedFilename = savePhotoFile(file);
-        String photoUrl = "uploads/photos/" + savedFilename;
+    public record EvaluationConfiguration(String provider, String model, String promptVersion) {}
 
-        byte[] bytes;
-        try {
-            bytes = file.getBytes();
-        } catch (IOException e) {
-            throw new RuntimeException("Impossible de lire l'image envoyée.");
+    public EvaluationConfiguration evaluationConfiguration() {
+        return new EvaluationConfiguration("GEMINI", aiProperties.getGemini().getModelVision(), PROMPT_VERSION);
+    }
+
+    /** Supervisor experiment: reuse the operational prompt without modifying a tour. */
+    public ImageAnalysis evaluateEvidence(MultipartFile after, MultipartFile before,
+                                          String expectedModel, String expectedPromptVersion) {
+        if (!Objects.equals(expectedModel, aiProperties.getGemini().getModelVision()) ||
+                !Objects.equals(expectedPromptVersion, PROMPT_VERSION)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "La configuration d'évaluation a changé.");
         }
+        if (after == null || after.isEmpty() || (before != null && before.isEmpty())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Photo APRÈS requise ; une photo AVANT fournie doit être lisible.");
+        }
+        return analyzeStoredEvidence(savePhotoFile(after), before == null ? null : savePhotoFile(before), null, null, null);
+    }
 
-        String contentType = file.getContentType() != null ? file.getContentType() : "image/jpeg";
-        String prompt = buildVisionPrompt();
+    /** Compatibility endpoint. The controller checks tour ownership before storing a photo. */
+    public ImageAnalysis analyzeImage(MultipartFile file, String pointCollecteId, String tourneeId,
+                                      String chauffeurId, Double latitude, Double longitude) {
+        return analyzeStoredEvidence(savePhotoFile(file), null, pointCollecteId, tourneeId, chauffeurId);
+    }
 
-        String geminiResponse;
-        ImageAnalysis analysis;
-
+    /** Called after the tour service has authorized the visit and saved its evidence. */
+    public ImageAnalysis analyzeStoredEvidence(String afterPhotoUrl, String beforePhotoUrl,
+                                               String pointCollecteId, String tourneeId, String chauffeurId) {
+        if (afterPhotoUrl == null || afterPhotoUrl.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Une photo APRÈS est requise pour l'analyse.");
+        }
+        boolean paired = beforePhotoUrl != null && !beforePhotoUrl.isBlank();
+        ImageAnalysis analysis = ImageAnalysis.builder()
+                .photoUrl(afterPhotoUrl).afterPhotoUrl(afterPhotoUrl).beforePhotoUrl(paired ? beforePhotoUrl : null)
+                .inputMode(paired ? "BEFORE_AFTER" : "AFTER_ONLY")
+                .pointCollecteId(pointCollecteId).tourneeId(tourneeId).chauffeurId(chauffeurId)
+                .provider("GEMINI").model(aiProperties.getGemini().getModelVision()).promptVersion(PROMPT_VERSION)
+                .createdAt(LocalDateTime.now()).problemCreated(false).build();
         try {
-            geminiResponse = geminiClient.analyzeImage(bytes, contentType, prompt);
-            analysis = parseVisionResponse(geminiResponse);
+            List<GeminiClient.ImageInput> images = new ArrayList<>();
+            if (paired) images.add(readStoredPhoto(beforePhotoUrl));
+            images.add(readStoredPhoto(afterPhotoUrl));
+            JsonNode result = objectMapper.readTree(geminiClient.analyzeImages(images, buildVisionPrompt(paired)));
+            String label = result.path("status").asText("");
+            String description = result.path("description").asText("").trim();
+            if (!OBSERVATION_LABELS.contains(label) || description.isBlank() || description.length() > 2000) {
+                throw new AiServiceException("Réponse d'analyse invalide.");
+            }
+            analysis.setStatus(label);
+            analysis.setDescription(description);
         } catch (Exception e) {
-            log.warn("Erreur lors de l'appel Gemini Vision : {}. Utilisation analyse de secours.", e.getMessage());
-            analysis = ImageAnalysis.builder()
-                    .status("NORMAL")
-                    .typeAnomalie("CONTENEUR_NORMAL")
-                    .confidence(0.70)
-                    .description("Conteneur inspecté. Analyse incertaine — vérification humaine recommandée.")
-                    .severity("INFO")
-                    .build();
+            analysis.setStatus("ANALYSIS_UNAVAILABLE");
+            analysis.setDescription("Analyse indisponible. Les photos restent enregistrées pour la vérification humaine. Vous pouvez réessayer.");
         }
-
-        analysis.setPhotoUrl(photoUrl);
-        analysis.setPointCollecteId(pointCollecteId);
-        analysis.setTourneeId(tourneeId);
-        analysis.setChauffeurId(chauffeurId);
-        analysis.setCreatedAt(LocalDateTime.now());
-
-        // Créer un problème automatique si anomalie détectée avec confiance suffisante
-        double threshold = aiProperties.getVision().getConfidenceThresholdAnomaly();
-        if ("ANOMALIE".equals(analysis.getStatus()) && analysis.getConfidence() != null && analysis.getConfidence() >= threshold) {
-            AiProblem problem = createProblem(analysis, latitude, longitude);
-            analysis.setProblemCreated(true);
-            analysis.setProblemId(problem.getId());
-        } else {
-            analysis.setProblemCreated(false);
-        }
-
+        // A model output is evidence for review, not an automatically established incident.
         return imageAnalysisRepository.save(analysis);
     }
 
-    private String buildVisionPrompt() {
+    private String buildVisionPrompt(boolean paired) {
         return """
-            Tu es un expert en inspection visuelle des points de collecte de déchets municipaux.
-            Examine attentivement l'image ci-jointe.
-            
-            Détecte l'une des catégories suivantes :
-            - CONTENEUR_NORMAL : conteneur en bon état, propre et non débordant.
-            - CONTENEUR_PLEIN : rempli à 100% mais sans débordement majeur.
-            - CONTENEUR_DEBORDE : déchets accumulés au-dessus du bac.
-            - CONTENEUR_RENVERSE : conteneur tombé au sol.
-            - CONTENEUR_ENDOMMAGE : conteneur cassé, brûlé ou déformé.
-            - DECHETS_AUTOUR : déchets volumineux ou sacs entassés à côté du conteneur.
-            - POINT_INACCESSIBLE : véhicule mal garé ou voie bloquée empêchant la collecte.
-            - OBSTACLE : travaux ou objet bloquant le camion.
-            - AUTRE_ANOMALIE : tout autre problème.
-
-            Réponds UNIQUEMENT avec un JSON valide sous le format exact suivant :
-            {
-              "status": "NORMAL" ou "ANOMALIE",
-              "typeAnomalie": "UN_DES_TYPES_CI_DESSUS",
-              "confidence": 0.95,
-              "description": "Explication claire et concise en français.",
-              "severity": "INFO" ou "WARNING" ou "CRITICAL"
-            }
-            """;
+                Tu aides à examiner des preuves visuelles d'un point de collecte municipal.
+                %s
+                Évalue uniquement ce qui est visible sur la photo APRÈS. Une paire peut aider à comparer le même point.
+                N'affirme jamais qui a réalisé la collecte ni qu'une tâche est prouvée par la photo.
+                Choisis exactement un état :
+                CLEANED : le point paraît propre, sans déchets visibles restant à collecter.
+                NOT_CLEANED : des déchets visibles paraissent rester au point.
+                OBSTRUCTED : un obstacle visible empêche l'accès/la collecte.
+                CANNOT_DETERMINE : cadrage, qualité, visibilité ou incohérence des preuves ne permettent pas de conclure.
+                Si les images ne représentent pas clairement le même point, ou ne montrent pas un point de collecte,
+                utilise CANNOT_DETERMINE. N'invente pas de pourcentage de confiance.
+                Retourne uniquement un objet JSON : {"status":"CLEANED|NOT_CLEANED|OBSTRUCTED|CANNOT_DETERMINE",
+                "description":"Explication brève en français fondée sur les éléments visibles."}
+                """.formatted(paired ? "La première image est AVANT ; la seconde est APRÈS." : "Une seule image est fournie : APRÈS la collecte déclarée.");
     }
 
-    private ImageAnalysis parseVisionResponse(String jsonText) {
-        try {
-            String cleaned = jsonText.trim().replaceAll("```json\\s*", "").replaceAll("```\\s*", "").trim();
-            JsonNode node = objectMapper.readTree(cleaned);
-
-            String status = node.path("status").asText("NORMAL");
-            String type = node.path("typeAnomalie").asText("CONTENEUR_NORMAL");
-            double confidence = node.path("confidence").asDouble(0.80);
-            String desc = node.path("description").asText("Analyse terminée.");
-            String severity = node.path("severity").asText("INFO");
-
-            return ImageAnalysis.builder()
-                    .status(status)
-                    .typeAnomalie(type)
-                    .confidence(confidence)
-                    .description(desc)
-                    .severity(severity)
-                    .build();
-        } catch (Exception e) {
-            log.error("Erreur parsing réponse Vision : {}", e.getMessage());
-            return ImageAnalysis.builder()
-                    .status("NORMAL")
-                    .typeAnomalie("CONTENEUR_NORMAL")
-                    .confidence(0.60)
-                    .description("Analyse incertaine — vérification humaine recommandée.")
-                    .severity("INFO")
-                    .build();
-        }
-    }
-
-    private AiProblem createProblem(ImageAnalysis analysis, Double lat, Double lon) {
-        String camionId = null;
-        if (analysis.getTourneeId() != null) {
-            Tournee tournee = tourneeRepository.findById(analysis.getTourneeId()).orElse(null);
-            if (tournee != null) {
-                camionId = tournee.getCamionId();
-            }
-        }
-
-        AiProblem problem = AiProblem.builder()
-                .imageAnalysisId(analysis.getId())
-                .tourneeId(analysis.getTourneeId())
-                .pointCollecteId(analysis.getPointCollecteId())
-                .chauffeurId(analysis.getChauffeurId())
-                .camionId(camionId)
-                .photoUrl(analysis.getPhotoUrl())
-                .latitude(lat)
-                .longitude(lon)
-                .typeProbleme(analysis.getTypeAnomalie())
-                .description(analysis.getDescription())
-                .scoreConfiance(analysis.getConfidence())
-                .severite(analysis.getSeverity())
-                .statut("SIGNALEE")
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-
-        return aiProblemRepository.save(problem);
+    public ImageAnalysis getAnalysis(String id) {
+        return imageAnalysisRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Analyse introuvable."));
     }
 
     public ImageAnalysis confirmOrCorrect(String analysisId, Boolean validee, String correctionChauffeur) {
-        ImageAnalysis analysis = imageAnalysisRepository.findById(analysisId)
-                .orElseThrow(() -> new RuntimeException("Analyse introuvable : " + analysisId));
-
-        analysis.setValideeParChauffeur(validee);
-        analysis.setCorrectionChauffeur(correctionChauffeur);
-
-        if (Boolean.FALSE.equals(validee) && correctionChauffeur != null) {
-            analysis.setTypeAnomalie(correctionChauffeur);
-            if ("CONTENEUR_NORMAL".equals(correctionChauffeur)) {
-                analysis.setStatus("NORMAL");
-                analysis.setSeverity("INFO");
-            } else {
-                analysis.setStatus("ANOMALIE");
-            }
+        if (validee == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Confirmation requise.");
+        if (!Boolean.TRUE.equals(validee) && !OBSERVATION_LABELS.contains(correctionChauffeur == null ? "" : correctionChauffeur)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Choisissez une observation valide.");
         }
-
+        ImageAnalysis analysis = getAnalysis(analysisId);
+        analysis.setValideeParChauffeur(validee);
+        analysis.setCorrectionChauffeur(Boolean.TRUE.equals(validee) ? null : correctionChauffeur);
         return imageAnalysisRepository.save(analysis);
+    }
+
+    public ImageAnalysis review(String analysisId, String label, String notes, String reviewerId) {
+        if (!OBSERVATION_LABELS.contains(label == null ? "" : label)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Choisissez une observation valide.");
+        }
+        ImageAnalysis analysis = getAnalysis(analysisId);
+        analysis.setReviewedLabel(label);
+        analysis.setReviewNotes(notes);
+        analysis.setReviewedBy(reviewerId);
+        analysis.setReviewedAt(LocalDateTime.now());
+        return imageAnalysisRepository.save(analysis);
+    }
+
+    private GeminiClient.ImageInput readStoredPhoto(String reference) throws IOException {
+        String clean = reference.startsWith("/") ? reference.substring(1) : reference;
+        if (!clean.startsWith("uploads/photos/")) throw new IOException("Référence photo invalide.");
+        String filename = clean.substring("uploads/photos/".length());
+        if (filename.isBlank() || !filename.matches("[A-Za-z0-9._-]+") || filename.equals(".") || filename.equals("..")) {
+            throw new IOException("Référence photo invalide.");
+        }
+        Path root = Paths.get(aiProperties.getStorage().getPhotosDir()).toAbsolutePath().normalize();
+        Path path = root.resolve(filename).normalize();
+        if (!path.startsWith(root) || !path.toRealPath().startsWith(root.toRealPath()) || Files.size(path) > 10 * 1024 * 1024) {
+            throw new IOException("Fichier photo invalide.");
+        }
+        byte[] bytes = Files.readAllBytes(path);
+        return validatedImage(bytes);
+    }
+
+    private GeminiClient.ImageInput validatedImage(byte[] bytes) throws IOException {
+        if (bytes.length == 0 || bytes.length > 10 * 1024 * 1024 || ImageIO.read(new ByteArrayInputStream(bytes)) == null) {
+            throw new IOException("Photo JPEG ou PNG lisible requise (10 Mo maximum).");
+        }
+        boolean jpeg = bytes.length > 2 && (bytes[0] & 255) == 255 && (bytes[1] & 255) == 216;
+        boolean png = bytes.length > 8 && (bytes[0] & 255) == 137 && bytes[1] == 80 && bytes[2] == 78 && bytes[3] == 71;
+        if (!jpeg && !png) throw new IOException("Photo JPEG ou PNG requise.");
+        return new GeminiClient.ImageInput(bytes, jpeg ? "image/jpeg" : "image/png");
     }
 
     private String savePhotoFile(MultipartFile file) {
         try {
-            Path uploadDir = Paths.get(aiProperties.getStorage().getPhotosDir()).toAbsolutePath().normalize();
-            Files.createDirectories(uploadDir);
-            String originalName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "photo.jpg";
-            String filename = System.currentTimeMillis() + "_" + originalName.replaceAll("[^a-zA-Z0-9._-]", "_");
-            Path filePath = uploadDir.resolve(filename);
-            Files.copy(file.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            return filename;
+            GeminiClient.ImageInput input = validatedImage(file.getBytes());
+            Path root = Paths.get(aiProperties.getStorage().getPhotosDir()).toAbsolutePath().normalize();
+            Files.createDirectories(root);
+            String filename = UUID.randomUUID() + (input.mimeType().equals("image/png") ? ".png" : ".jpg");
+            Files.write(root.resolve(filename), input.bytes());
+            return "/uploads/photos/" + filename;
         } catch (IOException e) {
-            log.error("Erreur sauvegarde photo : {}", e.getMessage(), e);
-            throw new RuntimeException("Impossible de sauvegarder le fichier photo : " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible de lire ou enregistrer la photo.");
         }
     }
 
-    public List<ImageAnalysis> getAllAnalyses() {
-        return imageAnalysisRepository.findAllByOrderByCreatedAtDesc();
-    }
-
-    public List<AiProblem> getAllProblems() {
-        return aiProblemRepository.findAllByOrderByCreatedAtDesc();
-    }
+    public List<ImageAnalysis> getAllAnalyses() { return imageAnalysisRepository.findAllByOrderByCreatedAtDesc(); }
+    public List<AiProblem> getAllProblems() { return aiProblemRepository.findAllByOrderByCreatedAtDesc(); }
 }

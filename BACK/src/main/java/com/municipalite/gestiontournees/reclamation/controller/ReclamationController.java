@@ -2,6 +2,7 @@ package com.municipalite.gestiontournees.reclamation.controller;
 
 import com.municipalite.gestiontournees.reclamation.model.Reclamation;
 import com.municipalite.gestiontournees.reclamation.service.ReclamationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,7 +21,7 @@ public class ReclamationController {
 
     @PostMapping
     public ResponseEntity<Reclamation> create(
-            @RequestBody Reclamation reclamation,
+            @Valid @RequestBody Reclamation reclamation,
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(reclamationService.createReclamation(reclamation, userDetails.getUsername()));
     }

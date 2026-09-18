@@ -20,6 +20,7 @@ public class RagMessage {
     private String id;
     private String sender; // "USER" ou "ASSISTANT"
     private String content;
+    private String status;
     private List<SourceDto> sources;
     private Double highestScore;
     private LocalDateTime timestamp;

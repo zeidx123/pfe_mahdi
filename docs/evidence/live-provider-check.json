@@ -1,0 +1,30 @@
+{
+  "checkedAtUtc": "2026-09-17T14:47:09.253822+00:00",
+  "purpose": "Live transport/response check; synthetic inputs, no accuracy claim",
+  "checks": {
+    "text": {
+      "status": "PASS",
+      "httpStatus": 200,
+      "latencyMs": 10151
+    },
+    "embedding": {
+      "status": "PASS",
+      "httpStatus": 200,
+      "latencyMs": 474,
+      "dimensions": 768
+    },
+    "vision": {
+      "status": "PROVIDER_UNAVAILABLE",
+      "httpStatus": 503,
+      "latencyMs": 4054
+    },
+    "roadMatrix": {
+      "status": "NOT_CONFIGURED"
+    }
+  },
+  "models": {
+    "text": "gemini-3.8-flash",
+    "embedding": "gemini-embedding-2",
+    "vision": "gemini-3.8-flash"
+  }
+}

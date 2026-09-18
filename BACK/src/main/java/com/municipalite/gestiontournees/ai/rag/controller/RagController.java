@@ -33,7 +33,7 @@ public class RagController {
     public ResponseEntity<RagResponse> query(
             @Valid @RequestBody RagQueryRequest request,
             Authentication authentication) {
-        String username = authentication != null ? authentication.getName() : "user@municipalite.ma";
+        String username = authentication.getName();
         RagResponse response = ragService.query(request, username);
         return ResponseEntity.ok(response);
     }
@@ -44,7 +44,7 @@ public class RagController {
      */
     @GetMapping("/conversations")
     public ResponseEntity<List<RagConversation>> getConversations(Authentication authentication) {
-        String username = authentication != null ? authentication.getName() : "user@municipalite.ma";
+        String username = authentication.getName();
         List<RagConversation> conversations = ragService.getUserConversations(username);
         return ResponseEntity.ok(conversations);
     }

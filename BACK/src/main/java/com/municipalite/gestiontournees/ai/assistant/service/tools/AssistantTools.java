@@ -159,20 +159,13 @@ public class AssistantTools {
                 sb.append("  • ").append(c.getPrenom() != null ? c.getPrenom() : "").append(" ").append(c.getNom() != null ? c.getNom() : c.getCvFileName())
                   .append(" | CIN: ").append(c.getCin() != null ? c.getCin() : "Non renseignée")
                   .append(" | Permis: ").append(c.getTypePermis() != null ? c.getTypePermis() : "N/C")
-                  .append(" | Score: ").append(c.getScoreCompatibilite() != null ? c.getScoreCompatibilite() + "%" : "0%")
+                  .append(" | Score: ").append(c.getScoreCompatibilite() != null ? c.getScoreCompatibilite() + "%" : "Non évalué")
                   .append(" | Recommandation: ").append(c.getRecommandation() != null ? c.getRecommandation() : "N/C")
                   .append(" | Statut: ").append(c.getStatut() != null ? c.getStatut() : "EN_ATTENTE")
                   .append("\n");
             }
         }
         sb.append("\n");
-
-        // 6. PROCÉDURES OPÉRATIONNELLES ET CONSIGNES
-        sb.append("📋 PROCÉDURES OPERATIONNELLES ET CONSIGNES MUNICIPALES :\n");
-        sb.append("1. Panne de camion en tournée : L'agent doit immédiatement garer le véhicule en sécurité, allumer les feux de détresse, poser le triangle et envoyer un signalement via l'application mobile. Le superviseur déclenche l'intervention de la dépanneuse municipale.\n");
-        sb.append("2. Problème de pneu / Crevaison : Ne jamais rouler à plat. Signaler l'incident et attendre l'équipe de maintenance.\n");
-        sb.append("3. Conteneur débordant / Anomalie collecte : Prendre une photo en direct via l'application mobile Flutter. L'IA de vision analyse le type de déchet et l'état du bac.\n");
-        sb.append("4. Critères de recrutement Chauffeur (Tunisie) : Âge obligatoire entre 20 et 35 ans, CIN tunisienne valide (8 chiffres), Permis B ou C minimum, et au moins 2 ans d'expérience.\n");
 
         return sb.toString();
     }

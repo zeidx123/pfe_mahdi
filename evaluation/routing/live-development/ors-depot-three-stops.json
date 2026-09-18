@@ -1,0 +1,291 @@
+{
+  "source": "LIVE_ORS_DEVELOPMENT",
+  "provenance": {
+    "providerMode": "REAL_HTTP",
+    "origin": "https://api.openrouteservice.org",
+    "municipalStopsReviewed": false
+  },
+  "route": {
+    "depot": {
+      "latitude": 36.722857,
+      "longitude": 10.283535,
+      "label": "Dépôt"
+    },
+    "provider": "OpenRouteService",
+    "profile": "driving-car",
+    "algorithm": "NN",
+    "algorithmVersion": "road-v1",
+    "calculatedAt": "2026-09-17T17:04:16.004",
+    "orderedPointIds": [
+      "6aabf02b93cc37692dbf6be8",
+      "6aabf02b93cc37692dbf6be9",
+      "6aabf02b93cc37692dbf6bea"
+    ],
+    "geometry": [
+      [
+        10.283168,
+        36.722762
+      ],
+      [
+        10.283442,
+        36.72208
+      ],
+      [
+        10.283474,
+        36.722086
+      ],
+      [
+        10.2837,
+        36.722132
+      ],
+      [
+        10.283746,
+        36.722145
+      ],
+      [
+        10.284376,
+        36.722394
+      ],
+      [
+        10.284378,
+        36.722452
+      ],
+      [
+        10.284248,
+        36.722638
+      ],
+      [
+        10.283996,
+        36.722998
+      ],
+      [
+        10.283903,
+        36.723133
+      ],
+      [
+        10.283918,
+        36.723174
+      ],
+      [
+        10.285176,
+        36.723756
+      ],
+      [
+        10.285323,
+        36.723825
+      ],
+      [
+        10.286648,
+        36.724412
+      ],
+      [
+        10.286349,
+        36.72489
+      ],
+      [
+        10.286218,
+        36.725091
+      ],
+      [
+        10.286349,
+        36.72489
+      ],
+      [
+        10.286648,
+        36.724412
+      ],
+      [
+        10.286746,
+        36.724257
+      ],
+      [
+        10.286993,
+        36.723862
+      ],
+      [
+        10.284248,
+        36.722638
+      ],
+      [
+        10.284378,
+        36.722452
+      ],
+      [
+        10.284376,
+        36.722394
+      ],
+      [
+        10.283746,
+        36.722145
+      ],
+      [
+        10.2837,
+        36.722132
+      ],
+      [
+        10.283474,
+        36.722086
+      ],
+      [
+        10.283442,
+        36.72208
+      ],
+      [
+        10.283168,
+        36.722762
+      ]
+    ],
+    "legs": [
+      {
+        "fromId": "DEPOT",
+        "toId": "6aabf02b93cc37692dbf6be8",
+        "distanceMeters": 246.48,
+        "durationSeconds": 49.58
+      },
+      {
+        "fromId": "6aabf02b93cc37692dbf6be8",
+        "toId": "6aabf02b93cc37692dbf6be9",
+        "distanceMeters": 151.35,
+        "durationSeconds": 36.32
+      },
+      {
+        "fromId": "6aabf02b93cc37692dbf6be9",
+        "toId": "6aabf02b93cc37692dbf6bea",
+        "distanceMeters": 234.9,
+        "durationSeconds": 56.37
+      },
+      {
+        "fromId": "6aabf02b93cc37692dbf6bea",
+        "toId": "DEPOT",
+        "distanceMeters": 633.63,
+        "durationSeconds": 108.9
+      }
+    ],
+    "distanceMeters": 1266.3600000000001,
+    "travelSeconds": 251.17000000000002,
+    "serviceSeconds": 900.0,
+    "totalSeconds": 1151.17,
+    "comparisons": [
+      {
+        "algorithm": "MANUAL",
+        "orderedPointIds": [
+          "6aabf02b93cc37692dbf6bea",
+          "6aabf02b93cc37692dbf6be8",
+          "6aabf02b93cc37692dbf6be9"
+        ],
+        "distanceMeters": 1661.9199999999998,
+        "travelSeconds": 312.52,
+        "runtimeMillis": 0.007318
+      },
+      {
+        "algorithm": "NN",
+        "orderedPointIds": [
+          "6aabf02b93cc37692dbf6be8",
+          "6aabf02b93cc37692dbf6be9",
+          "6aabf02b93cc37692dbf6bea"
+        ],
+        "distanceMeters": 1266.3600000000001,
+        "travelSeconds": 251.17000000000002,
+        "runtimeMillis": 0.483468
+      },
+      {
+        "algorithm": "NN_2OPT",
+        "orderedPointIds": [
+          "6aabf02b93cc37692dbf6be8",
+          "6aabf02b93cc37692dbf6be9",
+          "6aabf02b93cc37692dbf6bea"
+        ],
+        "distanceMeters": 1266.3600000000001,
+        "travelSeconds": 251.17000000000002,
+        "runtimeMillis": 0.02529
+      },
+      {
+        "algorithm": "EXACT",
+        "orderedPointIds": [
+          "6aabf02b93cc37692dbf6be8",
+          "6aabf02b93cc37692dbf6be9",
+          "6aabf02b93cc37692dbf6bea"
+        ],
+        "distanceMeters": 1266.3600000000001,
+        "travelSeconds": 251.17000000000002,
+        "runtimeMillis": 0.020969
+      }
+    ],
+    "matrixPointIds": [
+      "DEPOT",
+      "6aabf02b93cc37692dbf6bea",
+      "6aabf02b93cc37692dbf6be8",
+      "6aabf02b93cc37692dbf6be9"
+    ],
+    "matrixCoordinates": [
+      [
+        10.283535,
+        36.722857
+      ],
+      [
+        10.286000000000001,
+        36.725
+      ],
+      [
+        10.284,
+        36.723
+      ],
+      [
+        10.285,
+        36.724
+      ]
+    ],
+    "durations": [
+      [
+        0.0,
+        108.9,
+        49.58,
+        85.91
+      ],
+      [
+        108.9,
+        0.0,
+        81.39,
+        56.37
+      ],
+      [
+        49.58,
+        81.39,
+        0.0,
+        36.32
+      ],
+      [
+        85.91,
+        56.37,
+        36.32,
+        0.0
+      ]
+    ],
+    "distances": [
+      [
+        0.0,
+        633.63,
+        246.48,
+        397.83
+      ],
+      [
+        633.63,
+        0.0,
+        479.11,
+        234.9
+      ],
+      [
+        246.48,
+        479.11,
+        0.0,
+        151.35
+      ],
+      [
+        397.83,
+        234.9,
+        151.35,
+        0.0
+      ]
+    ]
+  }
+}

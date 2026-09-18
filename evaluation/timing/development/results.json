@@ -1,0 +1,24 @@
+{
+  "measuredTours": 1,
+  "excludedTours": [],
+  "totalMAESeconds": 130.0,
+  "totalMAPEPercent": 8.632138114209827,
+  "MAPETours": 1,
+  "serviceMAESeconds": null,
+  "completeServiceMeasurements": 0,
+  "rows": [
+    {
+      "tour": "BROWSER-T1",
+      "estimatedSeconds": 1636.0,
+      "actualSeconds": 1506,
+      "signedErrorSeconds": -130.0,
+      "absoluteErrorSeconds": 130.0,
+      "relativeToEstimatePct": -7.946210268948655,
+      "absolutePercentageErrorPct": 8.632138114209827,
+      "serviceAbsoluteErrorSeconds": null
+    }
+  ],
+  "limitations": "Elapsed time includes waiting/breaks. Missing measurements are excluded, not estimated. No observed driving distance is inferred.",
+  "dataOrigin": "BROWSER_DEVELOPMENT_WITH_SIMULATED_ROADS",
+  "experimentLimitation": "Elapsed time includes software testing delays; not physical driving or field performance."
+}

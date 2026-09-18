@@ -68,5 +68,5 @@ public class User implements UserDetails {
     public boolean isCredentialsNonExpired() { return true; }
 
     @Override
-    public boolean isEnabled() { return true; } // actif gère l'accès métier, pas la connexion
+    public boolean isEnabled() { return actif; }
 }

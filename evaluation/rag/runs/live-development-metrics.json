@@ -1,0 +1,233 @@
+{
+  "schemaVersion": "rag-metrics-v1",
+  "runId": "36c507cd-9004-4cd3-bd47-de441c1c9bc0",
+  "datasetVersion": "rag-development-template-v1",
+  "corpusFingerprint": "1be7ea6bc618e2e1af88caa25c48c72fa0fbc100bb5f3b38674e1560a6d27fd8",
+  "settings": {
+    "evaluationVersion": "rag-comparison-v1",
+    "topK": 5,
+    "similarityThreshold": 0.15,
+    "bm25K1": 1.2,
+    "bm25B": 0.75,
+    "reciprocalRankFusionK": 60,
+    "provider": "GEMINI",
+    "generationModel": "gemini-3.8-flash",
+    "promptVersion": "grounded-rag-v1",
+    "embeddingModel": "gemini-embedding-2",
+    "embeddingDimensions": 768,
+    "embeddingVersion": "text-v1"
+  },
+  "reviewVersion": null,
+  "requestFailures": [],
+  "denominators": {
+    "retrieval": "Independent relevant-passage labels and complete available requested mode only",
+    "abstention": "Independent answerability labels, available retrieval and valid generation/no-context result; provider/invalid/index failures excluded",
+    "claimsAndCitations": "Explicit independent support labels only; missing labels and incomplete claim inventories reported separately",
+    "latency": "Observed milliseconds; per-mode total includes shared query embedding for semantic/hybrid, so totals must not be summed as API wall time"
+  },
+  "groups": [
+    {
+      "split": "development",
+      "mode": "HYBRID",
+      "caseCount": 3,
+      "retrieval": {
+        "k": 5,
+        "reviewedAnswerableAvailableCount": 0,
+        "recallAtK": null,
+        "mrrAtK": null,
+        "literalSupportingPassageRecall": null,
+        "reviewedUnanswerableAvailableCount": 0,
+        "emptyRetrievalOnUnanswerableCount": 0,
+        "missingOrUnreviewedLabelsCount": 3,
+        "unavailableOrIncompleteIndexCount": 0
+      },
+      "answers": {
+        "answerableEligibleCount": 0,
+        "answerableAbstentionRate": null,
+        "unanswerableEligibleCount": 0,
+        "correctAbstentionRate": null,
+        "answeredUnanswerableRate": null,
+        "missingOrUnreviewedAnswerabilityCount": 3,
+        "unavailableOrInvalidGenerationCount": 3,
+        "answeredCount": 0,
+        "independentlyReviewedAnswerCount": 0,
+        "completeClaimReviewCount": 0,
+        "missingOrIncompleteClaimReviewCount": 0,
+        "reviewedClaimCount": 0,
+        "groundedClaimRate": null,
+        "unsupportedClaimRate": null,
+        "citationCount": 0,
+        "reviewedCitationCount": 0,
+        "citationSupportRate": null,
+        "missingCitationReviewCount": 0,
+        "answerCorrectnessReviewedCount": 0,
+        "answerCorrectnessRate": null
+      },
+      "responseStates": {
+        "SOURCE_EXCERPTS": 3
+      },
+      "retrievalStates": {
+        "AVAILABLE": 3
+      },
+      "generationStates": {
+        "PROVIDER_UNAVAILABLE": 3
+      },
+      "latency": {
+        "retrieval": {
+          "count": 3,
+          "meanMs": 0.6140586666666666,
+          "medianMs": 0.617108,
+          "p95Ms": 0.704895
+        },
+        "generation": {
+          "count": 3,
+          "meanMs": 3168.213869,
+          "medianMs": 196.306926,
+          "p95Ms": 9120.400642
+        },
+        "perModeTotal": {
+          "count": 3,
+          "meanMs": 3542.5094466666674,
+          "medianMs": 584.453617,
+          "p95Ms": 9520.895902000002
+        }
+      }
+    },
+    {
+      "split": "development",
+      "mode": "LEXICAL",
+      "caseCount": 3,
+      "retrieval": {
+        "k": 5,
+        "reviewedAnswerableAvailableCount": 0,
+        "recallAtK": null,
+        "mrrAtK": null,
+        "literalSupportingPassageRecall": null,
+        "reviewedUnanswerableAvailableCount": 0,
+        "emptyRetrievalOnUnanswerableCount": 0,
+        "missingOrUnreviewedLabelsCount": 3,
+        "unavailableOrIncompleteIndexCount": 0
+      },
+      "answers": {
+        "answerableEligibleCount": 0,
+        "answerableAbstentionRate": null,
+        "unanswerableEligibleCount": 0,
+        "correctAbstentionRate": null,
+        "answeredUnanswerableRate": null,
+        "missingOrUnreviewedAnswerabilityCount": 3,
+        "unavailableOrInvalidGenerationCount": 2,
+        "answeredCount": 0,
+        "independentlyReviewedAnswerCount": 0,
+        "completeClaimReviewCount": 0,
+        "missingOrIncompleteClaimReviewCount": 0,
+        "reviewedClaimCount": 0,
+        "groundedClaimRate": null,
+        "unsupportedClaimRate": null,
+        "citationCount": 0,
+        "reviewedCitationCount": 0,
+        "citationSupportRate": null,
+        "missingCitationReviewCount": 0,
+        "answerCorrectnessReviewedCount": 0,
+        "answerCorrectnessRate": null
+      },
+      "responseStates": {
+        "SOURCE_EXCERPTS": 2,
+        "INSUFFICIENT_INFORMATION": 1
+      },
+      "retrievalStates": {
+        "AVAILABLE": 3
+      },
+      "generationStates": {
+        "PROVIDER_UNAVAILABLE": 2,
+        "NO_CONTEXT": 1
+      },
+      "latency": {
+        "retrieval": {
+          "count": 3,
+          "meanMs": 2.080932,
+          "medianMs": 0.384718,
+          "p95Ms": 5.511098
+        },
+        "generation": {
+          "count": 3,
+          "meanMs": 462.049116,
+          "medianMs": 200.819568,
+          "p95Ms": 1185.305509
+        },
+        "perModeTotal": {
+          "count": 3,
+          "meanMs": 464.130048,
+          "medianMs": 201.204286,
+          "p95Ms": 1190.816607
+        }
+      }
+    },
+    {
+      "split": "development",
+      "mode": "SEMANTIC",
+      "caseCount": 3,
+      "retrieval": {
+        "k": 5,
+        "reviewedAnswerableAvailableCount": 0,
+        "recallAtK": null,
+        "mrrAtK": null,
+        "literalSupportingPassageRecall": null,
+        "reviewedUnanswerableAvailableCount": 0,
+        "emptyRetrievalOnUnanswerableCount": 0,
+        "missingOrUnreviewedLabelsCount": 3,
+        "unavailableOrIncompleteIndexCount": 0
+      },
+      "answers": {
+        "answerableEligibleCount": 0,
+        "answerableAbstentionRate": null,
+        "unanswerableEligibleCount": 0,
+        "correctAbstentionRate": null,
+        "answeredUnanswerableRate": null,
+        "missingOrUnreviewedAnswerabilityCount": 3,
+        "unavailableOrInvalidGenerationCount": 3,
+        "answeredCount": 0,
+        "independentlyReviewedAnswerCount": 0,
+        "completeClaimReviewCount": 0,
+        "missingOrIncompleteClaimReviewCount": 0,
+        "reviewedClaimCount": 0,
+        "groundedClaimRate": null,
+        "unsupportedClaimRate": null,
+        "citationCount": 0,
+        "reviewedCitationCount": 0,
+        "citationSupportRate": null,
+        "missingCitationReviewCount": 0,
+        "answerCorrectnessReviewedCount": 0,
+        "answerCorrectnessRate": null
+      },
+      "responseStates": {
+        "SOURCE_EXCERPTS": 3
+      },
+      "retrievalStates": {
+        "AVAILABLE": 3
+      },
+      "generationStates": {
+        "PROVIDER_UNAVAILABLE": 3
+      },
+      "latency": {
+        "retrieval": {
+          "count": 3,
+          "meanMs": 0.5863266666666667,
+          "medianMs": 0.506304,
+          "p95Ms": 0.80909
+        },
+        "generation": {
+          "count": 3,
+          "meanMs": 6121.017823666667,
+          "medianMs": 188.228806,
+          "p95Ms": 17994.789503
+        },
+        "perModeTotal": {
+          "count": 3,
+          "meanMs": 6495.285669333333,
+          "medianMs": 568.286048,
+          "p95Ms": 18395.208176
+        }
+      }
+    }
+  ]
+}

@@ -25,9 +25,19 @@ public class ImageAnalysis {
     private String pointCollecteId;
     private String tourneeId;
     private String chauffeurId;
-    private String photoUrl;
+    private String photoUrl; // Legacy alias for AFTER evidence
+    private String afterPhotoUrl;
+    private String beforePhotoUrl;
+    private String inputMode; // AFTER_ONLY or BEFORE_AFTER
+    private String provider;
+    private String model;
+    private String promptVersion;
+    private String reviewedLabel;
+    private String reviewNotes;
+    private String reviewedBy;
+    private LocalDateTime reviewedAt;
 
-    private String status;           // NORMAL ou ANOMALIE
+    private String status; // Original prediction; never overwritten by human correction
     private String typeAnomalie;     // CONTENEUR_NORMAL, CONTENEUR_PLEIN, CONTENEUR_DEBORDE, CONTENEUR_RENVERSE, CONTENEUR_ENDOMMAGE, DECHETS_AUTOUR, POINT_INACCESSIBLE, OBSTACLE, AUTRE_ANOMALIE
     private Double confidence;       // 0.0 à 1.0
     private String description;

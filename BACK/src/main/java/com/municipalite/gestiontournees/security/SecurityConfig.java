@@ -33,15 +33,16 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> {})
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/agents/reset-all-passwords").permitAll()
-                .requestMatchers("/uploads/**").permitAll()
+                .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
+            .exceptionHandling(errors -> errors
+                .authenticationEntryPoint((request, response, error) -> response.sendError(401))
+                .accessDeniedHandler((request, response, error) -> response.sendError(403)))
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

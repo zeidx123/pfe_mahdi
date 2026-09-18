@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
+  Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
 import { FiUsers, FiTruck, FiMap, FiAlertTriangle } from 'react-icons/fi';
@@ -13,17 +13,7 @@ const DashboardPage = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
   
-  // Toujours des données mockées pour le graphe linéaire (historique)
-  // car l'historique nécessite une table de logs plus complexe
-  const collectData = [
-    { name: 'Lun', tonnes: 12.5 },
-    { name: 'Mar', tonnes: 14.2 },
-    { name: 'Mer', tonnes: 13.8 },
-    { name: 'Jeu', tonnes: 15.1 },
-    { name: 'Ven', tonnes: 16.4 },
-    { name: 'Sam', tonnes: 18.2 },
-    { name: 'Dim', tonnes: 10.1 },
-  ];
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -31,12 +21,13 @@ const DashboardPage = () => {
         const response = await api.get('/dashboard/stats');
         setStats(response.data);
       } catch (error) {
-        console.error("Erreur lors de la récupération des statistiques:", error);
+        setError(error.response?.data?.message || "Statistiques indisponibles. Actualisez la page pour réessayer.");
       }
     };
     fetchStats();
   }, []);
 
+  if (error) return <p role="alert">{error}</p>;
   if (!stats) return <div className="loading-screen">Chargement du tableau de bord...</div>;
 
   const truckStatusData = [
@@ -90,21 +81,10 @@ const DashboardPage = () => {
       {/* Graphiques */}
       <div className="charts-grid">
         <div className="chart-card">
-          <h3>Déchets collectés (7 derniers jours)</h3>
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={collectData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
-                <RechartsTooltip 
-                  contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
-                />
-                <Legend />
-                <Line type="monotone" dataKey="tonnes" name="Tonnes collectées" stroke="#10b981" strokeWidth={3} dot={{r: 4, fill: '#10b981', strokeWidth: 0}} activeDot={{r: 6}} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <h3>Exécution des tournées</h3>
+          <p>Consultez les tournées pour comparer le temps estimé au temps enregistré et examiner les preuves de collecte.</p>
+          <a href="/tournees" className="btn-primary">Voir les tournées</a>
+          <p className="text-muted">Le tonnage n'est pas mesuré dans cette version.</p>
         </div>
 
         <div className="chart-card">

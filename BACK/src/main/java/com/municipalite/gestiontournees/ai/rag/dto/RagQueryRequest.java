@@ -14,5 +14,6 @@ public class RagQueryRequest {
     private String conversationId;
 
     @NotBlank(message = "La question est obligatoire")
+    @jakarta.validation.constraints.Size(max = 2000, message = "Question trop longue")
     private String question;
 }

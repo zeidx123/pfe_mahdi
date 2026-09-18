@@ -26,9 +26,12 @@ const TourneePage = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [detailsTournee, setDetailsTournee] = useState(null);
 
-  const handleOpenDetails = (tournee) => {
-    setDetailsTournee(tournee);
-    setIsDetailsOpen(true);
+  const handleOpenDetails = async (tournee) => {
+    try {
+      const current = await tourneeService.getById(tournee.id);
+      setDetailsTournee(current);
+      setIsDetailsOpen(true);
+    } catch (error) { toast.error(error.response?.data?.message || 'Détails indisponibles. Réessayez.'); }
   };
 
   const handleCloseDetails = () => {
@@ -38,11 +41,13 @@ const TourneePage = () => {
 
   useEffect(() => { fetchTournees(); }, []);
 
-  const fetchTournees = async () => {
+  const fetchTournees = async (updated = null) => {
+    if (updated?.id) setDetailsTournee(current => current?.id === updated.id ? updated : current);
     try {
       setLoading(true);
       const data = await tourneeService.getAll();
       setTournees(data);
+      setDetailsTournee(current => current ? data.find(t => t.id === current.id) || current : null);
     } catch {
       toast.error('Erreur lors du chargement des tournées');
     } finally {
@@ -79,16 +84,6 @@ const TourneePage = () => {
     }
   };
 
-  const handleChangeStatut = async (id, newStatut) => {
-    try {
-      await tourneeService.updateStatut(id, newStatut);
-      toast.success(`Statut mis à jour : ${STATUT_CONFIG[newStatut]?.label}`);
-      fetchTournees();
-    } catch {
-      toast.error('Erreur lors de la mise à jour du statut');
-    }
-  };
-
   const handleDelete = async (id) => {
     if (window.confirm('Voulez-vous annuler cette tournée ?')) {
       try {
@@ -111,8 +106,8 @@ const TourneePage = () => {
   };
 
   const filtered = tournees.filter(t => {
-    const matchSearch = t.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        t.reference.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchSearch = (t.nom || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        (t.reference || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchStatut = filterStatut === 'ALL' || t.statut === filterStatut;
     return matchSearch && matchStatut;
   });
@@ -214,12 +209,6 @@ const TourneePage = () => {
                       <td>
                         <div className="statut-control">
                           <span className={`status-badge ${cfg.cls}`}>{cfg.icon} {cfg.label}</span>
-                          {t.statut === 'PLANIFIEE' && (
-                            <button className="mini-btn green" onClick={() => handleChangeStatut(t.id, 'EN_COURS')} title="Démarrer">▶ Démarrer</button>
-                          )}
-                          {t.statut === 'EN_COURS' && (
-                            <button className="mini-btn blue" onClick={() => handleChangeStatut(t.id, 'TERMINEE')} title="Terminer">✓ Terminer</button>
-                          )}
                         </div>
                       </td>
                       <td className="actions-cell">
@@ -227,7 +216,7 @@ const TourneePage = () => {
                         {t.statut === 'TERMINEE' && (
                           <button className="icon-btn edit" style={{color: '#0369a1', background: '#e0f2fe'}} onClick={() => handleDownloadPdf(t.id, t.reference)} title="Télécharger PDF"><FiFileText /></button>
                         )}
-                        <button className="icon-btn edit" onClick={() => handleOpenModal(t)} title="Modifier"><FiEdit2 /></button>
+                        <button className="icon-btn edit" onClick={() => handleOpenModal(t)} title="Modifier la tournée planifiée" disabled={t.statut !== 'PLANIFIEE'}><FiEdit2 /></button>
                         <button className="icon-btn delete" onClick={() => handleDelete(t.id)} title="Annuler" disabled={t.statut === 'ANNULEE' || t.statut === 'TERMINEE'}><FiTrash2 /></button>
                       </td>
                     </tr>
@@ -240,7 +229,7 @@ const TourneePage = () => {
       </div>
 
       <TourneeFormModal isOpen={isModalOpen} onClose={handleCloseModal} onSubmit={handleSubmit} tournee={selectedTournee} isLoading={isSubmitting} />
-      <TourneeDetailsModal isOpen={isDetailsOpen} onClose={handleCloseDetails} tournee={detailsTournee} onRefresh={fetchTournees} />
+      <TourneeDetailsModal key={detailsTournee?.id || 'none'} isOpen={isDetailsOpen} onClose={handleCloseDetails} tournee={detailsTournee} onRefresh={fetchTournees} />
 
       <style>{`
         .tournee-page { display: flex; flex-direction: column; gap: 1.5rem; }

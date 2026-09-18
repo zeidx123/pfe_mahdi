@@ -1,0 +1,67 @@
+{
+  "date": "2026-09-17",
+  "backend": {
+    "tests": 111,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "package": "PASS"
+  },
+  "python": {
+    "rag": 8,
+    "candidate": 20,
+    "visionRunner": 12,
+    "visionMetrics": 10,
+    "timing": 3,
+    "total": 53
+  },
+  "stagedWorkflow": {
+    "result": "PASS",
+    "assertedHttpRequests": 71,
+    "backendRestartVerified": true,
+    "providerMode": "SIMULATED",
+    "evidence": "p1-staged-workflow.json"
+  },
+  "evaluationApiAccess": {
+    "result": "PASS",
+    "evidence": "p1-evaluation-access.json"
+  },
+  "cvFallbackContractReplay": {
+    "result": "PASS",
+    "authoredSyntheticCases": 2,
+    "matchedFieldValues": 12,
+    "expectedFieldValues": 12,
+    "matchedFieldStatuses": 12,
+    "expectedFieldStatuses": 12,
+    "providerMode": "EXPLICIT_SIMULATED_OUTAGE",
+    "realModelCalls": 0,
+    "independentHumanReview": false,
+    "evidence": "../../evaluation/candidates/fallback-contract-results.json"
+  },
+  "flutter": {
+    "vmTestsPreviousRun": 17,
+    "chromiumTestsPreviousRun": 20,
+    "latestDebugApkBuild": "PASS",
+    "physicalAndroidDevicesConnected": 0
+  },
+  "currentProviderData": "See live-provider-check.json and P1_RUN_RESULTS.md; availability and unreviewed accuracy are separate",
+  "optionalP2P3": "NOT_IMPLEMENTED",
+  "liveRouting": {
+    "result": "PASS",
+    "provider": "OpenRouteService",
+    "configuredDepot": [
+      36.722857,
+      10.283535
+    ],
+    "developmentScenarios": 1,
+    "stops": 3,
+    "routeAssertions": 44,
+    "independentPermutations": 6,
+    "savedMatrixReplay": "PASS",
+    "flutterBrowserRendering": "PASS",
+    "physicalExecutionVerified": false,
+    "municipalStopsReviewed": false,
+    "evidence": "live-ors-workflow.json",
+    "browserEvidence": "live-ors-browser.md"
+  }
+}

@@ -1,67 +1,62 @@
 package com.municipalite.gestiontournees.ai.cv.service;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
-
-/**
- * Service d'extraction du texte brut à partir d'un fichier CV (PDF).
- * Utilise Apache PDFBox — aucun appel externe, 100% local.
- */
 @Service
-@Slf4j
 public class CvExtractionService {
-
-    /**
-     * Extrait le texte brut d'un fichier PDF uploadé.
-     *
-     * @param file Le fichier PDF du CV
-     * @return Texte extrait du PDF
-     * @throws RuntimeException Si le fichier est invalide ou illisible
-     */
-    public String extractTextFromPdf(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw new RuntimeException("Le fichier CV est vide ou invalide.");
-        }
-
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.equalsIgnoreCase("application/pdf")) {
-            throw new RuntimeException("Format de fichier non supporté. Veuillez uploader un fichier PDF.");
-        }
-
-        try {
-            byte[] pdfBytes = file.getBytes();
-            try (PDDocument document = Loader.loadPDF(pdfBytes)) {
-
-                if (document.isEncrypted()) {
-                    throw new RuntimeException("Le fichier PDF est protégé par un mot de passe et ne peut pas être lu.");
-                }
-
-                PDFTextStripper stripper = new PDFTextStripper();
-                stripper.setSortByPosition(true);
-                String text = stripper.getText(document);
-
-                if (text == null || text.trim().isEmpty()) {
-                    log.warn("PDF ne contient pas de texte extractible (probablement scanné) : {}", file.getOriginalFilename());
-                    throw new RuntimeException(
-                        "Le PDF ne contient pas de texte lisible. " +
-                        "Si votre CV est une image scannée, convertissez-le d'abord en PDF avec du texte sélectionnable."
-                    );
-                }
-
-                log.info("Texte extrait du CV '{}' : {} caractères", file.getOriginalFilename(), text.length());
-                return text.trim();
-            }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("Erreur lors de l'extraction du texte PDF : {}", e.getMessage());
-            throw new RuntimeException("Impossible de lire le fichier PDF : " + e.getMessage());
-        }
+    public record TextPart(Integer pageNumber, String location, String text) {}
+    public record Extraction(List<TextPart> parts, String status) {
+        public String text() { return parts.stream().map(p -> "[" + p.location() + "]\n" + p.text()).reduce("", (a, b) -> a + "\n" + b); }
     }
+
+    public Extraction extract(MultipartFile file) {
+        if (file == null || file.isEmpty() || file.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("Le CV doit contenir un fichier de 10 Mo maximum");
+        }
+        String name = file.getOriginalFilename() == null ? "" : file.getOriginalFilename().toLowerCase(Locale.ROOT);
+        if (!name.endsWith(".pdf") && !name.endsWith(".docx")) throw new IllegalArgumentException("Format accepté : PDF ou DOCX");
+        var parts = new ArrayList<TextPart>();
+        try {
+            if (name.endsWith(".pdf")) {
+                try (var document = Loader.loadPDF(file.getBytes())) {
+                    var stripper = new PDFTextStripper(); stripper.setSortByPosition(true);
+                    for (int page = 1; page <= document.getNumberOfPages(); page++) {
+                        stripper.setStartPage(page); stripper.setEndPage(page);
+                        String text = stripper.getText(document).trim();
+                        if (!text.isBlank()) parts.add(new TextPart(page, "Page " + page, text));
+                    }
+                }
+            } else {
+                try (var document = new XWPFDocument(file.getInputStream())) {
+                    int index = 0;
+                    for (var paragraph : document.getParagraphs()) {
+                        index++;
+                        if (!paragraph.getText().isBlank()) parts.add(new TextPart(null, "Paragraphe " + index, paragraph.getText()));
+                    }
+                    int tableIndex = 0;
+                    for (var table : document.getTables()) {
+                        tableIndex++;
+                        for (int row = 0; row < table.getRows().size(); row++) {
+                            String text = table.getRow(row).getTableCells().stream().map(c -> c.getText()).reduce("", (a, b) -> a + " | " + b);
+                            if (!text.isBlank()) parts.add(new TextPart(null, "Tableau " + tableIndex + ", ligne " + (row + 1), text));
+                        }
+                    }
+                }
+            }
+        } catch (Exception error) {
+            return new Extraction(List.of(), "MANUAL_REVIEW_REQUIRED");
+        }
+        return new Extraction(parts, parts.isEmpty() ? "MANUAL_REVIEW_REQUIRED" : "EXTRACTED");
+    }
+
+    /** Compatibility entry point for callers that only need text. */
+    public String extractTextFromPdf(MultipartFile file) { return extract(file).text(); }
 }

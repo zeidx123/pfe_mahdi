@@ -6,8 +6,8 @@ import { APP_NAME } from '../utils/constants';
 import { FiMap } from 'react-icons/fi';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('admin@municipalite.ma');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
   const { login, isAuthenticated } = useAuth();
@@ -19,6 +19,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
     
     if (!email || !password) {
       toast.error('Veuillez remplir tous les champs');
@@ -31,8 +32,13 @@ const LoginPage = () => {
       toast.success('Connexion réussie !');
       navigate('/dashboard');
     } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || 'Email ou mot de passe incorrect');
+      const status = error.response?.status;
+      const message = !error.response
+        ? 'Serveur injoignable. Vérifiez la connexion et l’adresse du serveur, puis réessayez.'
+        : [401, 403].includes(status)
+          ? 'Identifiants incorrects ou compte désactivé.'
+          : error.response?.data?.message || 'Connexion indisponible. Réessayez dans un instant.';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -55,6 +61,7 @@ const LoginPage = () => {
             <label htmlFor="email">Email professionnel</label>
             <input
               type="email"
+              autoComplete="username"
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -67,6 +74,7 @@ const LoginPage = () => {
             <label htmlFor="password">Mot de passe</label>
             <input
               type="password"
+              autoComplete="current-password"
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

@@ -32,7 +32,7 @@ public class AssistantController {
             Authentication authentication) {
         String conversationId = payload.get("conversationId");
         String message = payload.get("message");
-        String email = authentication != null ? authentication.getName() : "admin@municipalite.ma";
+        String email = authentication.getName();
 
         ChatConversation conversation = assistantService.chat(conversationId, email, message);
         return ResponseEntity.ok(conversation);
@@ -44,7 +44,7 @@ public class AssistantController {
      */
     @GetMapping("/assistant/conversations")
     public ResponseEntity<List<ChatConversation>> getConversations(Authentication authentication) {
-        String email = authentication != null ? authentication.getName() : "admin@municipalite.ma";
+        String email = authentication.getName();
         return ResponseEntity.ok(assistantService.getSupervisorConversations(email));
     }
 

@@ -65,4 +65,11 @@ public class Tournee {
 
     // Photo prise à la fin de la tournée
     private String photoFin;
+    @Builder.Default
+    private List<TourneeVisit> visits = new java.util.ArrayList<>();
+    private RoadRoute route;
+    private String routeError;
+    private boolean returnedToDepot;
+    private Double estimatedAtStartSeconds;
+    private Double estimatedServiceAtStartSeconds;
 }

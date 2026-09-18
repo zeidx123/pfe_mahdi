@@ -1,0 +1,25 @@
+{
+  "result": "PASS",
+  "checks": [
+    {
+      "path": "/api/ai/rag/evaluation/corpus",
+      "anonymous": 401,
+      "driver": 403,
+      "supervisor": 200
+    },
+    {
+      "path": "/api/ai/vision/evaluation-config",
+      "anonymous": 401,
+      "driver": 403,
+      "supervisor": 200
+    },
+    {
+      "path": "/api/ai/rag/evaluation",
+      "driver": 403
+    },
+    {
+      "path": "/api/ai/vision/evaluate",
+      "driver": 403
+    }
+  ]
+}

@@ -137,16 +137,6 @@ public class AgentService {
         userRepository.save(user);
     }
 
-    public void resetAllPasswordsToCin() {
-        userRepository.findAll().stream()
-                .filter(u -> u.getRole() == Role.CHAUFFEUR && u.getCin() != null)
-                .forEach(u -> {
-                    u.setPassword(passwordEncoder.encode(u.getCin()));
-                    u.setUpdatedAt(java.time.LocalDateTime.now());
-                    userRepository.save(u);
-                });
-    }
-
     private AgentResponse mapToResponse(User user) {
         return AgentResponse.builder()
                 .id(user.getId())

@@ -1,16 +1,9 @@
 import { useState, useEffect } from 'react';
-import { FiX, FiMapPin } from 'react-icons/fi';
+import { FiX, FiMapPin, FiArrowUp, FiArrowDown } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { agentService } from '../../services/agentService';
 import { camionService } from '../../services/camionService';
 import { pointCollecteService } from '../../services/pointCollecteService';
-
-const STATUT_OPTIONS = [
-  { value: 'PLANIFIEE', label: 'Planifiée' },
-  { value: 'EN_COURS', label: 'En cours' },
-  { value: 'TERMINEE', label: 'Terminée' },
-  { value: 'ANNULEE', label: 'Annulée' },
-];
 
 const TourneeFormModal = ({ isOpen, onClose, onSubmit, tournee = null, isLoading = false }) => {
   const [formData, setFormData] = useState({
@@ -23,7 +16,7 @@ const TourneeFormModal = ({ isOpen, onClose, onSubmit, tournee = null, isLoading
   const [points, setPoints] = useState([]);
   const [localSubmitting, setLocalSubmitting] = useState(false);
 
-  // Génère une référence unique au format T-YYYY-XXX
+  // Proposition de référence modifiable ; le serveur contrôle les doublons.
   const generateReference = () => {
     const year = new Date().getFullYear();
     const rand = Math.floor(100 + Math.random() * 900); // 3 chiffres
@@ -47,12 +40,12 @@ const TourneeFormModal = ({ isOpen, onClose, onSubmit, tournee = null, isLoading
         camionId: tournee.camionId || '',
         chauffeurId: tournee.chauffeurId || '',
         pointsCollecteIds: tournee.pointsCollecteIds || [],
-        statut: tournee.statut || 'PLANIFIEE',
+        statut: 'PLANIFIEE',
         notes: tournee.notes || ''
       });
     } else {
       setFormData({
-        reference: generateReference(), // Auto-généré et unique
+        reference: generateReference(),
         nom: '', description: '', datePrevue: '',
         heureDepartPrevue: '', camionId: '', chauffeurId: '',
         pointsCollecteIds: [], statut: 'PLANIFIEE', notes: ''
@@ -80,16 +73,22 @@ const TourneeFormModal = ({ isOpen, onClose, onSubmit, tournee = null, isLoading
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(previous => ({ ...previous, [name]: value }));
   };
 
   const togglePoint = (pointId) => {
-    const current = formData.pointsCollecteIds;
-    if (current.includes(pointId)) {
-      setFormData({ ...formData, pointsCollecteIds: current.filter(id => id !== pointId) });
-    } else {
-      setFormData({ ...formData, pointsCollecteIds: [...current, pointId] });
-    }
+    setFormData(previous => ({ ...previous, pointsCollecteIds: previous.pointsCollecteIds.includes(pointId)
+      ? previous.pointsCollecteIds.filter(id => id !== pointId) : [...previous.pointsCollecteIds, pointId] }));
+  };
+
+  const movePoint = (index, direction) => {
+    setFormData(previous => {
+      const ids = [...previous.pointsCollecteIds];
+      const target = index + direction;
+      if (target < 0 || target >= ids.length) return previous;
+      [ids[index], ids[target]] = [ids[target], ids[index]];
+      return { ...previous, pointsCollecteIds: ids };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -99,9 +98,13 @@ const TourneeFormModal = ({ isOpen, onClose, onSubmit, tournee = null, isLoading
       toast.error('Veuillez remplir tous les champs obligatoires');
       return;
     }
+    if (formData.pointsCollecteIds.length === 0) {
+      toast.error('Sélectionnez au moins un point de collecte');
+      return;
+    }
     setLocalSubmitting(true);
-    await onSubmit(formData);
-    setLocalSubmitting(false);
+    try { await onSubmit({ ...formData, statut: 'PLANIFIEE' }); }
+    finally { setLocalSubmitting(false); }
   };
 
   return (
@@ -151,9 +154,8 @@ const TourneeFormModal = ({ isOpen, onClose, onSubmit, tournee = null, isLoading
               </div>
               <div className="form-group">
                 <label>Statut</label>
-                <select name="statut" value={formData.statut} onChange={handleChange} className="form-select">
-                  {STATUT_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                </select>
+                <input value="Planifiée" readOnly />
+                <small>Le chauffeur démarre et termine la tournée depuis son application.</small>
               </div>
               <div className="form-group full-width">
                 <label>Description</label>
@@ -179,7 +181,7 @@ const TourneeFormModal = ({ isOpen, onClose, onSubmit, tournee = null, isLoading
                       type="checkbox"
                       checked={formData.pointsCollecteIds.includes(point.id)}
                       onChange={() => togglePoint(point.id)}
-                      style={{display:'none'}}
+                      className="point-choice-input"
                     />
                     <span className="point-check">{formData.pointsCollecteIds.includes(point.id) ? '✓' : ''}</span>
                     <div>
@@ -189,6 +191,18 @@ const TourneeFormModal = ({ isOpen, onClose, onSubmit, tournee = null, isLoading
                   </label>
                 ))}
               </div>
+              {formData.pointsCollecteIds.length > 0 && <div className="manual-route-order">
+                <h3 className="section-title mt-3">Ordre manuel de référence</h3>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Définissez votre circuit habituel. Les algorithmes seront comparés à cet ordre, avec départ et retour au dépôt configuré.</p>
+                <ol>{formData.pointsCollecteIds.map((id, index) => {
+                  const point = points.find(p => p.id === id) || tournee?.pointsCollecte?.find(p => p.id === id);
+                  return <li key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0' }}>
+                    <span style={{ flex: 1 }}>{index + 1}. {point?.reference || id} — {point?.adresse || 'Point à vérifier'}</span>
+                    <button type="button" className="btn-secondary" onClick={() => movePoint(index, -1)} disabled={index === 0} aria-label={`Monter ${point?.reference || id}`}><FiArrowUp /></button>
+                    <button type="button" className="btn-secondary" onClick={() => movePoint(index, 1)} disabled={index === formData.pointsCollecteIds.length - 1} aria-label={`Descendre ${point?.reference || id}`}><FiArrowDown /></button>
+                  </li>;
+                })}</ol>
+              </div>}
             </div>
           </div>
           <div className="modal-footer">
@@ -205,6 +219,8 @@ const TourneeFormModal = ({ isOpen, onClose, onSubmit, tournee = null, isLoading
         .mt-3 { margin-top: 1.25rem; }
         .points-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; max-height: 220px; overflow-y: auto; padding: 4px; }
         .point-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px; border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .point-choice-input { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+        .point-item:focus-within { outline: 2px solid var(--primary); outline-offset: 2px; }
         .point-item:hover { border-color: var(--primary); background: #f0fdf4; }
         .point-item.selected { border-color: var(--primary); background: #f0fdf4; }
         .point-check { width: 20px; height: 20px; min-width: 20px; border: 2px solid var(--primary); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--primary); font-weight: 700; }

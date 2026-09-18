@@ -66,9 +66,9 @@ const ReclamationPage = () => {
   };
 
   const filtered = reclamations.filter(r => {
-    const matchSearch = r.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchSearch = (r.titre || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                         r.chauffeurNom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        r.description.toLowerCase().includes(searchTerm.toLowerCase());
+                        (r.description || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchStatut = filterStatut === 'ALL' || r.statut === filterStatut;
     return matchSearch && matchStatut;
   });

@@ -25,6 +25,10 @@ export const tourneeService = {
     const response = await api.delete(`/tournees/${id}`);
     return response.data;
   },
+  review: async (id, pointId, data) => {
+    const response = await api.patch(`/tournees/${id}/points/${pointId}/review`, data);
+    return response.data;
+  },
   reoptimiser: async (id) => {
     const response = await api.post(`/tournees/${id}/optimiser`);
     return response.data;

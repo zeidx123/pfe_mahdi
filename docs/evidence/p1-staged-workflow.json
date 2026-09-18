@@ -1,0 +1,366 @@
+{
+  "kind": "ISOLATED_HTTP_INTEGRATION_WITH_SIMULATED_PROVIDERS",
+  "result": "PASS",
+  "tourId": "6aac04eb30dfef01560c3759",
+  "documentId": "6aac04f0ef0e0c2ee39de978",
+  "candidateId": "6aac04f0ef0e0c2ee39de97a",
+  "backendRestartVerified": true,
+  "assertionRequests": 71,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 401
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agents",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agents",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/camions",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/points",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/points",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/points",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/tournees",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/start",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/optimiser",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/start",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/start",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tracking/position",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tracking/positions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tracking/positions",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/points/6aac04eb30dfef01560c3756/arrive",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/points/6aac04eb30dfef01560c3756/complete",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/points/6aac04eb30dfef01560c3756/photo?stage=BEFORE",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/points/6aac04eb30dfef01560c3756/photo?stage=AFTER",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/uploads/photos/93ca88ab-e24b-424b-91a0-6743012d341c.png",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/uploads/photos/93ca88ab-e24b-424b-91a0-6743012d341c.png",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/points/6aac04eb30dfef01560c3756/analyse",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/points/6aac04eb30dfef01560c3756/complete",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/start",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tracking/position",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/points/6aac04eb30dfef01560c3757/arrive",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/points/6aac04eb30dfef01560c3757/complete",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/points/6aac04eb30dfef01560c3757/photo?stage=AFTER",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/uploads/photos/1c692819-133d-49f2-89cc-7f43b780fbfb.png",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/uploads/photos/1c692819-133d-49f2-89cc-7f43b780fbfb.png",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/points/6aac04eb30dfef01560c3757/analyse",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/points/6aac04eb30dfef01560c3757/complete",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/points/6aac04eb30dfef01560c3758/complete",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/finish",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/finish",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/tracking/positions",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/start",
+      "status": 409
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/tournees/6aac04eb30dfef01560c3759/points/6aac04eb30dfef01560c3756/review",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/rapports/tournee/6aac04eb30dfef01560c3759/pdf",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/rapports/tournee/6aac04eb30dfef01560c3759/pdf",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai/documents",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/ai/documents/6aac04f0ef0e0c2ee39de978",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/ai/documents/6aac04f0ef0e0c2ee39de978",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/ai/documents/6aac04f0ef0e0c2ee39de978/source",
+      "status": 403
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/ai/documents/6aac04f0ef0e0c2ee39de978/approval",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai/rag/query",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai/rag/query",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/ai/documents/6aac04f0ef0e0c2ee39de978/source",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/camions/6aac04eb30dfef01560c3755",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/ai/cv/requirements",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/api/ai/cv/requirements",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai/cv/upload",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/ai/candidates/6aac04f0ef0e0c2ee39de97a/decision",
+      "status": 400
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/ai/candidates/6aac04f0ef0e0c2ee39de97a/review",
+      "status": 400
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/ai/candidates/6aac04f0ef0e0c2ee39de97a/review",
+      "status": 400
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/ai/candidates/6aac04f0ef0e0c2ee39de97a/review",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/ai/cv/requirements",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/ai/candidates/6aac04f0ef0e0c2ee39de97a/decision",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai/candidates/6aac04f0ef0e0c2ee39de97a/evaluate",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/ai/candidates/6aac04f0ef0e0c2ee39de97a/decision",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/ai/candidates/6aac04f0ef0e0c2ee39de97a/decision",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/agents",
+      "status": 200
+    }
+  ]
+}

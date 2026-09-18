@@ -32,7 +32,7 @@ public class Candidate {
     private String dateNaissance;
     private String numeroPermis;
     private String typePermis;
-    private Integer anneesExperience;
+    private Double anneesExperience;
     private String experienceChauffeur;   // Résumé des expériences comme chauffeur
     private String experienceCollecte;    // Expérience dans la collecte de déchets
     private String formations;
@@ -55,6 +55,25 @@ public class Candidate {
     // Décision du superviseur
     private String statut;               // EN_ATTENTE, ACCEPTE, REJETE, EN_ENTRETIEN
     private String notesSuperviseur;
+
+    private Integer legacyScoreCompatibilite;
+    private String legacyDetailScore;
+    private String legacyRecommandation;
+    private String agentId;
+    private String agentMatricule;
+    private String extractionStatus; // EXTRACTED, PROVIDER_UNAVAILABLE, MANUAL_REVIEW_REQUIRED, LEGACY_REVIEW_REQUIRED
+    private String extractionModel;
+    private String extractionPromptVersion;
+    private Boolean formationSecurite;
+    private Boolean experienceCollecteConfirmee;
+    private String dateExpirationPermis;
+    private java.util.Map<String, FieldEvidence> fieldEvidence;
+    private java.util.List<CriterionScore> criterionScores;
+    private String requiredCriteriaStatus;
+    private Integer requirementsVersion;
+    private DriverRequirements requirementsSnapshot;
+    private boolean scoreProvisional;
+    private java.util.List<CandidateEvaluation> evaluations;
 
     private LocalDateTime dateDepot;
     private LocalDateTime dateMiseAJour;

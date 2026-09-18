@@ -1,0 +1,141 @@
+{
+  "purpose": "Synthetic development fixtures for evaluator contracts. Responses are simulated, not Gemini output or an independently reviewed final CV dataset.",
+  "manifest": {
+    "datasetVersion": "cv-evaluator-synthetic-dev-v1",
+    "datasetKind": "SYNTHETIC_DEVELOPMENT",
+    "profileVersion": 1,
+    "labelProvenance": {
+      "description": "Manually authored software-test expectations; no real applicant, empirical AI evaluation or final benchmark.",
+      "independentOfPredictions": true,
+      "kind": "AUTHORED_SYNTHETIC",
+      "independentHumanReview": false
+    },
+    "cases": [
+      {
+        "id": "dev-partial-experience",
+        "file": "partial.docx",
+        "split": "development",
+        "expectedFields": {
+          "typePermis": "C",
+          "anneesExperience": 0.5,
+          "cin": null,
+          "formationSecurite": false
+        },
+        "expectedFieldStatuses": {
+          "typePermis": "UNCERTAIN",
+          "anneesExperience": "UNCERTAIN",
+          "cin": "MISSING",
+          "formationSecurite": "UNCERTAIN",
+          "telephone": "INVALID"
+        },
+        "reviewedFields": {
+          "typePermis": "C",
+          "anneesExperience": 0.5,
+          "formationSecurite": false,
+          "experienceCollecteConfirmee": false
+        },
+        "expectedScore": 50,
+        "expectedRequiredCriteriaStatus": "MET",
+        "authoredBy": "synthetic-fixture-author",
+        "authoredAt": "2026-09-17"
+      },
+      {
+        "id": "dev-provider-unavailable",
+        "file": "unavailable.docx",
+        "split": "development",
+        "expectedFields": {
+          "telephone": "00123456",
+          "cin": null
+        },
+        "expectedFieldStatuses": {
+          "telephone": "UNCERTAIN",
+          "cin": "MISSING"
+        },
+        "expectedRequiredCriteriaStatus": "NEEDS_REVIEW",
+        "authoredBy": "synthetic-fixture-author",
+        "authoredAt": "2026-09-17"
+      },
+      {
+        "id": "dev-unreported-status",
+        "file": "unreported.docx",
+        "split": "development",
+        "expectedFields": {
+          "cin": null
+        },
+        "expectedFieldStatuses": {
+          "cin": "MISSING",
+          "telephone": null
+        },
+        "authoredBy": "synthetic-fixture-author",
+        "authoredAt": "2026-09-17"
+      }
+    ]
+  },
+  "documentTexts": [
+    "Synthetic driver C; 0.5 years driving; no safety training. Invalid telephone: 12.",
+    "Synthetic local extraction fixture. Telephone: 00123456. No CIN supplied.",
+    "Synthetic manual-review fixture: no identifying CV fields supplied."
+  ],
+  "uploads": [
+    {
+      "id": "fixture-candidate-a",
+      "extractionStatus": "EXTRACTED",
+      "extractionModel": "SIMULATED_MODEL",
+      "extractionPromptVersion": "SIMULATED_PROMPT",
+      "scoreCompatibilite": 0,
+      "requiredCriteriaStatus": "NEEDS_REVIEW",
+      "fieldEvidence": {
+        "typePermis": {
+          "value": "C",
+          "status": "UNCERTAIN"
+        },
+        "anneesExperience": {
+          "value": "0.50",
+          "status": "UNCERTAIN"
+        },
+        "cin": {
+          "value": null,
+          "status": "MISSING"
+        },
+        "formationSecurite": {
+          "value": "false",
+          "status": "UNCERTAIN"
+        },
+        "telephone": {
+          "value": "12",
+          "status": "INVALID"
+        }
+      }
+    },
+    {
+      "id": "fixture-candidate-b",
+      "extractionStatus": "PROVIDER_UNAVAILABLE",
+      "extractionPromptVersion": "SIMULATED_PROMPT",
+      "scoreCompatibilite": 0,
+      "requiredCriteriaStatus": "NEEDS_REVIEW",
+      "fieldEvidence": {
+        "telephone": {
+          "value": "00123456",
+          "status": "UNCERTAIN"
+        },
+        "cin": {
+          "value": null,
+          "status": "MISSING"
+        }
+      }
+    },
+    {
+      "id": "fixture-candidate-c",
+      "extractionStatus": "MANUAL_REVIEW_REQUIRED",
+      "fieldEvidence": {}
+    }
+  ],
+  "reviews": {
+    "fixture-candidate-a": {
+      "id": "fixture-candidate-a",
+      "scoreCompatibilite": 50,
+      "requiredCriteriaStatus": "MET",
+      "extractionStatus": "POST_REVIEW_FIXTURE_MUST_NOT_REPLACE_ORIGINAL_STRATUM"
+    }
+  }
+}

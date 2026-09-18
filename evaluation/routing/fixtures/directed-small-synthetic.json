@@ -1,0 +1,7 @@
+{
+  "source": "SYNTHETIC_ALGORITHM_TEST",
+  "serviceSeconds": 900,
+  "matrixPointIds": ["DEPOT", "P1", "P2", "P3"],
+  "durations": [[0, 20, 90, 50], [70, 0, 10, 100], [30, 200, 0, 20], [20, 40, 90, 0]],
+  "distances": [[0, 200, 900, 500], [700, 0, 100, 1000], [300, 2000, 0, 200], [200, 400, 900, 0]]
+}

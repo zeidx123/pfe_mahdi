@@ -21,6 +21,8 @@ public class PdfRapportService {
 
     private final TourneeService tourneeService;
     private final PointCollecteRepository pointCollecteRepository;
+    @org.springframework.beans.factory.annotation.Value("${ai.storage.photos-dir:uploads/photos}")
+    private String photoDirectory = "uploads/photos";
 
     public byte[] generateTourneeReport(String tourneeId) {
         TourneeResponse tournee = tourneeService.getById(tourneeId);
@@ -64,8 +66,18 @@ public class PdfRapportService {
             }
             document.add(new Paragraph(" ", textFont));
 
+            if (tournee.getRoute() != null) {
+                document.add(new Paragraph("Itinéraire routier : " + tournee.getRoute().getAlgorithm() + " — départ et retour au dépôt", textFont));
+                document.add(new Paragraph("Distance estimée : " + String.format(java.util.Locale.ROOT, "%.2f km", tournee.getRoute().getDistanceMeters() / 1000.0), textFont));
+                document.add(new Paragraph("Durée estimée au départ : " + seconds(tournee.getEstimatedAtStartSeconds()), textFont));
+                document.add(new Paragraph("Durée réelle totale : " + seconds(tournee.getActualDurationSeconds()), textFont));
+                document.add(new Paragraph("Service observé : " + seconds(tournee.getObservedServiceSeconds()) + " (" + tournee.getMeasuredServiceStops() + " arrêts mesurés)", textFont));
+                document.add(new Paragraph("Les estimations excluent le trafic en temps réel. La durée réelle inclut les pauses éventuelles.", textFont));
+                document.add(new Paragraph(" ", textFont));
+            }
+
             // Tableau des points de collecte
-            document.add(new Paragraph("Points de Collecte Visités", subtitleFont));
+            document.add(new Paragraph("Points et résultats déclarés", subtitleFont));
             document.add(new Paragraph(" ", textFont));
 
             if (tournee.getPointsCollecteIds() != null && !tournee.getPointsCollecteIds().isEmpty()) {
@@ -77,24 +89,28 @@ public class PdfRapportService {
                 // Header
                 addTableHeader(table, "Référence", textFont);
                 addTableHeader(table, "Adresse", textFont);
-                addTableHeader(table, "Type Déchet", textFont);
-                addTableHeader(table, "Remplissage", textFont);
-                addTableHeader(table, "Photo Preuve", textFont);
+                addTableHeader(table, "Visite", textFont);
+                addTableHeader(table, "IA / Revue", textFont);
+                addTableHeader(table, "Photo APRÈS", textFont);
+                table.setHeaderRows(1);
 
                 // Lignes
-                List<PointCollecte> points = (List<PointCollecte>) pointCollecteRepository.findAllById(tournee.getPointsCollecteIds());
-                for (PointCollecte point : points) {
+                for (var point : tournee.getPointsCollecte()) {
+                    var visit = tournee.getVisits().stream().filter(v -> point.getId().equals(v.getPointId())).findFirst().orElse(null);
                     addTableCell(table, point.getReference(), textFont);
                     addTableCell(table, point.getAdresse(), textFont);
-                    addTableCell(table, point.getTypeDechet() != null ? point.getTypeDechet().name() : "-", textFont);
-                    addTableCell(table, point.getNiveauRemplissage() + "%", textFont);
+                    addTableCell(table, visit == null || visit.isLegacyProgressMissing() ? "Historique non renseigné" : visit.getStatus().name()
+                            + (visit.getNotes() == null ? "" : "\n" + visit.getNotes()), textFont);
+                    addTableCell(table, visit == null ? "Non analysé" : "IA : " + (visit.getAnalysisStatus() == null ? "Non analysé" : visit.getAnalysisStatus())
+                            + "\nRevue : " + (visit.getReviewLabel() == null ? "À examiner" : visit.getReviewLabel()), textFont);
                     
                     // Embed Point photo
-                    String photoName = tournee.getPhotosPoints() != null ? tournee.getPhotosPoints().get(point.getId()) : null;
+                    String photoName = visit == null ? null : visit.getAfterPhoto();
                     if (photoName != null && !photoName.isEmpty()) {
-                        addTableCellImage(table, "uploads/photos/" + photoName);
+                        addTableCellImage(table, java.nio.file.Path.of(photoDirectory, photoName).toString());
                     } else {
-                        addTableCell(table, "Non validé", textFont);
+                        addTableCell(table, visit != null && visit.getLegacyPhoto() != null
+                                ? "Étape non enregistrée pour la photo historique" : "Non fournie", textFont);
                     }
                 }
                 
@@ -110,7 +126,7 @@ public class PdfRapportService {
                 document.add(new Paragraph("Photo de Fin de Tournée", subtitleFont));
                 document.add(new Paragraph(" ", textFont));
                 try {
-                    Image imgFin = Image.getInstance("uploads/photos/" + tournee.getPhotoFin());
+                    Image imgFin = Image.getInstance(java.nio.file.Path.of(photoDirectory, tournee.getPhotoFin()).toString());
                     imgFin.scaleToFit(300, 200);
                     imgFin.setAlignment(Element.ALIGN_CENTER);
                     document.add(imgFin);
@@ -124,6 +140,10 @@ public class PdfRapportService {
         } catch (Exception e) {
             throw new RuntimeException("Erreur lors de la génération du PDF", e);
         }
+    }
+
+    private String seconds(Number value) {
+        return value == null ? "Non mesurée" : String.format(java.util.Locale.ROOT, "%.1f min", value.doubleValue() / 60.0);
     }
 
     private void addTableHeader(PdfPTable table, String headerTitle, Font font) {

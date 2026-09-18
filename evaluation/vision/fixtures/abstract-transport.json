@@ -1,0 +1,13 @@
+{
+  "datasetVersion": "abstract-transport-v1",
+  "dataKind": "ABSTRACT_SYNTHETIC_TRANSPORT_ONLY",
+  "description": "Abstract colored squares, not collection-point photographs. Development transport and serialization checks only; no human cleanliness reference labels.",
+  "scenes": [
+    {
+      "sceneId": "abstract-square-001",
+      "split": "development",
+      "afterPhoto": "abstract-after.png",
+      "beforePhoto": "abstract-before.png"
+    }
+  ]
+}

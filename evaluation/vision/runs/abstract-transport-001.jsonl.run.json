@@ -1,0 +1,20 @@
+{
+  "runId": "3cd8b2db-1b49-42e9-9e95-dca4021138c9",
+  "datasetVersion": "abstract-transport-v1",
+  "manifestSha256": "4c6c688b7e8a6c47d4aadaa2d0c467f3cc3e03584d9a225bbfaa96dc60d0d49a",
+  "labelsSha256": null,
+  "dataKind": "ABSTRACT_SYNTHETIC_TRANSPORT_ONLY",
+  "startedAt": "2026-09-17T15:00:40.572339+00:00",
+  "configuration": {
+    "provider": "GEMINI",
+    "model": "gemini-3.8-flash",
+    "promptVersion": "point-cleanliness-v1"
+  },
+  "apiBaseUrl": "http://127.0.0.1:18180/api",
+  "plannedAnalyses": 2,
+  "completedAnalyses": 2,
+  "failureCount": 1,
+  "reviewedInputs": 0,
+  "status": "COMPLETED",
+  "finishedAt": "2026-09-17T15:00:55.614760+00:00"
+}

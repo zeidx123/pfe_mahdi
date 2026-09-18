@@ -1,0 +1,172 @@
+[
+  {
+    "split": "development",
+    "inputMode": "AFTER_ONLY",
+    "model": "gemini-3.8-flash",
+    "promptVersion": "point-cleanliness-v1",
+    "count": 1,
+    "reviewedCount": 0,
+    "unreviewedCount": 1,
+    "reviewCoverage": 0.0,
+    "accuracyAvailable": false,
+    "classificationAvailableCount": 0,
+    "confusionMatrix": {
+      "CLEANED": {
+        "CLEANED": 0,
+        "NOT_CLEANED": 0,
+        "OBSTRUCTED": 0,
+        "CANNOT_DETERMINE": 0,
+        "ANALYSIS_UNAVAILABLE": 0
+      },
+      "NOT_CLEANED": {
+        "CLEANED": 0,
+        "NOT_CLEANED": 0,
+        "OBSTRUCTED": 0,
+        "CANNOT_DETERMINE": 0,
+        "ANALYSIS_UNAVAILABLE": 0
+      },
+      "OBSTRUCTED": {
+        "CLEANED": 0,
+        "NOT_CLEANED": 0,
+        "OBSTRUCTED": 0,
+        "CANNOT_DETERMINE": 0,
+        "ANALYSIS_UNAVAILABLE": 0
+      },
+      "CANNOT_DETERMINE": {
+        "CLEANED": 0,
+        "NOT_CLEANED": 0,
+        "OBSTRUCTED": 0,
+        "CANNOT_DETERMINE": 0,
+        "ANALYSIS_UNAVAILABLE": 0
+      }
+    },
+    "classes": {
+      "CLEANED": {
+        "support": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "NOT_CLEANED": {
+        "support": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "OBSTRUCTED": {
+        "support": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "CANNOT_DETERMINE": {
+        "support": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      }
+    },
+    "macroF1RepresentedClasses": null,
+    "classificationDenominator": "Independently reviewed available analyses only; unreviewed and unavailable outcomes excluded",
+    "availableCount": 1,
+    "analysisCoverage": 1.0,
+    "pairedSceneCount": 1,
+    "pairedSceneIds": [
+      "abstract-square-001"
+    ],
+    "reviewedPairedSceneCount": 0,
+    "reviewedPairedSceneIds": [],
+    "notCleanedPredictedCleanedRate": null,
+    "unavailableCount": 0,
+    "failureKindCounts": {},
+    "uncertainCount": 1,
+    "uncertainOnDeterminateCount": 0,
+    "matchedSceneMetrics": null
+  },
+  {
+    "split": "development",
+    "inputMode": "BEFORE_AFTER",
+    "model": "gemini-3.8-flash",
+    "promptVersion": "point-cleanliness-v1",
+    "count": 1,
+    "reviewedCount": 0,
+    "unreviewedCount": 1,
+    "reviewCoverage": 0.0,
+    "accuracyAvailable": false,
+    "classificationAvailableCount": 0,
+    "confusionMatrix": {
+      "CLEANED": {
+        "CLEANED": 0,
+        "NOT_CLEANED": 0,
+        "OBSTRUCTED": 0,
+        "CANNOT_DETERMINE": 0,
+        "ANALYSIS_UNAVAILABLE": 0
+      },
+      "NOT_CLEANED": {
+        "CLEANED": 0,
+        "NOT_CLEANED": 0,
+        "OBSTRUCTED": 0,
+        "CANNOT_DETERMINE": 0,
+        "ANALYSIS_UNAVAILABLE": 0
+      },
+      "OBSTRUCTED": {
+        "CLEANED": 0,
+        "NOT_CLEANED": 0,
+        "OBSTRUCTED": 0,
+        "CANNOT_DETERMINE": 0,
+        "ANALYSIS_UNAVAILABLE": 0
+      },
+      "CANNOT_DETERMINE": {
+        "CLEANED": 0,
+        "NOT_CLEANED": 0,
+        "OBSTRUCTED": 0,
+        "CANNOT_DETERMINE": 0,
+        "ANALYSIS_UNAVAILABLE": 0
+      }
+    },
+    "classes": {
+      "CLEANED": {
+        "support": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "NOT_CLEANED": {
+        "support": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "OBSTRUCTED": {
+        "support": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      },
+      "CANNOT_DETERMINE": {
+        "support": 0,
+        "precision": null,
+        "recall": null,
+        "f1": null
+      }
+    },
+    "macroF1RepresentedClasses": null,
+    "classificationDenominator": "Independently reviewed available analyses only; unreviewed and unavailable outcomes excluded",
+    "availableCount": 0,
+    "analysisCoverage": 0.0,
+    "pairedSceneCount": 1,
+    "pairedSceneIds": [
+      "abstract-square-001"
+    ],
+    "reviewedPairedSceneCount": 0,
+    "reviewedPairedSceneIds": [],
+    "notCleanedPredictedCleanedRate": null,
+    "unavailableCount": 1,
+    "failureKindCounts": {
+      "ANALYSIS_UNAVAILABLE": 1
+    },
+    "uncertainCount": 0,
+    "uncertainOnDeterminateCount": 0,
+    "matchedSceneMetrics": null
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "checkedAtUtc": "2026-09-17T15:03:32.395137+00:00",
+  "model": "gemini-2.5-flash",
+  "dataOrigin": "Fictional source for bounded stable-model availability check",
+  "configurationChanged": false,
+  "result": {
+    "status": "PROVIDER_UNAVAILABLE",
+    "httpStatus": 404,
+    "latencyMs": 236
+  }
+}

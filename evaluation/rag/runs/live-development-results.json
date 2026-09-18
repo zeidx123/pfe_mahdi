@@ -1,0 +1,494 @@
+{
+  "schemaVersion": "rag-evaluation-v1",
+  "runId": "36c507cd-9004-4cd3-bd47-de441c1c9bc0",
+  "capturedAt": "2026-09-17T15:00:54.545471+00:00",
+  "datasetVersion": "rag-development-template-v1",
+  "manifestFingerprint": "94743116d4376d046374a932d17401bc6ef0520858e0f5de597ec9ef5aa22fad",
+  "corpus": {
+    "corpus": {
+      "fingerprint": "1be7ea6bc618e2e1af88caa25c48c72fa0fbc100bb5f3b38674e1560a6d27fd8",
+      "documentCount": 1,
+      "chunkCount": 1,
+      "compatibleChunkCount": 1
+    },
+    "settings": {
+      "evaluationVersion": "rag-comparison-v1",
+      "topK": 5,
+      "similarityThreshold": 0.15,
+      "bm25K1": 1.2,
+      "bm25B": 0.75,
+      "reciprocalRankFusionK": 60,
+      "provider": "GEMINI",
+      "generationModel": "gemini-3.8-flash",
+      "promptVersion": "grounded-rag-v1",
+      "embeddingModel": "gemini-embedding-2",
+      "embeddingDimensions": 768,
+      "embeddingVersion": "text-v1"
+    },
+    "chunks": [
+      {
+        "source": {
+          "documentId": "6aac007cdf64820524fbadc8",
+          "documentName": "pfe-fictional-procedure.txt",
+          "pageNumber": 0,
+          "sectionTitle": "Texte — segment 1",
+          "chunkId": "6aac007cdf64820524fbadc9",
+          "score": 0.0,
+          "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+          "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+        },
+        "contentSha256": "e2e54a76aff03d041db93ce1e9baef8693c64e607f32ef26a81fd0e8f9a714f6",
+        "compatibleEmbedding": true
+      }
+    ]
+  },
+  "generationRequested": true,
+  "modes": [
+    "LEXICAL",
+    "SEMANTIC",
+    "HYBRID"
+  ],
+  "cases": [
+    {
+      "id": "after-photo",
+      "split": "development",
+      "groupId": "photo-followup",
+      "question": "Quelle photo faut-il fournir pour terminer un point ?",
+      "history": [],
+      "labels": {
+        "independent": false,
+        "reviewer": null,
+        "reviewDate": null,
+        "answerable": null,
+        "relevantChunkIds": null,
+        "expectedPassages": []
+      },
+      "response": {
+        "question": "Quelle photo faut-il fournir pour terminer un point ?",
+        "retrievalQuery": "Quelle photo faut-il fournir pour terminer un point ?",
+        "corpus": {
+          "fingerprint": "1be7ea6bc618e2e1af88caa25c48c72fa0fbc100bb5f3b38674e1560a6d27fd8",
+          "documentCount": 1,
+          "chunkCount": 1,
+          "compatibleChunkCount": 1
+        },
+        "settings": {
+          "evaluationVersion": "rag-comparison-v1",
+          "topK": 5,
+          "similarityThreshold": 0.15,
+          "bm25K1": 1.2,
+          "bm25B": 0.75,
+          "reciprocalRankFusionK": 60,
+          "provider": "GEMINI",
+          "generationModel": "gemini-3.8-flash",
+          "promptVersion": "grounded-rag-v1",
+          "embeddingModel": "gemini-embedding-2",
+          "embeddingDimensions": 768,
+          "embeddingVersion": "text-v1"
+        },
+        "embeddingStatus": "AVAILABLE",
+        "embeddingLatencyMs": 399.975087,
+        "results": [
+          {
+            "requestedMode": "LEXICAL",
+            "effectiveMode": "LEXICAL",
+            "retrievalStatus": "AVAILABLE",
+            "retrievedSources": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 1.4229988226632733,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "retrievalLatencyMs": 5.511098,
+            "generationStatus": "PROVIDER_UNAVAILABLE",
+            "status": "SOURCE_EXCERPTS",
+            "answer": "Extraits pertinents — l’assistant ne peut pas générer de réponse pour le moment.\n\npfe-fictional-procedure.txt — Texte — segment 1\n> Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+            "citations": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 1.4229988226632733,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "generationLatencyMs": 1185.305509,
+            "totalLatencyMs": 1190.816607,
+            "responseFingerprint": "c024e3a13b70d3970f16f3302ef00d9659e35e0eae485296aa5e68c7fffce698"
+          },
+          {
+            "requestedMode": "SEMANTIC",
+            "effectiveMode": "SEMANTIC",
+            "retrievalStatus": "AVAILABLE",
+            "retrievedSources": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 0.5698484915340749,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "retrievalLatencyMs": 0.443586,
+            "generationStatus": "PROVIDER_UNAVAILABLE",
+            "status": "SOURCE_EXCERPTS",
+            "answer": "Extraits pertinents — l’assistant ne peut pas générer de réponse pour le moment.\n\npfe-fictional-procedure.txt — Texte — segment 1\n> Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+            "citations": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 0.5698484915340749,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "generationLatencyMs": 17994.789503,
+            "totalLatencyMs": 18395.208176,
+            "responseFingerprint": "fdb316f008c522625de50fbbee025016bdf0168f9efe87adf9a4b48990865170"
+          },
+          {
+            "requestedMode": "HYBRID",
+            "effectiveMode": "HYBRID",
+            "retrievalStatus": "AVAILABLE",
+            "retrievedSources": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 0.03278688524590164,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "retrievalLatencyMs": 0.520173,
+            "generationStatus": "PROVIDER_UNAVAILABLE",
+            "status": "SOURCE_EXCERPTS",
+            "answer": "Extraits pertinents — l’assistant ne peut pas générer de réponse pour le moment.\n\npfe-fictional-procedure.txt — Texte — segment 1\n> Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+            "citations": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 0.03278688524590164,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "generationLatencyMs": 9120.400642,
+            "totalLatencyMs": 9520.895902000002,
+            "responseFingerprint": "3f14dd0bcc25db9e55228a2d544f45acd08fa7226e1260e9c453b1391e754bba"
+          }
+        ]
+      }
+    },
+    {
+      "id": "photo-followup",
+      "split": "development",
+      "groupId": "photo-followup",
+      "question": "Et si ce point est inaccessible ?",
+      "history": [
+        {
+          "sender": "USER",
+          "content": "Quelle photo faut-il fournir pour terminer un point ?"
+        }
+      ],
+      "labels": {
+        "independent": false,
+        "reviewer": null,
+        "reviewDate": null,
+        "answerable": null,
+        "relevantChunkIds": null,
+        "expectedPassages": []
+      },
+      "response": {
+        "question": "Et si ce point est inaccessible ?",
+        "retrievalQuery": "Quelle photo faut-il fournir pour terminer un point ?\nEt si ce point est inaccessible ?",
+        "corpus": {
+          "fingerprint": "1be7ea6bc618e2e1af88caa25c48c72fa0fbc100bb5f3b38674e1560a6d27fd8",
+          "documentCount": 1,
+          "chunkCount": 1,
+          "compatibleChunkCount": 1
+        },
+        "settings": {
+          "evaluationVersion": "rag-comparison-v1",
+          "topK": 5,
+          "similarityThreshold": 0.15,
+          "bm25K1": 1.2,
+          "bm25B": 0.75,
+          "reciprocalRankFusionK": 60,
+          "provider": "GEMINI",
+          "generationModel": "gemini-3.8-flash",
+          "promptVersion": "grounded-rag-v1",
+          "embeddingModel": "gemini-embedding-2",
+          "embeddingDimensions": 768,
+          "embeddingVersion": "text-v1"
+        },
+        "embeddingStatus": "AVAILABLE",
+        "embeddingLatencyMs": 387.441796,
+        "results": [
+          {
+            "requestedMode": "LEXICAL",
+            "effectiveMode": "LEXICAL",
+            "retrievalStatus": "AVAILABLE",
+            "retrievedSources": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 1.710680895115054,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "retrievalLatencyMs": 0.384718,
+            "generationStatus": "PROVIDER_UNAVAILABLE",
+            "status": "SOURCE_EXCERPTS",
+            "answer": "Extraits pertinents — l’assistant ne peut pas générer de réponse pour le moment.\n\npfe-fictional-procedure.txt — Texte — segment 1\n> Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+            "citations": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 1.710680895115054,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "generationLatencyMs": 200.819568,
+            "totalLatencyMs": 201.204286,
+            "responseFingerprint": "9eb82b6ac27082684462fbab389cf7ddacda3c372d6a2e61f5c39004813cb79b"
+          },
+          {
+            "requestedMode": "SEMANTIC",
+            "effectiveMode": "SEMANTIC",
+            "retrievalStatus": "AVAILABLE",
+            "retrievedSources": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 0.6652324604798537,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "retrievalLatencyMs": 0.80909,
+            "generationStatus": "PROVIDER_UNAVAILABLE",
+            "status": "SOURCE_EXCERPTS",
+            "answer": "Extraits pertinents — l’assistant ne peut pas générer de réponse pour le moment.\n\npfe-fictional-procedure.txt — Texte — segment 1\n> Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+            "citations": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 0.6652324604798537,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "generationLatencyMs": 180.035162,
+            "totalLatencyMs": 568.286048,
+            "responseFingerprint": "a17b86df729a645b45c7c57624e02250b3e14ccc20d9709fe1150d4f2e6e5dd8"
+          },
+          {
+            "requestedMode": "HYBRID",
+            "effectiveMode": "HYBRID",
+            "retrievalStatus": "AVAILABLE",
+            "retrievedSources": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 0.03278688524590164,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "retrievalLatencyMs": 0.704895,
+            "generationStatus": "PROVIDER_UNAVAILABLE",
+            "status": "SOURCE_EXCERPTS",
+            "answer": "Extraits pertinents — l’assistant ne peut pas générer de réponse pour le moment.\n\npfe-fictional-procedure.txt — Texte — segment 1\n> Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+            "citations": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 0.03278688524590164,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "generationLatencyMs": 196.306926,
+            "totalLatencyMs": 584.453617,
+            "responseFingerprint": "98d3dae01a69e8c2b6bf04e7e8ccfee27646961e2d76c15d544d915dd48829e4"
+          }
+        ]
+      }
+    },
+    {
+      "id": "salary-topic-change",
+      "split": "development",
+      "groupId": "salary-topic-change",
+      "question": "Quel est le salaire annuel ?",
+      "history": [
+        {
+          "sender": "USER",
+          "content": "Quelle photo faut-il fournir pour terminer un point ?"
+        }
+      ],
+      "labels": {
+        "independent": false,
+        "reviewer": null,
+        "reviewDate": null,
+        "answerable": null,
+        "relevantChunkIds": null,
+        "expectedPassages": []
+      },
+      "response": {
+        "question": "Quel est le salaire annuel ?",
+        "retrievalQuery": "Quel est le salaire annuel ?",
+        "corpus": {
+          "fingerprint": "1be7ea6bc618e2e1af88caa25c48c72fa0fbc100bb5f3b38674e1560a6d27fd8",
+          "documentCount": 1,
+          "chunkCount": 1,
+          "compatibleChunkCount": 1
+        },
+        "settings": {
+          "evaluationVersion": "rag-comparison-v1",
+          "topK": 5,
+          "similarityThreshold": 0.15,
+          "bm25K1": 1.2,
+          "bm25B": 0.75,
+          "reciprocalRankFusionK": 60,
+          "provider": "GEMINI",
+          "generationModel": "gemini-3.8-flash",
+          "promptVersion": "grounded-rag-v1",
+          "embeddingModel": "gemini-embedding-2",
+          "embeddingDimensions": 768,
+          "embeddingVersion": "text-v1"
+        },
+        "embeddingStatus": "AVAILABLE",
+        "embeddingLatencyMs": 333.627674,
+        "results": [
+          {
+            "requestedMode": "LEXICAL",
+            "effectiveMode": "LEXICAL",
+            "retrievalStatus": "AVAILABLE",
+            "retrievedSources": [],
+            "retrievalLatencyMs": 0.34698,
+            "generationStatus": "NO_CONTEXT",
+            "status": "INSUFFICIENT_INFORMATION",
+            "answer": "Je n'ai pas trouvé d'information suffisante dans les documents disponibles pour répondre à cette question.",
+            "citations": [],
+            "generationLatencyMs": 0.022271,
+            "totalLatencyMs": 0.369251,
+            "responseFingerprint": "a9eea6c56c8af5c1ed086d7b226010ed7bf5cc5c47f752b7c539c6060e7f797f"
+          },
+          {
+            "requestedMode": "SEMANTIC",
+            "effectiveMode": "SEMANTIC",
+            "retrievalStatus": "AVAILABLE",
+            "retrievedSources": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 0.46096969849848723,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "retrievalLatencyMs": 0.506304,
+            "generationStatus": "PROVIDER_UNAVAILABLE",
+            "status": "SOURCE_EXCERPTS",
+            "answer": "Extraits pertinents — l’assistant ne peut pas générer de réponse pour le moment.\n\npfe-fictional-procedure.txt — Texte — segment 1\n> Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+            "citations": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 0.46096969849848723,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "generationLatencyMs": 188.228806,
+            "totalLatencyMs": 522.362784,
+            "responseFingerprint": "fd692636df8f66fd59668b1b1818fbad2e0a53f9adb20625414fc5b84d4d6a2c"
+          },
+          {
+            "requestedMode": "HYBRID",
+            "effectiveMode": "HYBRID",
+            "retrievalStatus": "AVAILABLE",
+            "retrievedSources": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 0.01639344262295082,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "retrievalLatencyMs": 0.617108,
+            "generationStatus": "PROVIDER_UNAVAILABLE",
+            "status": "SOURCE_EXCERPTS",
+            "answer": "Extraits pertinents — l’assistant ne peut pas générer de réponse pour le moment.\n\npfe-fictional-procedure.txt — Texte — segment 1\n> Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+            "citations": [
+              {
+                "documentId": "6aac007cdf64820524fbadc8",
+                "documentName": "pfe-fictional-procedure.txt",
+                "pageNumber": 0,
+                "sectionTitle": "Texte — segment 1",
+                "chunkId": "6aac007cdf64820524fbadc9",
+                "score": 0.01639344262295082,
+                "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+                "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+              }
+            ],
+            "generationLatencyMs": 187.934039,
+            "totalLatencyMs": 522.178821,
+            "responseFingerprint": "cdec0b51ecbe2970cd17c17c2a0022ed12dcf9ef2951d1654c6440effc50bb3a"
+          }
+        ]
+      }
+    }
+  ]
+}

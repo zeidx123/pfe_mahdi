@@ -23,10 +23,23 @@ public class AiConfig {
     public OkHttpClient okHttpClient(AiProperties aiProperties) {
         long timeout = aiProperties.getGemini().getTimeoutSeconds();
         return new OkHttpClient.Builder()
-                .connectTimeout(timeout, TimeUnit.SECONDS)
+                .callTimeout(timeout, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(false)
+                .connectTimeout(Math.min(timeout, 10), TimeUnit.SECONDS)
                 .readTimeout(timeout, TimeUnit.SECONDS)
                 .writeTimeout(timeout, TimeUnit.SECONDS)
                 .build();
+    }
+
+    /** One bounded worker for the existing document indexing task. */
+    @Bean(name = "documentTaskExecutor")
+    public org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor documentTaskExecutor() {
+        var executor = new org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(1);
+        executor.setQueueCapacity(32);
+        executor.setThreadNamePrefix("rag-document-");
+        return executor;
     }
 
     /**

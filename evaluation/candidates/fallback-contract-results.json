@@ -1,0 +1,594 @@
+{
+  "runnerVersion": "cv-evaluation-v2",
+  "generatedAt": "2026-09-17T15:20:09.028191+00:00",
+  "runStatus": "COMPLETED",
+  "plannedCases": 2,
+  "datasetVersion": "cv-explicit-label-fallback-regression-v1",
+  "datasetKind": "SYNTHETIC_DEVELOPMENT",
+  "evidenceClass": "SYNTHETIC_CONTRACT_CHECKS",
+  "labelProvenance": {
+    "kind": "AUTHORED_SYNTHETIC",
+    "description": "Fictional CVs and reference expectations authored for software development. No independent human review, real applicant, or final evaluation dataset. Expectations were authored before requesting provider predictions.",
+    "independentOfPredictions": true,
+    "independentHumanReview": false
+  },
+  "manifestSha256": "482af21fcb37a5b06e9293c5d9d33ec14d1c8886126b3b96080fed8af02789f7",
+  "profile": {
+    "id": "8aea1b76-26d9-46a8-b0ad-f3af2c5b1b20",
+    "version": 3,
+    "label": "Chauffeur de collecte",
+    "acceptedLicences": [
+      "C",
+      "CE"
+    ],
+    "licenceWeight": 40,
+    "licenceRequired": true,
+    "experienceTargetYears": 2.0,
+    "experienceWeight": 40,
+    "experienceRequired": false,
+    "safetyWeight": 10,
+    "safetyRequired": false,
+    "collectionWeight": 10,
+    "collectionRequired": false,
+    "editedBy": "6aac04ea30dfef01560c3752",
+    "editedAt": "2026-09-17T16:20:08.885"
+  },
+  "counts": {
+    "cases": 2,
+    "failures": 0,
+    "bySplit": {
+      "development": 2
+    }
+  },
+  "bySplit": {
+    "development": {
+      "metrics": {
+        "cases": 2,
+        "failures": 0,
+        "uploadedCases": 2,
+        "expectedValueFields": 12,
+        "expectedStatusFields": 12,
+        "labelledValueFields": 12,
+        "exactFieldAccuracy": 1.0,
+        "fieldPresencePrecision": 1.0,
+        "fieldPresenceRecall": 1.0,
+        "fieldStatuses": {
+          "labelledFields": 12,
+          "accuracy": 1.0,
+          "macroF1": 1.0,
+          "macroF1Scope": "classes with at least one independent expected label",
+          "unreportedPredictions": 0,
+          "unrecognizedPredictions": 0,
+          "confusionMatrix": {
+            "MISSING": {
+              "MISSING": 3,
+              "INVALID": 0,
+              "UNCERTAIN": 0,
+              "VERIFIED": 0,
+              "UNREPORTED": 0,
+              "UNRECOGNIZED": 0
+            },
+            "INVALID": {
+              "MISSING": 0,
+              "INVALID": 1,
+              "UNCERTAIN": 0,
+              "VERIFIED": 0,
+              "UNREPORTED": 0,
+              "UNRECOGNIZED": 0
+            },
+            "UNCERTAIN": {
+              "MISSING": 0,
+              "INVALID": 0,
+              "UNCERTAIN": 8,
+              "VERIFIED": 0,
+              "UNREPORTED": 0,
+              "UNRECOGNIZED": 0
+            },
+            "VERIFIED": {
+              "MISSING": 0,
+              "INVALID": 0,
+              "UNCERTAIN": 0,
+              "VERIFIED": 0,
+              "UNREPORTED": 0,
+              "UNRECOGNIZED": 0
+            }
+          },
+          "perClass": {
+            "MISSING": {
+              "support": 3,
+              "predicted": 3,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "INVALID": {
+              "support": 1,
+              "predicted": 1,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "UNCERTAIN": {
+              "support": 8,
+              "predicted": 8,
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "VERIFIED": {
+              "support": 0,
+              "predicted": 0,
+              "precision": null,
+              "recall": null,
+              "f1": null
+            }
+          }
+        },
+        "rubricExpectedCases": 2,
+        "rubricCases": 2,
+        "rubricAgreement": 1.0,
+        "requiredCriteriaExpectedCases": 2,
+        "requiredCriteriaCases": 2,
+        "requiredCriteriaAgreement": 1.0,
+        "meanUploadLatencyMs": 25.5,
+        "latencyCases": 2
+      },
+      "byExtractionStatus": {
+        "PROVIDER_UNAVAILABLE": {
+          "cases": 2,
+          "failures": 0,
+          "uploadedCases": 2,
+          "expectedValueFields": 12,
+          "expectedStatusFields": 12,
+          "labelledValueFields": 12,
+          "exactFieldAccuracy": 1.0,
+          "fieldPresencePrecision": 1.0,
+          "fieldPresenceRecall": 1.0,
+          "fieldStatuses": {
+            "labelledFields": 12,
+            "accuracy": 1.0,
+            "macroF1": 1.0,
+            "macroF1Scope": "classes with at least one independent expected label",
+            "unreportedPredictions": 0,
+            "unrecognizedPredictions": 0,
+            "confusionMatrix": {
+              "MISSING": {
+                "MISSING": 3,
+                "INVALID": 0,
+                "UNCERTAIN": 0,
+                "VERIFIED": 0,
+                "UNREPORTED": 0,
+                "UNRECOGNIZED": 0
+              },
+              "INVALID": {
+                "MISSING": 0,
+                "INVALID": 1,
+                "UNCERTAIN": 0,
+                "VERIFIED": 0,
+                "UNREPORTED": 0,
+                "UNRECOGNIZED": 0
+              },
+              "UNCERTAIN": {
+                "MISSING": 0,
+                "INVALID": 0,
+                "UNCERTAIN": 8,
+                "VERIFIED": 0,
+                "UNREPORTED": 0,
+                "UNRECOGNIZED": 0
+              },
+              "VERIFIED": {
+                "MISSING": 0,
+                "INVALID": 0,
+                "UNCERTAIN": 0,
+                "VERIFIED": 0,
+                "UNREPORTED": 0,
+                "UNRECOGNIZED": 0
+              }
+            },
+            "perClass": {
+              "MISSING": {
+                "support": 3,
+                "predicted": 3,
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0
+              },
+              "INVALID": {
+                "support": 1,
+                "predicted": 1,
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0
+              },
+              "UNCERTAIN": {
+                "support": 8,
+                "predicted": 8,
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0
+              },
+              "VERIFIED": {
+                "support": 0,
+                "predicted": 0,
+                "precision": null,
+                "recall": null,
+                "f1": null
+              }
+            }
+          },
+          "rubricExpectedCases": 2,
+          "rubricCases": 2,
+          "rubricAgreement": 1.0,
+          "requiredCriteriaExpectedCases": 2,
+          "requiredCriteriaCases": 2,
+          "requiredCriteriaAgreement": 1.0,
+          "meanUploadLatencyMs": 25.5,
+          "latencyCases": 2
+        }
+      },
+      "byProviderStatus": {
+        "UNAVAILABLE": {
+          "cases": 2,
+          "failures": 0,
+          "uploadedCases": 2,
+          "expectedValueFields": 12,
+          "expectedStatusFields": 12,
+          "labelledValueFields": 12,
+          "exactFieldAccuracy": 1.0,
+          "fieldPresencePrecision": 1.0,
+          "fieldPresenceRecall": 1.0,
+          "fieldStatuses": {
+            "labelledFields": 12,
+            "accuracy": 1.0,
+            "macroF1": 1.0,
+            "macroF1Scope": "classes with at least one independent expected label",
+            "unreportedPredictions": 0,
+            "unrecognizedPredictions": 0,
+            "confusionMatrix": {
+              "MISSING": {
+                "MISSING": 3,
+                "INVALID": 0,
+                "UNCERTAIN": 0,
+                "VERIFIED": 0,
+                "UNREPORTED": 0,
+                "UNRECOGNIZED": 0
+              },
+              "INVALID": {
+                "MISSING": 0,
+                "INVALID": 1,
+                "UNCERTAIN": 0,
+                "VERIFIED": 0,
+                "UNREPORTED": 0,
+                "UNRECOGNIZED": 0
+              },
+              "UNCERTAIN": {
+                "MISSING": 0,
+                "INVALID": 0,
+                "UNCERTAIN": 8,
+                "VERIFIED": 0,
+                "UNREPORTED": 0,
+                "UNRECOGNIZED": 0
+              },
+              "VERIFIED": {
+                "MISSING": 0,
+                "INVALID": 0,
+                "UNCERTAIN": 0,
+                "VERIFIED": 0,
+                "UNREPORTED": 0,
+                "UNRECOGNIZED": 0
+              }
+            },
+            "perClass": {
+              "MISSING": {
+                "support": 3,
+                "predicted": 3,
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0
+              },
+              "INVALID": {
+                "support": 1,
+                "predicted": 1,
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0
+              },
+              "UNCERTAIN": {
+                "support": 8,
+                "predicted": 8,
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0
+              },
+              "VERIFIED": {
+                "support": 0,
+                "predicted": 0,
+                "precision": null,
+                "recall": null,
+                "f1": null
+              }
+            }
+          },
+          "rubricExpectedCases": 2,
+          "rubricCases": 2,
+          "rubricAgreement": 1.0,
+          "requiredCriteriaExpectedCases": 2,
+          "requiredCriteriaCases": 2,
+          "requiredCriteriaAgreement": 1.0,
+          "meanUploadLatencyMs": 25.5,
+          "latencyCases": 2
+        }
+      },
+      "byModelAndPrompt": [
+        {
+          "model": "gemini-3.8-flash",
+          "promptVersion": "cv-evidence-v1",
+          "metrics": {
+            "cases": 2,
+            "failures": 0,
+            "uploadedCases": 2,
+            "expectedValueFields": 12,
+            "expectedStatusFields": 12,
+            "labelledValueFields": 12,
+            "exactFieldAccuracy": 1.0,
+            "fieldPresencePrecision": 1.0,
+            "fieldPresenceRecall": 1.0,
+            "fieldStatuses": {
+              "labelledFields": 12,
+              "accuracy": 1.0,
+              "macroF1": 1.0,
+              "macroF1Scope": "classes with at least one independent expected label",
+              "unreportedPredictions": 0,
+              "unrecognizedPredictions": 0,
+              "confusionMatrix": {
+                "MISSING": {
+                  "MISSING": 3,
+                  "INVALID": 0,
+                  "UNCERTAIN": 0,
+                  "VERIFIED": 0,
+                  "UNREPORTED": 0,
+                  "UNRECOGNIZED": 0
+                },
+                "INVALID": {
+                  "MISSING": 0,
+                  "INVALID": 1,
+                  "UNCERTAIN": 0,
+                  "VERIFIED": 0,
+                  "UNREPORTED": 0,
+                  "UNRECOGNIZED": 0
+                },
+                "UNCERTAIN": {
+                  "MISSING": 0,
+                  "INVALID": 0,
+                  "UNCERTAIN": 8,
+                  "VERIFIED": 0,
+                  "UNREPORTED": 0,
+                  "UNRECOGNIZED": 0
+                },
+                "VERIFIED": {
+                  "MISSING": 0,
+                  "INVALID": 0,
+                  "UNCERTAIN": 0,
+                  "VERIFIED": 0,
+                  "UNREPORTED": 0,
+                  "UNRECOGNIZED": 0
+                }
+              },
+              "perClass": {
+                "MISSING": {
+                  "support": 3,
+                  "predicted": 3,
+                  "precision": 1.0,
+                  "recall": 1.0,
+                  "f1": 1.0
+                },
+                "INVALID": {
+                  "support": 1,
+                  "predicted": 1,
+                  "precision": 1.0,
+                  "recall": 1.0,
+                  "f1": 1.0
+                },
+                "UNCERTAIN": {
+                  "support": 8,
+                  "predicted": 8,
+                  "precision": 1.0,
+                  "recall": 1.0,
+                  "f1": 1.0
+                },
+                "VERIFIED": {
+                  "support": 0,
+                  "predicted": 0,
+                  "precision": null,
+                  "recall": null,
+                  "f1": null
+                }
+              }
+            },
+            "rubricExpectedCases": 2,
+            "rubricCases": 2,
+            "rubricAgreement": 1.0,
+            "requiredCriteriaExpectedCases": 2,
+            "requiredCriteriaCases": 2,
+            "requiredCriteriaAgreement": 1.0,
+            "meanUploadLatencyMs": 25.5,
+            "latencyCases": 2
+          }
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "fictional-cv-dev-01",
+      "split": "development",
+      "labelAuthor": "Codex synthetic fixture author",
+      "labelDate": "2026-09-17",
+      "independentHumanReview": false,
+      "documentSha256": "1d71fa6680c29449776f227f28b6eb79e49df3076b88fbe18aec51870d203d30",
+      "valueLabelCount": 6,
+      "statusLabelCount": 6,
+      "scoreLabelled": true,
+      "requiredLabelled": true,
+      "extractionStatus": "PROVIDER_UNAVAILABLE",
+      "providerStatus": "UNAVAILABLE",
+      "candidateId": "6aac0528ef0e0c2ee39de97c",
+      "providerStatusSource": "DERIVED_FROM_API_EXTRACTION_STATUS",
+      "model": "gemini-3.8-flash",
+      "promptVersion": "cv-evidence-v1",
+      "latencyMs": 28,
+      "fields": [
+        {
+          "field": "anneesExperience",
+          "valueLabelled": true,
+          "expectedStatus": "UNCERTAIN",
+          "actualStatus": "UNCERTAIN",
+          "matches": true,
+          "expectedPresent": true,
+          "actualPresent": true
+        },
+        {
+          "field": "cin",
+          "valueLabelled": true,
+          "expectedStatus": "MISSING",
+          "actualStatus": "MISSING",
+          "matches": true,
+          "expectedPresent": false,
+          "actualPresent": false
+        },
+        {
+          "field": "experienceCollecteConfirmee",
+          "valueLabelled": true,
+          "expectedStatus": "UNCERTAIN",
+          "actualStatus": "UNCERTAIN",
+          "matches": true,
+          "expectedPresent": true,
+          "actualPresent": true
+        },
+        {
+          "field": "formationSecurite",
+          "valueLabelled": true,
+          "expectedStatus": "UNCERTAIN",
+          "actualStatus": "UNCERTAIN",
+          "matches": true,
+          "expectedPresent": true,
+          "actualPresent": true
+        },
+        {
+          "field": "telephone",
+          "valueLabelled": true,
+          "expectedStatus": "MISSING",
+          "actualStatus": "MISSING",
+          "matches": true,
+          "expectedPresent": false,
+          "actualPresent": false
+        },
+        {
+          "field": "typePermis",
+          "valueLabelled": true,
+          "expectedStatus": "UNCERTAIN",
+          "actualStatus": "UNCERTAIN",
+          "matches": true,
+          "expectedPresent": true,
+          "actualPresent": true
+        }
+      ],
+      "rubricStage": "POST_REVIEW",
+      "score": 70,
+      "scoreMatches": true,
+      "requiredCriteriaStatus": "MET",
+      "requiredMatches": true
+    },
+    {
+      "id": "fictional-cv-dev-02",
+      "split": "development",
+      "labelAuthor": "Codex synthetic fixture author",
+      "labelDate": "2026-09-17",
+      "independentHumanReview": false,
+      "documentSha256": "c0263116126d64d6609f4ba310ba3a4e562e58cac5d05d1c0665cba10d0d5708",
+      "valueLabelCount": 6,
+      "statusLabelCount": 6,
+      "scoreLabelled": true,
+      "requiredLabelled": true,
+      "extractionStatus": "PROVIDER_UNAVAILABLE",
+      "providerStatus": "UNAVAILABLE",
+      "candidateId": "6aac0529ef0e0c2ee39de97d",
+      "providerStatusSource": "DERIVED_FROM_API_EXTRACTION_STATUS",
+      "model": "gemini-3.8-flash",
+      "promptVersion": "cv-evidence-v1",
+      "latencyMs": 23,
+      "fields": [
+        {
+          "field": "anneesExperience",
+          "valueLabelled": true,
+          "expectedStatus": "UNCERTAIN",
+          "actualStatus": "UNCERTAIN",
+          "matches": true,
+          "expectedPresent": true,
+          "actualPresent": true
+        },
+        {
+          "field": "cin",
+          "valueLabelled": true,
+          "expectedStatus": "MISSING",
+          "actualStatus": "MISSING",
+          "matches": true,
+          "expectedPresent": false,
+          "actualPresent": false
+        },
+        {
+          "field": "experienceCollecteConfirmee",
+          "valueLabelled": true,
+          "expectedStatus": "UNCERTAIN",
+          "actualStatus": "UNCERTAIN",
+          "matches": true,
+          "expectedPresent": true,
+          "actualPresent": true
+        },
+        {
+          "field": "formationSecurite",
+          "valueLabelled": true,
+          "expectedStatus": "UNCERTAIN",
+          "actualStatus": "UNCERTAIN",
+          "matches": true,
+          "expectedPresent": true,
+          "actualPresent": true
+        },
+        {
+          "field": "telephone",
+          "valueLabelled": true,
+          "expectedStatus": "INVALID",
+          "actualStatus": "INVALID",
+          "matches": true,
+          "expectedPresent": true,
+          "actualPresent": true
+        },
+        {
+          "field": "typePermis",
+          "valueLabelled": true,
+          "expectedStatus": "UNCERTAIN",
+          "actualStatus": "UNCERTAIN",
+          "matches": true,
+          "expectedPresent": true,
+          "actualPresent": true
+        }
+      ],
+      "rubricStage": "POST_REVIEW",
+      "score": 10,
+      "scoreMatches": true,
+      "requiredCriteriaStatus": "UNMET",
+      "requiredMatches": true
+    }
+  ],
+  "limitations": [
+    "No pooled accuracy across splits; metrics use only explicit reference labels.",
+    "Upload failures have no predictions and are reported separately, not credited as correct missing fields.",
+    "Provider status is derived from actual API extractionStatus unless the API supplies it directly.",
+    "Synthetic development fixtures verify the evaluator, not empirical model accuracy."
+  ],
+  "executionContext": {
+    "providerMode": "EXPLICIT_SIMULATED_OUTAGE",
+    "realModelCalls": 0,
+    "purpose": "Contract regression for the fixed explicit-label parser"
+  }
+}

@@ -37,3 +37,10 @@ MOBILE/ios/Flutter/.last_build_id
 *.apk
 CV_*.pdf
 graphify-out/
+
+# Local evaluation bytecode
+__pycache__/
+*.pyc
+
+# Local browser automation state
+.playwright-cli/

@@ -4,7 +4,7 @@ Date: 2026-09-17. This record is deliberately sanitized; it contains no API keys
 
 ## Environment and isolation
 
-- Workspace: `/home/habib/Projects/pfe_mahdi`.
+- Workspace: repository root.
 - Audit working artifacts/logs: `/tmp/pfe-audit-20260917/` (temporary, may not persist across machines/sessions).
 - Disposable Mongo port27018, DBs `pfe_audit` and `pfe_audit_tests`; default Mongo27017 not used for application writes.
 - Packaged backend launched from temporary `runtime/`, bound127.0.0.1:8080; upload files remained there.

@@ -16,6 +16,9 @@ dependencies:
   # Stockage local (JWT token)
   shared_preferences: ^2.2.3
   image_picker: ^1.1.2
+  path_provider: ^2.1.4
+  url_launcher: ^6.3.0
+  web: ^1.1.1
 
   # GPS — geolocator 13.0.1 compatible with Flutter 3.24.0
   geolocator: 13.0.1

@@ -39,6 +39,9 @@ public class DocumentChunk {
      * Vecteur d'embedding (768 dimensions pour Gemini text-embedding-004 ou 1536 pour OpenAI).
      */
     private List<Float> embedding;
+    private String embeddingModel;
+    private Integer embeddingDimensions;
+    private String embeddingVersion;
 
     private LocalDateTime createdAt;
 }

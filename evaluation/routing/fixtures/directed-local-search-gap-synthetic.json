@@ -1,0 +1,9 @@
+{
+  "source": "SYNTHETIC_ALGORITHM_TEST",
+  "description": "Illustrative directed shortest-path matrix. Manual 150s, NN 119s, NN+2-opt 114s, exact 102s. Demonstrates improvement and a remaining heuristic gap; not road measurements.",
+  "fixtureVersion": "directed-gap-v1",
+  "serviceSeconds": 1800,
+  "matrixPointIds": ["DEPOT", "P1", "P2", "P3", "P4", "P5", "P6"],
+  "durations": [[0,38,19,6,8,8,24],[22,0,13,28,29,30,18],[9,19,0,15,16,17,5],[22,32,13,0,29,30,18],[41,49,46,35,0,26,37],[29,35,20,35,5,0,25],[4,26,23,10,12,12,0]],
+  "distances": [[0,380,190,60,80,80,240],[220,0,130,280,290,300,180],[90,190,0,150,160,170,50],[220,320,130,0,290,300,180],[410,490,460,350,0,260,370],[290,350,200,350,50,0,250],[40,260,230,100,120,120,0]]
+}

@@ -1,0 +1,38 @@
+{
+  "corpus": {
+    "fingerprint": "1be7ea6bc618e2e1af88caa25c48c72fa0fbc100bb5f3b38674e1560a6d27fd8",
+    "documentCount": 1,
+    "chunkCount": 1,
+    "compatibleChunkCount": 1
+  },
+  "settings": {
+    "evaluationVersion": "rag-comparison-v1",
+    "topK": 5,
+    "similarityThreshold": 0.15,
+    "bm25K1": 1.2,
+    "bm25B": 0.75,
+    "reciprocalRankFusionK": 60,
+    "provider": "GEMINI",
+    "generationModel": "gemini-3.8-flash",
+    "promptVersion": "grounded-rag-v1",
+    "embeddingModel": "gemini-embedding-2",
+    "embeddingDimensions": 768,
+    "embeddingVersion": "text-v1"
+  },
+  "chunks": [
+    {
+      "source": {
+        "documentId": "6aac007cdf64820524fbadc8",
+        "documentName": "pfe-fictional-procedure.txt",
+        "pageNumber": 0,
+        "sectionTitle": "Texte — segment 1",
+        "chunkId": "6aac007cdf64820524fbadc9",
+        "score": 0.0,
+        "snippet": "Document FICTIF de développement : ces règles servent uniquement à tester le logiciel, pas de protocole municipal approuvé. Pour terminer normalement un point dans cette démonstration, fournir une photo APRÈS la collecte. Une photo AVANT est facultative. Si le point est inaccessible ou si prendre une photo est dangereux, signaler un problème avec son motif sans inventer une arrivée. Le code fictif du dépôt est DEMO-42. Ce document ne contient aucune information sur les salaires.",
+        "sourceUrl": "/api/ai/documents/6aac007cdf64820524fbadc8/source"
+      },
+      "contentSha256": "e2e54a76aff03d041db93ce1e9baef8693c64e607f32ef26a81fd0e8f9a714f6",
+      "compatibleEmbedding": true
+    }
+  ]
+}

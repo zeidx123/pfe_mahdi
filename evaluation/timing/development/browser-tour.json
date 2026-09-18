@@ -1,0 +1,27 @@
+[
+  {
+    "reference": "BROWSER-T1",
+    "statut": "TERMINEE",
+    "estimatedAtStartSeconds": 1636.0,
+    "estimatedServiceAtStartSeconds": 900.0,
+    "actualDurationSeconds": 1506,
+    "observedServiceSeconds": 777,
+    "measuredServiceStops": 2,
+    "visits": [
+      {
+        "order": 0,
+        "status": "COMPLETED_REPORTED"
+      },
+      {
+        "order": 1,
+        "status": "COMPLETED_REPORTED"
+      },
+      {
+        "order": 2,
+        "status": "ISSUE_REPORTED"
+      }
+    ],
+    "dataOrigin": "BROWSER_DEVELOPMENT_WITH_SIMULATED_ROADS",
+    "limitations": "Elapsed time includes software testing delays; not physical driving or field performance."
+  }
+]

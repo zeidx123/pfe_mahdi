@@ -61,11 +61,4 @@ public class AgentController {
         return ResponseEntity.ok().build();
     }
 
-    // Endpoint pour réinitialiser TOUS les mots de passe au CIN (migration données existantes)
-    @PostMapping("/reset-all-passwords")
-    @PreAuthorize("permitAll()")
-    public ResponseEntity<String> resetAllPasswordsToCin() {
-        agentService.resetAllPasswordsToCin();
-        return ResponseEntity.ok("Tous les mots de passe ont été réinitialisés au CIN.");
-    }
 }

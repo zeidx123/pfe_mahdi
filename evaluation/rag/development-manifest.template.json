@@ -1,0 +1,29 @@
+{
+  "datasetVersion": "rag-development-template-v1",
+  "description": "Authored questions only, not independently reviewed. Select an approved fictional demo corpus and supply reference labels only after independent review. Null labels remain excluded from accuracy metrics.",
+  "cases": [
+    {
+      "id": "after-photo",
+      "split": "development",
+      "groupId": "photo-followup",
+      "question": "Quelle photo faut-il fournir pour terminer un point ?",
+      "history": [],
+      "labels": {"independent": false, "reviewer": null, "reviewDate": null, "answerable": null, "relevantChunkIds": null, "expectedPassages": []}
+    },
+    {
+      "id": "photo-followup",
+      "split": "development",
+      "groupId": "photo-followup",
+      "question": "Et si ce point est inaccessible ?",
+      "history": [{"sender": "USER", "content": "Quelle photo faut-il fournir pour terminer un point ?"}],
+      "labels": {"independent": false, "reviewer": null, "reviewDate": null, "answerable": null, "relevantChunkIds": null, "expectedPassages": []}
+    },
+    {
+      "id": "salary-topic-change",
+      "split": "development",
+      "question": "Quel est le salaire annuel ?",
+      "history": [{"sender": "USER", "content": "Quelle photo faut-il fournir pour terminer un point ?"}],
+      "labels": {"independent": false, "reviewer": null, "reviewDate": null, "answerable": null, "relevantChunkIds": null, "expectedPassages": []}
+    }
+  ]
+}

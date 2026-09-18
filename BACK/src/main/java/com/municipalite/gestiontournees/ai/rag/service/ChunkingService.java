@@ -28,6 +28,7 @@ public class ChunkingService {
     public List<DocumentChunk> createChunks(AiDocument doc, List<ExtractedPage> pages) {
         int chunkSize = aiProperties.getRag().getChunkSize();
         int chunkOverlap = aiProperties.getRag().getChunkOverlap();
+        if (chunkSize < 100 || chunkOverlap < 0 || chunkOverlap >= chunkSize) throw new IllegalArgumentException("Configuration de découpage invalide.");
 
         List<DocumentChunk> chunks = new ArrayList<>();
         int globalChunkIndex = 0;
@@ -38,11 +39,11 @@ public class ChunkingService {
                 continue;
             }
 
-            String currentSectionTitle = extractSectionTitle(text);
+            String currentSectionTitle = page.getSectionTitle() != null ? page.getSectionTitle() : extractSectionTitle(text);
 
             List<String> textChunks = splitTextWithOverlap(text, chunkSize, chunkOverlap);
             for (String chunkText : textChunks) {
-                if (chunkText.trim().length() < 20) {
+                if (chunkText.isBlank()) {
                     continue; // Ignorer les tranches insignifiantes
                 }
 

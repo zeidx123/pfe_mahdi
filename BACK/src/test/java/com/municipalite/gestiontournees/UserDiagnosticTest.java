@@ -1,25 +1,33 @@
 package com.municipalite.gestiontournees;
 
+import com.municipalite.gestiontournees.user.model.Role;
 import com.municipalite.gestiontournees.user.model.User;
 import com.municipalite.gestiontournees.user.repository.UserRepository;
+import com.municipalite.gestiontournees.user.service.UserService;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.List;
+import java.util.Optional;
 
-@SpringBootTest
-public class UserDiagnosticTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
-    @Autowired
-    private UserRepository userRepository;
-
+class UserDiagnosticTest {
     @Test
-    public void printUsers() {
-        List<User> users = userRepository.findAll();
-        System.out.println("=== USERS IN MONGO DB ===");
-        for (User u : users) {
-            System.out.println("User: id=" + u.getId() + ", email=" + u.getEmail() + ", role=" + u.getRole() + ", authorities=" + u.getAuthorities());
-        }
+    void inactiveDriverCannotAuthenticateByMatricule() {
+        var users = mock(UserRepository.class);
+        var driver = User.builder().email("driver@test.invalid").matricule("D-001")
+                .password("encoded").role(Role.CHAUFFEUR).actif(false).build();
+        when(users.findByEmail("D-001")).thenReturn(Optional.empty());
+        when(users.findByMatricule("D-001")).thenReturn(Optional.of(driver));
+        var provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(new UserService(users));
+        provider.setPasswordEncoder(mock(PasswordEncoder.class));
+        assertThrows(DisabledException.class, () -> provider.authenticate(
+                new UsernamePasswordAuthenticationToken("D-001", "irrelevant")));
+        verify(users, never()).save(any());
     }
 }

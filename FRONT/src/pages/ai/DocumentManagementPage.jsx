@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { aiService } from '../../services/aiService';
+import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 import { 
   FiFileText, FiUpload, FiRefreshCw, FiTrash2, 
-  FiCheckCircle, FiAlertCircle, FiClock, FiFile, FiInfo
+  FiCheckCircle, FiAlertCircle, FiClock, FiFile
 } from 'react-icons/fi';
 
 const DocumentManagementPage = () => {
@@ -12,6 +13,8 @@ const DocumentManagementPage = () => {
   const [uploading, setUploading] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [loadError, setLoadError] = useState('');
+  const [busy, setBusy] = useState(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -23,8 +26,9 @@ const DocumentManagementPage = () => {
     try {
       const data = await aiService.getDocuments();
       setDocuments(data || []);
+      setLoadError('');
     } catch (error) {
-      console.error('Erreur chargement documents:', error);
+      setLoadError(error.response?.data?.message || 'Documents indisponibles. Nouvelle tentative automatique.');
     } finally {
       setLoading(false);
     }
@@ -76,6 +80,26 @@ const DocumentManagementPage = () => {
     }
   };
 
+  const toggleApproval = async (doc) => {
+    setBusy(doc.id);
+    try {
+      await api.patch(`/ai/documents/${doc.id}/approval`, { approved: !doc.approved });
+      await fetchDocuments();
+      toast.success(doc.approved ? 'Document retiré des sources autorisées' : 'Document approuvé pour le chauffeur');
+    } catch (error) { toast.error(error.response?.data?.message || "Impossible de modifier l'approbation"); }
+    finally { setBusy(null); }
+  };
+
+  const downloadSource = async (doc) => {
+    try {
+      const response = await api.get(`/ai/documents/${doc.id}/source`, { responseType: 'blob' });
+      const url = URL.createObjectURL(response.data);
+      const link = document.createElement('a'); link.href = url; link.download = doc.originalName;
+      document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) { toast.error(error.response?.data?.message || 'Source indisponible'); }
+  };
+
   const formatFileSize = (bytes) => {
     if (!bytes) return '0 B';
     const k = 1024;
@@ -92,6 +116,8 @@ const DocumentManagementPage = () => {
             <FiCheckCircle /> INDEXÉ
           </span>
         );
+      case 'TEXT_READY':
+        return <span className="badge badge-warning">Extraits disponibles — IA indisponible</span>;
       case 'PROCESSING':
         return (
           <span className="badge badge-warning" style={{ background: '#fef3c7', color: '#b45309', padding: '6px 12px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600' }}>
@@ -122,7 +148,7 @@ const DocumentManagementPage = () => {
             <span style={{ fontSize: '28px' }}>📚</span> Base Documentaire
           </h1>
           <p style={{ color: '#6b7280', marginTop: '4px', marginBottom: 0, fontSize: '14px' }}>
-            Gérez les documents de la municipalité (règlements, consignes, procédures) alimentant la mémoire de l'Assistant.
+            Gérez les documents de la municipalité (règlements, consignes, procédures) utilisés par l'assistant après votre approbation.
           </p>
         </div>
 
@@ -154,13 +180,14 @@ const DocumentManagementPage = () => {
           </div>
         </div>
         <div style={{ background: 'white', padding: '20px', borderRadius: '12px', borderLeft: '4px solid #9333ea', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '600' }}>TRANCHES (CHUNKS) VECTORIELLES</div>
+          <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '600' }}>PASSAGES EXTRAITS</div>
           <div style={{ fontSize: '28px', fontWeight: '800', color: '#9333ea', marginTop: '6px' }}>
             {documents.reduce((sum, d) => sum + (d.chunkCount || 0), 0)}
           </div>
         </div>
       </div>
 
+      {loadError && <p role="alert">{loadError}</p>}
       {/* Tableau des documents */}
       <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
         {loading ? (
@@ -172,7 +199,7 @@ const DocumentManagementPage = () => {
           <div style={{ padding: '60px 20px', textAlign: 'center', color: '#6b7280' }}>
             <FiFileText style={{ fontSize: '48px', color: '#9ca3af', marginBottom: '12px' }} />
             <h3 style={{ fontSize: '18px', color: '#374151', margin: '0 0 6px 0' }}>Aucun document indexé</h3>
-            <p style={{ fontSize: '14px', margin: 0 }}>Ajoutez des fichiers PDF, DOCX ou TXT pour alimenter le RAG SmartWaste.</p>
+            <p style={{ fontSize: '14px', margin: 0 }}>Ajoutez des fichiers PDF, DOCX ou TXT pour alimenter le GestiCollecte.</p>
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
@@ -183,7 +210,7 @@ const DocumentManagementPage = () => {
                   <th style={{ padding: '16px 20px' }}>Type</th>
                   <th style={{ padding: '16px 20px' }}>Taille</th>
                   <th style={{ padding: '16px 20px' }}>Statut Indexation</th>
-                  <th style={{ padding: '16px 20px' }}>Chunks</th>
+                  <th style={{ padding: '16px 20px' }}>Passages / Approbation</th>
                   <th style={{ padding: '16px 20px' }}>Ajouté par</th>
                   <th style={{ padding: '16px 20px' }}>Date</th>
                   <th style={{ padding: '16px 20px', textAlign: 'right' }}>Actions</th>
@@ -210,13 +237,20 @@ const DocumentManagementPage = () => {
                     </td>
                     <td style={{ padding: '16px 20px', color: '#6b7280' }}>{formatFileSize(doc.fileSize)}</td>
                     <td style={{ padding: '16px 20px' }}>{getStatusBadge(doc.status)}</td>
-                    <td style={{ padding: '16px 20px', fontWeight: '600', color: '#4b5563' }}>{doc.chunkCount || 0}</td>
+                    <td style={{ padding: '16px 20px', fontWeight: '600', color: '#4b5563' }}>{doc.chunkCount || 0}<br />
+                      <strong>{doc.approved ? 'Approuvé' : 'À examiner'}</strong><br />
+                      <small>{doc.semanticIndexReady ? 'Recherche sémantique prête' : doc.textReady ? 'Recherche textuelle disponible' : 'Texte indisponible'}</small>
+                    </td>
                     <td style={{ padding: '16px 20px', color: '#6b7280' }}>{doc.uploadedBy || 'Admin'}</td>
                     <td style={{ padding: '16px 20px', color: '#6b7280', fontSize: '13px' }}>
                       {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString('fr-FR') : '-'}
                     </td>
                     <td style={{ padding: '16px 20px', textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: '8px' }}>
+                      <div style={{ display: 'inline-flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button type="button" onClick={() => downloadSource(doc)}>Source</button>
+                        <button type="button" disabled={busy === doc.id || (!doc.approved && !doc.textReady)} onClick={() => toggleApproval(doc)}>
+                          {doc.approved ? "Retirer l'approbation" : 'Approuver'}
+                        </button>
                         <button 
                           onClick={() => handleReindex(doc.id, doc.originalName)}
                           title="Réindexer le document"
@@ -243,7 +277,7 @@ const DocumentManagementPage = () => {
 
       {/* Modal d'affichage de l'erreur d'indexation */}
       {showErrorModal && selectedDoc && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyCenter: 'center', zIndex: 1000, padding: '20px' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
           <div style={{ background: 'white', borderRadius: '12px', maxWidth: '600px', width: '100%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
             <h3 style={{ marginTop: 0, color: '#dc2626', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FiAlertCircle /> Erreur d'indexation RAG

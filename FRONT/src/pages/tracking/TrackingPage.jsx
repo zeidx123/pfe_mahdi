@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { FiTruck, FiMapPin, FiWifi, FiWifiOff, FiBatteryCharging } from 'react-icons/fi';
+import { FiTruck, FiMapPin, FiWifi, FiWifiOff } from 'react-icons/fi';
 import api from '../../services/api';
 import { websocketService } from '../../services/websocketService';
 
@@ -41,20 +41,11 @@ const MapCenterUpdater = ({ center }) => {
 const TrackingPage = () => {
   const [positions, setPositions] = useState({});
   const [isConnected, setIsConnected] = useState(false);
-  const [mapCenter, setMapCenter] = useState([33.5731, -7.5898]); // Casablanca par défaut
+  const [mapCenter] = useState([36.722857, 10.283535]); // Dépôt confirmé pour la démonstration
+  const [now, setNow] = useState(Date.now());
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Demander la position actuelle de l'utilisateur
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setMapCenter([position.coords.latitude, position.coords.longitude]);
-        },
-        (error) => {
-          console.log("Erreur géolocalisation:", error);
-        }
-      );
-    }
     // 1. Fetch initial positions from REST API
     const fetchInitialPositions = async () => {
       try {
@@ -64,8 +55,9 @@ const TrackingPage = () => {
           positionsMap[pos.camionId] = pos;
         });
         setPositions(positionsMap);
+        setError('');
       } catch (error) {
-        console.error("Erreur lors de la récupération des positions initiales:", error);
+        setError(error.response?.data?.message || "Positions indisponibles. Nouvelle tentative dans 15 secondes.");
       }
     };
 
@@ -73,7 +65,7 @@ const TrackingPage = () => {
 
     // 2. Connect to WebSocket for real-time updates
     const handleNewPosition = (position) => {
-      console.log("Nouvelle position reçue:", position);
+
       setPositions(prev => ({
         ...prev,
         [position.camionId]: position
@@ -85,15 +77,19 @@ const TrackingPage = () => {
     // Polling connection status (simple hack to show UI status)
     const interval = setInterval(() => {
       setIsConnected(websocketService.connected);
+      setNow(Date.now());
     }, 1000);
 
+    const refresh = setInterval(fetchInitialPositions, 15000);
     return () => {
+      clearInterval(refresh);
       clearInterval(interval);
       websocketService.disconnect();
     };
   }, []);
 
   const activeTrucks = Object.values(positions);
+  const isStale = (truck) => truck.stale || !truck.timestamp || now - new Date(truck.timestamp).getTime() > 60000;
 
   return (
     <div className="tracking-page">
@@ -107,12 +103,13 @@ const TrackingPage = () => {
         </div>
       </div>
 
+      {error && <p role="alert">{error}</p>}
       <div className="map-layout">
         {/* LEFT: List of active trucks */}
         <div className="trucks-list-panel">
           <div className="panel-header">
             <h3>Flotte active</h3>
-            <span className="badge">{activeTrucks.length} véhicule(s) en ligne</span>
+            <span className="badge">{activeTrucks.filter(t => !isStale(t)).length} signal(s) récent(s)</span>
           </div>
           
           <div className="trucks-list-scroll">
@@ -127,7 +124,7 @@ const TrackingPage = () => {
                   <div className="truck-header">
                     <span className="truck-matricule">{truck.camionMatricule || truck.camionId}</span>
                     <span className={`status-badge ${truck.statut === 'EN_COLLECTE' ? 'badge-warning' : truck.statut === 'A_LARRET' ? 'badge-danger' : 'badge-success'}`}>
-                      {truck.statut || 'EN_ROUTE'}
+                      {isStale(truck) ? 'SIGNAL ANCIEN' : truck.statut || 'Position reçue'}
                     </span>
                   </div>
                   
@@ -140,15 +137,9 @@ const TrackingPage = () => {
                   <div className="truck-telemetry">
                     <div className="telemetry-item">
                       <span className="label">Vitesse</span>
-                      <span className="value">{truck.vitesse ? truck.vitesse.toFixed(1) : '0.0'} km/h</span>
+                      <span className="value">{truck.vitesse != null ? `${truck.vitesse.toFixed(1)} km/h` : 'Non mesurée'}</span>
                     </div>
-                    <div className="telemetry-item">
-                      <span className="label">Carburant</span>
-                      <span className="value">
-                        <FiBatteryCharging size={12} style={{marginRight:4, color: truck.niveauCarburant < 20 ? 'red' : 'green'}}/>
-                        {truck.niveauCarburant ? truck.niveauCarburant.toFixed(0) : '--'}%
-                      </span>
-                    </div>
+
                   </div>
                   
                   <div className="truck-timestamp">
@@ -174,7 +165,7 @@ const TrackingPage = () => {
             />
             
             {activeTrucks.map(truck => (
-              truck.latitude && truck.longitude ? (
+              Number.isFinite(truck.latitude) && Number.isFinite(truck.longitude) ? (
                 <Marker
                   key={truck.camionId}
                   position={[truck.latitude, truck.longitude]}
@@ -185,17 +176,14 @@ const TrackingPage = () => {
                       <strong style={{ fontSize: 16, display: 'block', borderBottom: '1px solid #e2e8f0', paddingBottom: 6, marginBottom: 6 }}>
                         {truck.camionMatricule || truck.camionId}
                       </strong>
-                      <p style={{ margin: '4px 0', fontSize: 13 }}><strong>Statut:</strong> {truck.statut}</p>
+                      <p style={{ margin: '4px 0', fontSize: 13 }}><strong>Statut:</strong> {isStale(truck) ? "Signal ancien / interrompu" : truck.statut}</p>
                       {truck.tourneeReference && <p style={{ margin: '4px 0', fontSize: 13 }}><strong>Tournée:</strong> {truck.tourneeReference}</p>}
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, background: '#f8fafc', padding: '6px', borderRadius: 4 }}>
                         <div>
                           <span style={{ fontSize: 11, color: '#64748b', display: 'block' }}>Vitesse</span>
-                          <strong style={{ fontSize: 13 }}>{truck.vitesse ? truck.vitesse.toFixed(1) : 0} km/h</strong>
+                          <strong style={{ fontSize: 13 }}>{truck.vitesse != null ? `${truck.vitesse.toFixed(1)} km/h` : 'Non mesurée'}</strong>
                         </div>
-                        <div>
-                          <span style={{ fontSize: 11, color: '#64748b', display: 'block' }}>Carburant</span>
-                          <strong style={{ fontSize: 13 }}>{truck.niveauCarburant ? truck.niveauCarburant.toFixed(0) : 0}%</strong>
-                        </div>
+
                       </div>
                       <p style={{ margin: '8px 0 0 0', fontSize: 11, color: '#94a3b8', textAlign: 'right' }}>
                         Mis à jour: {new Date(truck.timestamp).toLocaleTimeString()}

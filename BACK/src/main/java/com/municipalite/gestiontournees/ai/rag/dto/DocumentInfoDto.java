@@ -20,6 +20,14 @@ public class DocumentInfoDto {
     private DocumentStatus status;
     private int chunkCount;
     private String errorMessage;
+    private boolean approved;
+    private String approvedBy;
+    private LocalDateTime approvedAt;
+    private boolean textReady;
+    private boolean semanticIndexReady;
+    private String embeddingModel;
+    private String embeddingVersion;
+    private Integer embeddingDimensions;
     private String uploadedBy;
     private LocalDateTime createdAt;
     private LocalDateTime indexedAt;

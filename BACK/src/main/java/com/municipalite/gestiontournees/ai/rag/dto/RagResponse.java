@@ -15,6 +15,8 @@ public class RagResponse {
     private String conversationId;
     private String question;
     private String answer;
+    private String status; // ANSWERED, SOURCE_EXCERPTS, INSUFFICIENT_INFORMATION, PROVIDER_UNAVAILABLE
+    private String retrievalMode;
     private List<SourceDto> sources;
     private boolean relevantContextFound;
     private double maxSimilarityScore;

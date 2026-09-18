@@ -1,6 +1,9 @@
 package com.municipalite.gestiontournees.ai.cv.controller;
 
 import com.municipalite.gestiontournees.ai.cv.model.Candidate;
+import com.municipalite.gestiontournees.ai.cv.model.DriverRequirements;
+import com.municipalite.gestiontournees.ai.cv.dto.CandidateReviewRequest;
+import com.municipalite.gestiontournees.ai.cv.service.DriverRequirementsService;
 import com.municipalite.gestiontournees.ai.cv.service.CvAnalysisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +25,28 @@ import java.util.Map;
 public class CvController {
 
     private final CvAnalysisService cvAnalysisService;
+    private final DriverRequirementsService driverRequirementsService;
+
+    @GetMapping("/cv/requirements")
+    public ResponseEntity<DriverRequirements> requirements() {
+        return ResponseEntity.ok(driverRequirementsService.current());
+    }
+
+    @PutMapping("/cv/requirements")
+    public ResponseEntity<DriverRequirements> updateRequirements(@RequestBody DriverRequirements profile) {
+        return ResponseEntity.ok(driverRequirementsService.update(profile));
+    }
+
+    @PatchMapping("/candidates/{id}/review")
+    public ResponseEntity<Candidate> review(@PathVariable String id, @RequestBody CandidateReviewRequest request) {
+        return ResponseEntity.ok(cvAnalysisService.review(id, request));
+    }
+
+    @PostMapping("/candidates/{id}/evaluate")
+    public ResponseEntity<Candidate> evaluate(@PathVariable String id) {
+        return ResponseEntity.ok(cvAnalysisService.evaluate(id));
+    }
+
 
     /**
      * Upload et analyse automatique d'un CV PDF.

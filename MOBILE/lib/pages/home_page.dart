@@ -24,16 +24,30 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadTournees() async {
     try {
-      setState(() { _isLoading = true; _error = null; });
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
       final data = await TourneeService.getMesTournees();
-      setState(() { _tournees = data; _isLoading = false; });
+      if (!mounted) return;
+      setState(() {
+        _tournees = data;
+        _isLoading = false;
+      });
     } catch (e) {
-      if (e is DioException && (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
+      if (e is DioException && (e.response?.statusCode == 401)) {
         await AuthService.logout();
-        if (mounted) Navigator.pushReplacementNamed(context, '/login');
+        if (mounted) {
+          Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
+        }
         return;
       }
-      setState(() { _error = 'Impossible de charger vos tournées'; _isLoading = false; });
+      if (mounted) {
+        setState(() {
+          _error = 'Impossible de charger vos tournées';
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -41,7 +55,11 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final user = AuthService.currentUser;
     final now = DateTime.now();
-    final greeting = now.hour < 12 ? 'Bonjour' : now.hour < 18 ? 'Bon après-midi' : 'Bonsoir';
+    final greeting = now.hour < 12
+        ? 'Bonjour'
+        : now.hour < 18
+            ? 'Bon après-midi'
+            : 'Bonsoir';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
@@ -52,8 +70,11 @@ class _HomePageState extends State<HomePage> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('$greeting, ${user?['prenom'] ?? 'Chauffeur'}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-            const Text('Mes tournées de collecte', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400)),
+            Text('$greeting, ${user?['prenom'] ?? 'Chauffeur'}',
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            const Text('Mes tournées de collecte',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400)),
           ],
         ),
         actions: [
@@ -75,7 +96,10 @@ class _HomePageState extends State<HomePage> {
             icon: const Icon(Icons.logout_rounded),
             onPressed: () async {
               await AuthService.logout();
-              if (mounted) Navigator.pushReplacementNamed(context, '/login');
+              if (context.mounted) {
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil('/login', (_) => false);
+              }
             },
           ),
         ],
@@ -83,17 +107,22 @@ class _HomePageState extends State<HomePage> {
       body: RefreshIndicator(
         onRefresh: _loadTournees,
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: Color(0xFF0369a1)))
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFF0369a1)))
             : _error != null
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.wifi_off, size: 60, color: Colors.grey.shade400),
+                        Icon(Icons.wifi_off,
+                            size: 60, color: Colors.grey.shade400),
                         const SizedBox(height: 16),
-                        Text(_error!, style: TextStyle(color: Colors.grey.shade600)),
+                        Text(_error!,
+                            style: TextStyle(color: Colors.grey.shade600)),
                         const SizedBox(height: 12),
-                        ElevatedButton(onPressed: _loadTournees, child: const Text('Réessayer')),
+                        ElevatedButton(
+                            onPressed: _loadTournees,
+                            child: const Text('Réessayer')),
                       ],
                     ),
                   )
@@ -102,10 +131,14 @@ class _HomePageState extends State<HomePage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.check_circle_outline, size: 80, color: Colors.green.shade300),
+                            Icon(Icons.check_circle_outline,
+                                size: 80, color: Colors.green.shade300),
                             const SizedBox(height: 16),
-                            const Text('Aucune tournée planifiée', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                            Text('Profitez de votre journée !', style: TextStyle(color: Colors.grey.shade500)),
+                            const Text('Aucune tournée planifiée',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w600)),
+                            Text('Profitez de votre journée !',
+                                style: TextStyle(color: Colors.grey.shade500)),
                           ],
                         ),
                       )
@@ -114,16 +147,18 @@ class _HomePageState extends State<HomePage> {
                         itemCount: _tournees.length,
                         itemBuilder: (context, index) {
                           final tournee = _tournees[index];
-                          final isAssigned = tournee['chauffeurId'] == user?['id'];
+                          final isAssigned =
+                              tournee['chauffeurId'] == user?['id'];
                           return TourneeCard(
                             tournee: tournee,
                             isAssigned: isAssigned,
-                            onTap: () {
-                              Navigator.pushNamed(
+                            onTap: () async {
+                              await Navigator.pushNamed(
                                 context,
                                 '/tournee-detail',
                                 arguments: tournee,
                               );
+                              if (mounted) _loadTournees();
                             },
                           );
                         },

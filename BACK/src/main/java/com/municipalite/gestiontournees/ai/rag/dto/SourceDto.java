@@ -20,4 +20,5 @@ public class SourceDto {
     private String chunkId;
     private double score;
     private String snippet;
+    private String sourceUrl;
 }

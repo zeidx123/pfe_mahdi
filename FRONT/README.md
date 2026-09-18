@@ -1,16 +1,29 @@
-# React + Vite
+# GestiCollecte supervisor web application
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+This is the active React/Vite application for supervisors. Run commands from this `FRONT` directory. The nested `gestion-tournees-front` directory is a historical scaffold and is not used by the current application.
 
-Currently, two official plugins are available:
+Requirements: Node.js 22 LTS (or at least 20.19) and the GestiCollecte backend.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Windows PowerShell:
 
-## React Compiler
+```powershell
+npm ci
+$env:VITE_API_URL = 'http://localhost:8080/api'
+npm run dev -- --host 0.0.0.0
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Linux Bash:
 
-## Expanding the Oxlint configuration
+```bash
+npm ci
+VITE_API_URL=http://localhost:8080/api npm run dev -- --host 0.0.0.0
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Verification:
+
+```text
+npm run lint
+npm run build
+```
+
+See the repository [README](../README.md) for MongoDB, backend, Flutter, Android and first-supervisor setup.

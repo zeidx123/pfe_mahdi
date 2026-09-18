@@ -14,5 +14,6 @@ import java.time.LocalDateTime;
 public class ChatMessage {
     private String role; // "user" ou "assistant"
     private String content;
+    private String status;
     private LocalDateTime timestamp;
 }

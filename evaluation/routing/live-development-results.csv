@@ -1,0 +1,5 @@
+scenario,source,points,algorithm,distance_m,travel_s,service_s,total_s,runtime_ms,improvement_vs_manual_pct,gap_to_exact_pct
+ors-depot-three-stops.json,OpenRouteService,3,MANUAL,1661.9199999999998,312.52,900.0,1212.52,0.0047,0.0,24.425687781184042
+ors-depot-three-stops.json,OpenRouteService,3,NN,1266.3600000000001,251.17000000000002,900.0,1151.17,0.614566,19.630743632407516,0.0
+ors-depot-three-stops.json,OpenRouteService,3,NN_2OPT,1266.3600000000001,251.17000000000002,900.0,1151.17,0.031941,19.630743632407516,0.0
+ors-depot-three-stops.json,OpenRouteService,3,EXACT,1266.3600000000001,251.17000000000002,900.0,1151.17,0.016107,19.630743632407516,0.0

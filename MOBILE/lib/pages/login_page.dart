@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/auth_service.dart';
+import '../services/api_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -9,7 +10,8 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
+class _LoginPageState extends State<LoginPage>
+    with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -25,7 +27,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    _fadeAnimation = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _fadeAnimation =
+        CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _animController.forward();
   }
 
@@ -45,7 +48,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
     final success = await AuthService.login(
       _emailController.text.trim(),
-      _passwordController.text.trim(),
+      _passwordController.text,
     );
 
     if (mounted) {
@@ -54,20 +57,73 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Row(
+            content: Row(
               children: [
-                Icon(Icons.error_outline, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Email ou mot de passe incorrect'),
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                    child:
+                        Text(AuthService.lastError ?? 'Connexion impossible')),
               ],
             ),
             backgroundColor: Colors.red.shade700,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _configureServer() async {
+    final controller =
+        TextEditingController(text: ApiService.instance.options.baseUrl);
+    final formKey = GlobalKey<FormState>();
+    final value = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+              title: const Text('Serveur GestiCollecte'),
+              content: Form(
+                  key: formKey,
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    const Text(
+                        'Sur un téléphone, utilisez l’adresse réseau du serveur accessible depuis cet appareil.'),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                        controller: controller,
+                        keyboardType: TextInputType.url,
+                        decoration: const InputDecoration(
+                            labelText: 'Adresse de l’API',
+                            hintText: 'http://192.168.1.10:8080/api'),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Adresse requise'
+                            : null),
+                  ])),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('Annuler')),
+                FilledButton(
+                    onPressed: () {
+                      if (formKey.currentState!.validate()) {
+                        Navigator.pop(ctx, controller.text);
+                      }
+                    },
+                    child: const Text('Enregistrer'))
+              ],
+            ));
+    if (value == null) return;
+    try {
+      await AuthService.logout();
+      await ApiService.configureServer(value);
+      if (mounted) setState(() {});
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(ApiService.errorMessage(error))));
+      }
     }
   }
 
@@ -98,19 +154,28 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.15),
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+                        border: Border.all(
+                            color: Colors.white.withOpacity(0.3), width: 2),
                       ),
-                      child: const Icon(Icons.local_shipping_rounded, size: 48, color: Colors.white),
+                      child: const Icon(Icons.local_shipping_rounded,
+                          size: 48, color: Colors.white),
                     ),
                     const SizedBox(height: 24),
                     const Text(
                       'GestiCollecte',
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5),
+                      style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: -0.5),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'Espace Chauffeur',
-                      style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.7), fontWeight: FontWeight.w400),
+                      style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.white.withOpacity(0.7),
+                          fontWeight: FontWeight.w400),
                     ),
                     const SizedBox(height: 48),
 
@@ -121,7 +186,10 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 30, offset: const Offset(0, 10)),
+                          BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 30,
+                              offset: const Offset(0, 10)),
                         ],
                       ),
                       child: Form(
@@ -129,9 +197,20 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Connexion', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF0f172a))),
+                            const Text('Connexion',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF0f172a))),
                             const SizedBox(height: 4),
-                            Text('Entrez vos identifiants municipaux', style: TextStyle(fontSize: 13, color: Colors.grey.shade500)),
+                            Text('Entrez vos identifiants municipaux',
+                                style: TextStyle(
+                                    fontSize: 13, color: Colors.grey.shade500)),
+                            TextButton.icon(
+                                onPressed: _isLoading ? null : _configureServer,
+                                icon: const Icon(Icons.settings_ethernet,
+                                    size: 16),
+                                label: const Text('Configurer le serveur')),
                             const SizedBox(height: 24),
                             TextFormField(
                               controller: _emailController,
@@ -139,13 +218,21 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                               decoration: InputDecoration(
                                 labelText: 'Identifiant / Email',
                                 hintText: 'ex: 222LMT100',
-                                prefixIcon: const Icon(Icons.badge, color: Color(0xFF0369a1)),
+                                prefixIcon: const Icon(Icons.badge,
+                                    color: Color(0xFF0369a1)),
                                 filled: true,
                                 fillColor: const Color(0xFFF8FAFC),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                        color: Colors.grey.shade200)),
+                                enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                        color: Colors.grey.shade200)),
                               ),
-                              validator: (v) => v!.isEmpty ? 'Email requis' : null,
+                              validator: (v) =>
+                                  v!.isEmpty ? 'Email requis' : null,
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
@@ -155,15 +242,25 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                 labelText: 'Mot de passe',
                                 prefixIcon: const Icon(Icons.lock_outline),
                                 suffixIcon: IconButton(
-                                  icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                  icon: Icon(_obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility),
+                                  onPressed: () => setState(() =>
+                                      _obscurePassword = !_obscurePassword),
                                 ),
                                 filled: true,
                                 fillColor: const Color(0xFFF8FAFC),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                        color: Colors.grey.shade200)),
+                                enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                        color: Colors.grey.shade200)),
                               ),
-                              validator: (v) => v!.isEmpty ? 'Mot de passe requis' : null,
+                              validator: (v) =>
+                                  v!.isEmpty ? 'Mot de passe requis' : null,
                             ),
                             const SizedBox(height: 28),
                             SizedBox(
@@ -174,12 +271,21 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF0369a1),
                                   foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14)),
                                   elevation: 0,
                                 ),
                                 child: _isLoading
-                                    ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                                    : const Text('Se connecter', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                                    ? const SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2.5))
+                                    : const Text('Se connecter',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700)),
                               ),
                             ),
                           ],

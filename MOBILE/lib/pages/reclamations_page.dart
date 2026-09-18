@@ -60,17 +60,21 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: const Text('Déposer une réclamation', style: TextStyle(fontWeight: FontWeight.bold)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              title: const Text('Déposer une réclamation',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     DropdownButtonFormField<String>(
                       value: typeSelectionne,
-                      decoration: const InputDecoration(labelText: 'Type de problème'),
+                      decoration:
+                          const InputDecoration(labelText: 'Type de problème'),
                       items: types.entries.map((e) {
-                        return DropdownMenuItem(value: e.key, child: Text(e.value));
+                        return DropdownMenuItem(
+                            value: e.key, child: Text(e.value));
                       }).toList(),
                       onChanged: (val) {
                         if (val != null) {
@@ -102,30 +106,37 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Annuler', style: TextStyle(color: Colors.grey)),
+                  child: const Text('Annuler',
+                      style: TextStyle(color: Colors.grey)),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0369a1)),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0369a1)),
                   onPressed: () async {
                     final titre = titreController.text.trim();
                     final desc = descController.text.trim();
                     if (titre.isEmpty || desc.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Veuillez remplir tous les champs')),
+                        const SnackBar(
+                            content: Text('Veuillez remplir tous les champs')),
                       );
                       return;
                     }
                     try {
-                      await ReclamationService.createReclamation(titre, typeSelectionne, desc);
+                      await ReclamationService.createReclamation(
+                          titre, typeSelectionne, desc);
+                      if (!context.mounted) return;
                       Navigator.pop(context);
                       _loadReclamations();
                     } catch (e) {
+                      if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Erreur d\'envoi : $e')),
                       );
                     }
                   },
-                  child: const Text('Envoyer', style: TextStyle(color: Colors.white)),
+                  child: const Text('Envoyer',
+                      style: TextStyle(color: Colors.white)),
                 ),
               ],
             );
@@ -165,24 +176,32 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF0369a1),
         foregroundColor: Colors.white,
-        title: const Text('Mes Réclamations', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Mes Réclamations',
+            style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: RefreshIndicator(
         onRefresh: _loadReclamations,
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: Color(0xFF0369a1)))
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFF0369a1)))
             : _reclamations.isEmpty
                 ? ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: [
-                      SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                      SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.3),
                       const Center(
                         child: Column(
                           children: [
-                            Icon(Icons.mark_chat_unread_outlined, size: 70, color: Colors.grey),
+                            Icon(Icons.mark_chat_unread_outlined,
+                                size: 70, color: Colors.grey),
                             SizedBox(height: 16),
-                            Text('Aucune réclamation déposée', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                            Text('Cliquez sur le bouton + pour en signaler une.', style: TextStyle(color: Colors.grey)),
+                            Text('Aucune réclamation déposée',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                            Text(
+                                'Cliquez sur le bouton + pour en signaler une.',
+                                style: TextStyle(color: Colors.grey)),
                           ],
                         ),
                       ),
@@ -196,7 +215,8 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
                       final isTraitee = r['statut'] == 'TRAITEE';
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                         elevation: 2,
                         child: Padding(
                           padding: const EdgeInsets.all(16),
@@ -207,19 +227,27 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
                                 children: [
                                   Text(
                                     _formatType(r['type']),
-                                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0369a1), fontSize: 13),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF0369a1),
+                                        fontSize: 13),
                                   ),
                                   const Spacer(),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: isTraitee ? Colors.green.shade100 : Colors.orange.shade100,
+                                      color: isTraitee
+                                          ? Colors.green.shade100
+                                          : Colors.orange.shade100,
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
                                       isTraitee ? 'Traitée' : 'En attente',
                                       style: TextStyle(
-                                        color: isTraitee ? Colors.green.shade800 : Colors.orange.shade800,
+                                        color: isTraitee
+                                            ? Colors.green.shade800
+                                            : Colors.orange.shade800,
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -228,11 +256,17 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              Text(r['titre'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                              Text(r['titre'] ?? '',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16)),
                               const SizedBox(height: 4),
-                              Text(_formatDate(r['dateCreation']), style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                              Text(_formatDate(r['dateCreation']),
+                                  style: const TextStyle(
+                                      fontSize: 11, color: Colors.grey)),
                               const Divider(height: 20),
-                              Text(r['description'] ?? '', style: const TextStyle(fontSize: 14)),
+                              Text(r['description'] ?? '',
+                                  style: const TextStyle(fontSize: 14)),
                               if (isTraitee && r['reponse'] != null) ...[
                                 const SizedBox(height: 12),
                                 Container(
@@ -241,20 +275,30 @@ class _ReclamationsPageState extends State<ReclamationsPage> {
                                   decoration: BoxDecoration(
                                     color: Colors.green.shade50,
                                     borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: Colors.green.shade200),
+                                    border: Border.all(
+                                        color: Colors.green.shade200),
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Row(
                                         children: [
-                                          Icon(Icons.reply_rounded, size: 16, color: Colors.green),
+                                          Icon(Icons.reply_rounded,
+                                              size: 16, color: Colors.green),
                                           SizedBox(width: 6),
-                                          Text('Réponse du Superviseur :', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 12)),
+                                          Text('Réponse du Superviseur :',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.green,
+                                                  fontSize: 12)),
                                         ],
                                       ),
                                       const SizedBox(height: 4),
-                                      Text(r['reponse']!, style: const TextStyle(fontSize: 13, color: Colors.black87)),
+                                      Text(r['reponse']!,
+                                          style: const TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.black87)),
                                     ],
                                   ),
                                 ),

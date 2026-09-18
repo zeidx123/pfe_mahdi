@@ -1,557 +1,215 @@
-import { useState, useEffect } from 'react';
-import { 
-  FiFileText, 
-  FiUploadCloud, 
-  FiCheckCircle, 
-  FiAlertTriangle, 
-  FiXCircle, 
-  FiUserCheck, 
-  FiSearch, 
-  FiEye, 
-  FiAward,
-  FiCalendar,
-  FiMail,
-  FiPhone,
-  FiBriefcase,
-  FiShield,
-  FiX,
-  FiPlus,
-  FiCreditCard,
-  FiBarChart2,
-  FiClock,
-  FiTruck,
-  FiCheckSquare
-} from 'react-icons/fi';
+import { useEffect, useState } from 'react';
+import { FiUploadCloud, FiSearch, FiEye, FiX, FiDownload, FiCheckCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
-import { aiService } from '../../services/aiService';
+import { candidateService } from '../../services/candidateService';
+import './candidatures.css';
+
+const FIELDS = [
+  ['typePermis', 'Catégories de permis', 'text', 'C, CE'],
+  ['anneesExperience', 'Années de conduite', 'number', '1.5'],
+  ['formationSecurite', 'Formation sécurité pertinente', 'boolean'],
+  ['experienceCollecteConfirmee', 'Expérience de collecte', 'boolean'],
+  ['nom', 'Nom'], ['prenom', 'Prénom'], ['cin', 'CIN'], ['email', 'Email'], ['telephone', 'Téléphone'],
+  ['numeroPermis', 'Numéro de permis'], ['dateExpirationPermis', 'Expiration du permis', 'date'],
+  ['adresse', 'Adresse'], ['dateNaissance', 'Date de naissance', 'date'],
+  ['experienceChauffeur', 'Expérience de conduite — détail'], ['experienceCollecte', 'Collecte — détail'],
+  ['formations', 'Formations'], ['certifications', 'Certifications'],
+];
+const FIELD_STATES = { MISSING: 'Manquant', UNCERTAIN: 'À vérifier', INVALID: 'Invalide', VERIFIED: 'Vérifié' };
+const REQUIRED = { MET: 'Satisfaits', UNMET: 'Non satisfaits', NEEDS_REVIEW: 'À vérifier', NOT_REQUIRED: 'Facultatif' };
+const DECISIONS = { EN_ATTENTE: 'En attente', EN_ENTRETIEN: 'Entretien', ACCEPTE: 'Accepté', REJETE: 'Rejeté' };
+const WEIGHTS = [
+  ['licenceWeight', 'licenceRequired', 'Permis accepté'],
+  ['experienceWeight', 'experienceRequired', 'Expérience de conduite'],
+  ['safetyWeight', 'safetyRequired', 'Formation sécurité'],
+  ['collectionWeight', 'collectionRequired', 'Expérience de collecte'],
+];
+const errorMessage = (error) => error.response?.data?.message || error.message || 'Action impossible. Réessayez.';
+
+function reviewFields(candidate) {
+  return Object.fromEntries(FIELDS.map(([key]) => [key, {
+    value: candidate.fieldEvidence?.[key]?.value ?? candidate[key]?.toString() ?? '',
+    status: candidate.fieldEvidence?.[key]?.status || (candidate[key] == null ? 'MISSING' : 'UNCERTAIN'),
+    reviewNote: candidate.fieldEvidence?.[key]?.reviewNote || '',
+  }]));
+}
+
+function Score({ candidate }) {
+  return <span className="status-badge">
+    {candidate.scoreCompatibilite == null ? 'À réévaluer' : `${candidate.scoreCompatibilite}/100`}
+    {candidate.scoreProvisional && candidate.scoreCompatibilite != null ? ' · provisoire' : ''}
+  </span>;
+}
 
 export default function CandidaturesPage() {
   const [candidates, setCandidates] = useState([]);
+  const [profile, setProfile] = useState(null);
+  const [profileDraft, setProfileDraft] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [selectedCandidate, setSelectedCandidate] = useState(null);
-  const [filterRec, setFilterRec] = useState('ALL');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [busy, setBusy] = useState('');
+  const [error, setError] = useState('');
+  const [selected, setSelected] = useState(null);
+  const [fields, setFields] = useState({});
+  const [dirty, setDirty] = useState(false);
   const [notes, setNotes] = useState('');
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('ALL');
+  const notesDirty = !!selected && notes !== (selected.notesSuperviseur || '');
 
   useEffect(() => {
-    loadCandidates();
+    let active = true;
+    Promise.all([candidateService.list(), candidateService.requirements()])
+      .then(([items, requirements]) => {
+        if (!active) return;
+        setCandidates(items); setProfile(requirements); setProfileDraft(requirements);
+      })
+      .catch((failure) => { if (active) setError(errorMessage(failure)); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, []);
 
-  const loadCandidates = async () => {
-    try {
-      setLoading(true);
-      const data = await aiService.getCandidates();
-      setCandidates(data);
-    } catch (err) {
-      console.error('Erreur chargement candidatures:', err);
-      toast.error('Erreur lors du chargement des candidatures');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (!selected) return;
+    const close = (event) => { if (event.key === 'Escape' && !busy && !dirty && !notesDirty) setSelected(null); };
+    window.addEventListener('keydown', close);
+    return () => window.removeEventListener('keydown', close);
+  }, [selected, busy, dirty, notesDirty]);
+
+  const showCandidate = (candidate) => {
+    setSelected(candidate); setFields(reviewFields(candidate)); setNotes(candidate.notesSuperviseur || ''); setDirty(false);
+  };
+  const updateCandidate = (candidate) => {
+    setCandidates((items) => items.some((item) => item.id === candidate.id)
+      ? items.map((item) => item.id === candidate.id ? candidate : item) : [candidate, ...items]);
+    if (selected?.id === candidate.id) {
+      // Reviewing fields or recalculating a score must not discard the supervisor's note draft.
+      setSelected(candidate); setFields(reviewFields(candidate)); setDirty(false);
+    } else {
+      showCandidate(candidate);
     }
   };
-
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
+  const run = async (name, action) => {
+    setBusy(name);
+    try { await action(); }
+    catch (failure) { toast.error(errorMessage(failure)); }
+    finally { setBusy(''); }
+  };
+  const upload = (event) => {
+    const file = event.target.files?.[0]; event.target.value = '';
     if (!file) return;
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
-      toast.error('Veuillez importer un fichier au format PDF.');
-      return;
-    }
-
-    try {
-      setUploading(true);
-      const toastId = toast.loading('Analyse du CV par l’IA en cours...');
-      const newCandidate = await aiService.uploadCv(file);
-      toast.dismiss(toastId);
-      toast.success(`CV de ${newCandidate.nom || 'Candidat'} analysé avec succès ! Score : ${newCandidate.scoreCompatibilite}%`);
-      await loadCandidates();
-      setSelectedCandidate(newCandidate);
-      setNotes(newCandidate.notesSuperviseur || '');
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Erreur lors de l’analyse du CV');
-    } finally {
-      setUploading(false);
-      e.target.value = '';
-    }
+    if (!/\.(pdf|docx)$/i.test(file.name)) return toast.error('Choisissez un PDF ou un DOCX.');
+    run('upload', async () => {
+      const candidate = await candidateService.upload(file); updateCandidate(candidate);
+      toast.success('CV enregistré. Vérifiez les informations avant de décider.');
+    });
   };
-
-  const handleDecision = async (statut) => {
-    if (!selectedCandidate) return;
-    try {
-      const updated = await aiService.updateCandidateDecision(selectedCandidate.id, statut, notes);
-      setSelectedCandidate(updated);
-      await loadCandidates();
-      
-      if (statut === 'ACCEPTE') {
-        toast.success(`Candidat accepté ! Un compte agent a été créé avec mot de passe (CIN).`);
-      } else if (statut === 'EN_ENTRETIEN') {
-        toast.success(`Candidat convoqué en entretien.`);
-      } else {
-        toast.error(`Candidat refusé.`);
-      }
-    } catch (err) {
-      toast.error('Erreur lors de la mise à jour de la décision');
-    }
-  };
-
-  // Stats
-  const totalCount = candidates.length;
-  const recommendedCount = candidates.filter(c => c.recommandation === 'RECOMMANDE').length;
-  const toExamineCount = candidates.filter(c => c.recommandation === 'A_EXAMINER').length;
-  const acceptedCount = candidates.filter(c => c.statut === 'ACCEPTE').length;
-
-  const filtered = candidates.filter((c) => {
-    const matchesRec = filterRec === 'ALL' || c.recommandation === filterRec || (filterRec === 'ACCEPTE' && c.statut === 'ACCEPTE');
-    const name = `${c.nom || ''} ${c.prenom || ''} ${c.email || ''} ${c.cvFileName || ''} ${c.typePermis || ''}`.toLowerCase();
-    const matchesSearch = name.includes(searchTerm.toLowerCase());
-    return matchesRec && matchesSearch;
+  const saveReview = () => run('review', async () => {
+    updateCandidate(await candidateService.review(selected.id, fields));
+    toast.success('Vérification enregistrée et score recalculé.');
   });
-
-  const getScoreBadge = (score) => {
-    if (score >= 70) {
-      return <span className="status-badge active" style={{ background: '#dcfce7', color: '#15803d', fontWeight: 'bold' }}>{score}% (Élevé)</span>;
-    }
-    if (score >= 40) {
-      return <span className="status-badge" style={{ background: '#fef3c7', color: '#b45309', fontWeight: 'bold' }}>{score}% (Moyen)</span>;
-    }
-    return <span className="status-badge inactive" style={{ background: '#fee2e2', color: '#b91c1c', fontWeight: 'bold' }}>{score}% (Faible)</span>;
+  const decide = (statut) => run('decision', async () => {
+    updateCandidate(await candidateService.decision(selected.id, statut, notes));
+    toast.success('Décision enregistrée.');
+  });
+  const changeField = (key, property, value) => {
+    setDirty(true);
+    setFields((current) => ({ ...current, [key]: { ...current[key], [property]: value,
+      ...(property === 'value' ? { status: value === '' ? 'MISSING' : 'UNCERTAIN' } : {}),
+    } }));
   };
+  const filtered = candidates.filter((candidate) => (filter === 'ALL' || candidate.statut === filter)
+    && `${candidate.nom || ''} ${candidate.prenom || ''} ${candidate.cvFileName || ''} ${candidate.email || ''}`.toLowerCase().includes(search.toLowerCase()));
 
-  const getRecBadge = (rec) => {
-    if (rec === 'RECOMMANDE') {
-      return (
-        <span className="status-badge active">
-          <FiCheckCircle style={{ marginRight: '4px' }} /> Recommandé
-        </span>
-      );
-    }
-    if (rec === 'A_EXAMINER') {
-      return (
-        <span className="status-badge" style={{ background: '#fff7ed', color: '#c2410c', border: '1px solid #ffedd5' }}>
-          <FiAlertTriangle style={{ marginRight: '4px' }} /> À examiner
-        </span>
-      );
-    }
-    return (
-      <span className="status-badge inactive">
-        <FiXCircle style={{ marginRight: '4px' }} /> Peu compatible
-      </span>
-    );
-  };
-
-  const getStatusBadge = (statut) => {
-    if (statut === 'ACCEPTE') {
-      return (
-        <span className="status-badge active" style={{ background: '#10b981', color: '#ffffff' }}>
-          <FiUserCheck style={{ marginRight: '4px' }} /> Accepté (Agent)
-        </span>
-      );
-    }
-    if (statut === 'REJETE') {
-      return (
-        <span className="status-badge inactive">
-          <FiXCircle style={{ marginRight: '4px' }} /> Rejeté
-        </span>
-      );
-    }
-    if (statut === 'EN_ENTRETIEN') {
-      return (
-        <span className="status-badge" style={{ background: '#e0e7ff', color: '#4338ca' }}>
-          <FiCalendar style={{ marginRight: '4px' }} /> En Entretien
-        </span>
-      );
-    }
-    return (
-      <span className="status-badge" style={{ background: '#f1f5f9', color: '#64748b' }}>
-        <FiClock style={{ marginRight: '4px' }} /> En Attente
-      </span>
-    );
-  };
-
-  const getInitials = (c) => {
-    if (c.prenom && c.nom) return `${c.prenom[0]}${c.nom[0]}`.toUpperCase();
-    if (c.nom) return c.nom.substring(0, 2).toUpperCase();
-    return 'CV';
-  };
-
-  const getCriteriaSections = (c) => {
-    const isCinValid = c.cin && /^[0-9]{8}$/.test(c.cin);
-    const isPhoneValid = c.telephone && /^[2-9][0-9]{7}$/.test(c.telephone.replace(/[^0-9]/g, '').slice(-8));
-    const hasPermis = c.typePermis && (c.typePermis.toUpperCase().includes('B') || c.typePermis.toUpperCase().includes('C'));
-    const exp = c.anneesExperience || 0;
-    const hasChauffeur = !!c.experienceChauffeur;
-    const hasCollecte = !!c.experienceCollecte;
-    const hasCertif = !!c.certifications || !!c.formations;
-
-    return [
-      {
-        category: 'EXPERIENCE PROFESSIONNELLE',
-        items: [
-          {
-            icon: FiBriefcase,
-            title: "Durée d'expérience professionnelle (≥ 2 ans obligatoire)",
-            pts: exp >= 5 ? 25 : exp >= 2 ? 20 : exp >= 1 ? 10 : 0,
-            max: 25,
-            desc: exp >= 2 ? `${exp} ans d'expérience (Conforme)` : exp > 0 ? `${exp} an (Insuffisant)` : 'Expérience non renseignée'
-          },
-          {
-            icon: FiTruck,
-            title: 'Expérience Chauffeur Poids Lourds & Collecte (BOM)',
-            pts: (hasChauffeur ? 10 : 0) + (hasCollecte ? 10 : 0),
-            max: 20,
-            desc: hasChauffeur && hasCollecte ? 'Conduite poids lourds & collecte déchets validées' : hasChauffeur ? 'Conduite poids lourds validée' : hasCollecte ? 'Collecte déchets validée' : 'Non mentionnée'
-          }
-        ]
-      },
-      {
-        category: 'FORMATIONS ET CERTIFICATIONS',
-        items: [
-          {
-            icon: FiShield,
-            title: 'Formations Sécurité Routière & Prévention',
-            pts: hasCertif ? 15 : 0,
-            max: 15,
-            desc: hasCertif ? 'Attestations et formations de sécurité enregistrées' : 'Aucune formation sécurité détectée'
-          },
-          {
-            icon: FiAward,
-            title: 'Certifications Professionnelles (FIMO / FCOS)',
-            pts: hasCertif ? 10 : 0,
-            max: 10,
-            desc: hasCertif ? 'Certifications professionnelles à jour' : 'Non mentionnées'
-          }
-        ]
-      },
-      {
-        category: 'COMPETENCES ET DISPONIBILITE',
-        items: [
-          {
-            icon: FiCreditCard,
-            title: 'Permis B ou C Minimum (Obligatoire)',
-            pts: hasPermis ? 20 : 0,
-            max: 20,
-            desc: hasPermis ? `Permis ${c.typePermis} (Valide)` : 'Aucun permis B ou C'
-          },
-          {
-            icon: FiClock,
-            title: 'Disponibilité & Aptitudes Métier',
-            pts: (c.disponibilite ? 5 : 0) + (isPhoneValid ? 5 : 0),
-            max: 10,
-            desc: `Disponibilité : ${c.disponibilite || 'Immédiate'}`
-          }
-        ]
-      }
-    ];
-  };
-
-  const getFieldStatusTag = (val, isValid, label) => {
-    if (!val) {
-      return (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#fff7ed', color: '#c2410c', padding: '2px 8px', borderRadius: '4px', fontSize: '0.78rem', fontWeight: 'bold' }}>
-          🟠 MANQUANT
-        </span>
-      );
-    }
-    if (isValid === false) {
-      return (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#fee2e2', color: '#b91c1c', padding: '2px 8px', borderRadius: '4px', fontSize: '0.78rem', fontWeight: 'bold' }}>
-          🔴 INVALIDE
-        </span>
-      );
-    }
-    return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#dcfce7', color: '#15803d', padding: '2px 8px', borderRadius: '4px', fontSize: '0.78rem', fontWeight: 'bold' }}>
-        🟢 VALIDE
-      </span>
-    );
-  };
-
-  return (
-    <div className="agent-page">
-      {/* Header Standard comme les autres pages */}
-      <div className="page-header flex-between">
-        <div>
-          <h1>Espace des candidatures</h1>
-          <p>Analyse automatique des CVs, extraction de compétences et scoring de compatibilité.</p>
-        </div>
-        <label className="btn-primary" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>
-          <FiUploadCloud style={{ marginRight: '8px' }} />
-          {uploading ? 'Analyse en cours...' : 'Importer un CV (PDF)'}
-          <input type="file" accept=".pdf" className="hidden" onChange={handleFileUpload} disabled={uploading} style={{ display: 'none' }} />
-        </label>
-      </div>
-
-      {/* Main Card */}
-      <div className="card">
-        {/* Table Toolbar */}
-        <div className="table-toolbar flex-between" style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' }}>
-          <div className="search-box">
-            <FiSearch className="search-icon" />
-            <input 
-              type="text" 
-              placeholder="Rechercher candidat par nom, email, permis..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
-          <select 
-            value={filterRec} 
-            onChange={(e) => setFilterRec(e.target.value)}
-            className="form-select filter-select"
-            style={{ maxWidth: '240px' }}
-          >
-            <option value="ALL">Toutes les recommandations</option>
-            <option value="RECOMMANDE">🟢 Recommandé</option>
-            <option value="A_EXAMINER">🟠 À examiner</option>
-            <option value="PEU_COMPATIBLE">🔴 Peu compatible</option>
-            <option value="ACCEPTE">✅ Acceptés (Agents)</option>
-          </select>
-        </div>
-
-        {/* Data Table Standard */}
-        <div className="table-container">
-          {loading ? (
-            <div className="loading-state">Chargement des candidatures...</div>
-          ) : filtered.length === 0 ? (
-            <div className="empty-state">Aucune candidature trouvée. Importez un CV au format PDF.</div>
-          ) : (
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Candidat</th>
-                  <th>Permis</th>
-                  <th>Expérience</th>
-                  <th>Score IA</th>
-                  <th>Recommandation</th>
-                  <th>Statut</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((c) => (
-                  <tr key={c.id}>
-                    <td>
-                      <div className="user-cell">
-                        <div className="avatar-sm" style={{ background: '#3b82f6', color: '#ffffff' }}>
-                          {getInitials(c)}
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: '600' }}>
-                            {c.prenom || c.nom ? `${c.prenom || ''} ${c.nom || ''}`.trim() : c.cvFileName}
-                          </div>
-                          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{c.email || 'Sans email'}</div>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td>
-                      <span className="status-badge" style={{ background: '#f1f5f9', color: '#0369a1', fontWeight: 'bold' }}>
-                        {c.typePermis || 'Non renseigné'}
-                      </span>
-                    </td>
-
-                    <td>{c.anneesExperience != null ? `${c.anneesExperience} ans` : 'N/C'}</td>
-                    <td>{getScoreBadge(c.scoreCompatibilite || 0)}</td>
-                    <td>{getRecBadge(c.recommandation)}</td>
-                    <td>{getStatusBadge(c.statut)}</td>
-
-                    <td className="actions-cell" style={{ textAlign: 'right' }}>
-                      <button 
-                        className="btn-secondary" 
-                        onClick={() => { setSelectedCandidate(c); setNotes(c.notesSuperviseur || ''); }}
-                        style={{ padding: '6px 12px', fontSize: '0.85rem' }}
-                      >
-                        <FiEye style={{ marginRight: '6px' }} /> Examiner
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-
-      {/* Modal Détail Candidat Standard comme les autres modals du projet */}
-      {selectedCandidate && (
-        <div className="modal-overlay" onClick={() => setSelectedCandidate(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '650px' }}>
-            
-            <div className="modal-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div className="avatar-sm" style={{ width: '40px', height: '40px', fontSize: '1rem', background: '#3b82f6', color: '#ffffff' }}>
-                  {getInitials(selectedCandidate)}
-                </div>
-                <div>
-                  <h2 style={{ margin: 0 }}>
-                    {selectedCandidate.prenom || selectedCandidate.nom 
-                      ? `${selectedCandidate.prenom || ''} ${selectedCandidate.nom || ''}` 
-                      : 'Détail Candidat'}
-                  </h2>
-                  <small style={{ color: '#64748b' }}>Fichier CV : {selectedCandidate.cvFileName}</small>
-                </div>
-              </div>
-              <button className="close-btn" onClick={() => setSelectedCandidate(null)}><FiX /></button>
-            </div>
-
-            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              
-              {/* Score et Recommandation */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <div>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' }}>Score de Compatibilité IA</div>
-                  <div style={{ marginTop: '4px' }}>{getScoreBadge(selectedCandidate.scoreCompatibilite)}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' }}>Recommandation IA</div>
-                  <div style={{ marginTop: '4px' }}>{getRecBadge(selectedCandidate.recommandation)}</div>
-                </div>
-              </div>
-
-              {/* Critères de score par grandes catégories */}
-              <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '14px' }}>
-                <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '12px', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <FiBarChart2 style={{ color: '#2563eb' }} /> Décomposition des points attribués :
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  {getCriteriaSections(selectedCandidate).map((sec, sIdx) => (
-                    <div key={sIdx} style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '6px', border: '1px solid #f1f5f9' }}>
-                      <div style={{ fontSize: '0.78rem', fontWeight: 'bold', color: '#3b82f6', letterSpacing: '0.5px', marginBottom: '8px', textTransform: 'uppercase' }}>
-                        {sec.category}
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {sec.items.map((item, idx) => {
-                          const IconComp = item.icon;
-                          return (
-                            <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.83rem', padding: '4px 0', borderBottom: idx < sec.items.length - 1 ? '1px solid #e2e8f0' : 'none' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <IconComp style={{ color: '#64748b' }} />
-                                <div>
-                                  <div style={{ fontWeight: '600' }}>{item.title}</div>
-                                  <div style={{ fontSize: '0.78rem', color: '#64748b' }}>{item.desc}</div>
-                                </div>
-                              </div>
-                              <span style={{ fontWeight: 'bold', color: item.pts > 0 ? '#16a34a' : '#94a3b8', whiteSpace: 'nowrap' }}>
-                                +{item.pts} / {item.max} pts
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Résumé IA */}
-              {selectedCandidate.analyseIa && (
-                <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', padding: '12px', borderRadius: '8px', color: '#1e3a8a', fontSize: '0.85rem' }}>
-                  <strong style={{ display: 'block', marginBottom: '4px' }}>🤖 Synthèse de l'Analyse IA :</strong>
-                  {selectedCandidate.analyseIa}
-                </div>
-              )}
-
-              {/* Informations Personnelles avec statut des champs */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.85rem', background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong>CIN Tunisienne :</strong>
-                    {getFieldStatusTag(selectedCandidate.cin, selectedCandidate.cin && /^[0-9]{8}$/.test(selectedCandidate.cin))}
-                  </div>
-                  <span style={{ color: '#475569' }}>{selectedCandidate.cin || 'Non renseignée'}</span>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong>N° Permis :</strong>
-                    {getFieldStatusTag(selectedCandidate.numeroPermis, !!selectedCandidate.numeroPermis)}
-                  </div>
-                  <span style={{ color: '#475569' }}>{selectedCandidate.numeroPermis || 'Non renseigné'}</span>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong>Type de Permis :</strong>
-                    {getFieldStatusTag(selectedCandidate.typePermis, selectedCandidate.typePermis && (selectedCandidate.typePermis.includes('B') || selectedCandidate.typePermis.includes('C')))}
-                  </div>
-                  <span style={{ color: '#475569' }}>{selectedCandidate.typePermis || 'Non renseigné'}</span>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong>Expérience :</strong>
-                    {getFieldStatusTag(selectedCandidate.anneesExperience != null ? `${selectedCandidate.anneesExperience} ans` : null, selectedCandidate.anneesExperience != null && selectedCandidate.anneesExperience >= 2)}
-                  </div>
-                  <span style={{ color: '#475569' }}>{selectedCandidate.anneesExperience != null ? `${selectedCandidate.anneesExperience} ans` : 'Non renseignée'}</span>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong>Téléphone :</strong>
-                    {getFieldStatusTag(selectedCandidate.telephone, selectedCandidate.telephone && /^[2-9][0-9]{7}$/.test(selectedCandidate.telephone.replace(/[^0-9]/g, '').slice(-8)))}
-                  </div>
-                  <span style={{ color: '#475569' }}>{selectedCandidate.telephone || 'Non renseigné'}</span>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong>Email :</strong>
-                    {getFieldStatusTag(selectedCandidate.email, selectedCandidate.email && selectedCandidate.email.includes('@'))}
-                  </div>
-                  <span style={{ color: '#475569' }}>{selectedCandidate.email || 'Non renseigné'}</span>
-                </div>
-              </div>
-
-              {/* Zone Notes Superviseur */}
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>Remarques / Motif du superviseur :</label>
-                <textarea
-                  rows="2"
-                  className="form-control"
-                  style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.85rem' }}
-                  placeholder="Saisissez vos observations..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                ></textarea>
-              </div>
-
-            </div>
-
-            {/* Modal Footer Standard */}
-            <div className="modal-footer" style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', padding: '14px 20px', borderTop: '1px solid #e2e8f0' }}>
-              <button 
-                type="button" 
-                className="btn-secondary" 
-                onClick={() => handleDecision('REJETE')}
-                style={{ background: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5' }}
-              >
-                <FiXCircle style={{ marginRight: '6px' }} /> Rejeter
-              </button>
-
-              <button 
-                type="button" 
-                className="btn-secondary" 
-                onClick={() => handleDecision('EN_ENTRETIEN')}
-              >
-                <FiCalendar style={{ marginRight: '6px' }} /> Entretien
-              </button>
-
-              <button 
-                type="button" 
-                className="btn-primary" 
-                onClick={() => handleDecision('ACCEPTE')}
-                style={{ background: '#10b981', borderColor: '#059669' }}
-              >
-                <FiUserCheck style={{ marginRight: '6px' }} /> Accepter le Candidat
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
+  return <div className="agent-page candidates-page">
+    <div className="page-header flex-between">
+      <div><h1>Espace des candidatures</h1><p>Vérifier les faits du CV, comparer au profil du poste, puis décider.</p></div>
+      <label className="btn-primary">
+        <FiUploadCloud /> {busy === 'upload' ? 'Extraction en cours…' : 'Importer un CV'}
+        <input type="file" accept=".pdf,.docx" onChange={upload} disabled={!!busy} hidden />
+      </label>
     </div>
-  );
+    {error ? <p role="alert" className="candidate-notice">{error}</p> : null}
+    {profileDraft ? <details className="card candidate-profile">
+      <summary>Profil du poste · version {profile.version} · {profile.label}</summary>
+      <p>Une modification crée une nouvelle version. Les évaluations existantes restent rattachées à leur version.</p>
+      <div className="candidate-profile-inputs">
+        <label>Intitulé<input value={profileDraft.label} onChange={(e) => setProfileDraft({ ...profileDraft, label: e.target.value })} /></label>
+        <label>Permis acceptés, séparés par virgules<input value={profileDraft.acceptedLicences.join(',')}
+          onChange={(e) => setProfileDraft({ ...profileDraft, acceptedLicences: e.target.value.split(',') })} /></label>
+        <label>Cible d'expérience (années)<input type="number" min="0.1" step="0.1" value={profileDraft.experienceTargetYears}
+          onChange={(e) => setProfileDraft({ ...profileDraft, experienceTargetYears: Number(e.target.value) })} /></label>
+      </div>
+      <div className="table-container"><table className="data-table"><thead><tr><th>Critère</th><th>Points</th><th>Obligatoire</th></tr></thead><tbody>
+        {WEIGHTS.map(([weight, required, label]) => <tr key={weight}><td>{label}</td><td><input aria-label={`Points : ${label}`} type="number" min="0" max="100" value={profileDraft[weight]}
+          onChange={(e) => setProfileDraft({ ...profileDraft, [weight]: Number(e.target.value) })} /></td>
+          <td><input aria-label={`Obligatoire : ${label}`} type="checkbox" checked={profileDraft[required]} onChange={(e) => setProfileDraft({ ...profileDraft, [required]: e.target.checked })} /></td></tr>)}
+      </tbody></table></div>
+      <p>Les poids totalisent 100. L'expérience est une cible proportionnelle par défaut. Si elle devient obligatoire, aucun point n'est attribué sous son seuil.</p>
+      <button className="btn-secondary" disabled={!!busy} onClick={() => run('profile', async () => {
+        const saved = await candidateService.saveRequirements(profileDraft); setProfile(saved); setProfileDraft(saved); toast.success(`Profil version ${saved.version} enregistré.`);
+      })}>Enregistrer une nouvelle version</button>
+    </details> : null}
+    <div className="card">
+      <div className="table-toolbar flex-between">
+        <div className="search-box"><FiSearch className="search-icon" /><input aria-label="Rechercher un candidat" placeholder="Nom, email ou fichier CV…" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
+        <select aria-label="Filtrer les décisions" value={filter} onChange={(e) => setFilter(e.target.value)}><option value="ALL">Toutes les décisions</option>{Object.entries(DECISIONS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select>
+      </div>
+      <div className="table-container">{loading ? <p className="loading-state">Chargement…</p> : filtered.length === 0 ? <p className="empty-state">Aucune candidature. Importez un PDF ou DOCX.</p>
+        : <table className="data-table"><thead><tr><th>Candidat</th><th>Permis / conduite</th><th>Points confirmés</th><th>Critères requis</th><th>Décision</th><th>Action</th></tr></thead><tbody>
+          {filtered.map((candidate) => <tr key={candidate.id}><td><strong>{`${candidate.prenom || ''} ${candidate.nom || ''}`.trim() || candidate.cvFileName}</strong><small>{candidate.email || 'Email à renseigner'}</small></td>
+            <td>{candidate.typePermis || 'À vérifier'}<small>{candidate.anneesExperience == null ? 'Durée inconnue' : `${candidate.anneesExperience} an(s)`}</small></td>
+            <td><Score candidate={candidate} /><small>Profil {candidate.requirementsVersion ? `v${candidate.requirementsVersion}` : 'ancien'}</small></td>
+            <td>{REQUIRED[candidate.requiredCriteriaStatus] || 'À vérifier'}</td><td>{DECISIONS[candidate.statut] || candidate.statut}</td>
+            <td><button className="btn-secondary" onClick={() => showCandidate(candidate)}><FiEye /> Examiner</button></td></tr>)}
+        </tbody></table>}</div>
+    </div>
+
+    {selected ? <div className="modal-overlay"><div className="modal-content candidate-modal" role="dialog" aria-modal="true" aria-labelledby="candidate-title">
+      <div className="modal-header"><div><h2 id="candidate-title">{`${selected.prenom || ''} ${selected.nom || ''}`.trim() || 'Vérification du CV'}</h2><small>{selected.cvFileName}</small></div>
+        <button className="close-btn" aria-label="Fermer la candidature" disabled={!!busy} onClick={() => {
+          if ((!dirty && !notesDirty) || window.confirm('Fermer sans enregistrer les modifications ?')) setSelected(null);
+        }}><FiX /></button></div>
+      <div className="modal-body">
+        <div className="candidate-summary"><div><strong>Points confirmés</strong><div><Score candidate={selected} /></div></div>
+          <div><strong>Critères obligatoires</strong><div>{REQUIRED[selected.requiredCriteriaStatus] || 'À vérifier'}</div></div>
+          <div><strong>Profil utilisé</strong><div>{selected.requirementsVersion ? `Version ${selected.requirementsVersion}` : 'Ancien barème'}</div></div></div>
+        <p className="candidate-notice">Le score est calculé par les règles du poste à partir des champs vérifiés. Les informations manquantes restent à examiner. L'âge, le CIN et le téléphone ne donnent aucun point. La décision de recrutement reste humaine.</p>
+        {selected.extractionStatus === 'PROVIDER_UNAVAILABLE' ? <p role="status" className="candidate-notice">Le fournisseur IA est indisponible. Les champs proposés proviennent d'une extraction locale limitée ; vérifiez le CV.</p> : null}
+        {selected.extractionStatus === 'MANUAL_REVIEW_REQUIRED' ? <p role="status" className="candidate-notice">Le document ne contient pas de texte exploitable. Saisissez et vérifiez les informations manuellement.</p> : null}
+        <div className="candidate-actions"><button className="btn-secondary" disabled={!!busy} onClick={() => run('download', () => candidateService.download(selected))}><FiDownload /> Télécharger le CV</button>
+          <button className="btn-secondary" disabled={!!busy || dirty} onClick={() => run('evaluate', async () => updateCandidate(await candidateService.evaluate(selected.id)))}>Réévaluer avec le profil v{profile?.version || 'courant'}</button></div>
+        <div className="table-container"><table className="data-table"><thead><tr><th>Critère</th><th>Valeur / vérification</th><th>Points</th><th>Règle</th></tr></thead><tbody>
+          {(selected.criterionScores || []).map((criterion) => <tr key={criterion.key}><td>{criterion.label}<small>{criterion.required ? 'Obligatoire' : 'Scoring'}</small></td>
+            <td>{criterion.value ?? 'Non renseigné'}<small>{FIELD_STATES[criterion.evidenceStatus]} · {REQUIRED[criterion.requiredStatus]}</small></td>
+            <td>{criterion.points} / {criterion.maxPoints}</td><td>{criterion.explanation}</td></tr>)}
+        </tbody></table></div>
+        <h3>Vérification des informations</h3><p>Corrigez la valeur si nécessaire, puis choisissez « Vérifié ». Les extraits restent disponibles pour comparer avec le document.</p>
+        <div className="candidate-fields">{FIELDS.map(([key, label, type = 'text', placeholder]) => {
+          const field = fields[key]; const evidence = selected.fieldEvidence?.[key];
+          return <div className="candidate-field" key={key}>
+            <label htmlFor={`candidate-${key}`}>{label}</label>
+            {type === 'boolean' ? <select id={`candidate-${key}`} value={field.value} disabled={!!selected.agentId} onChange={(e) => changeField(key, 'value', e.target.value)}>
+              <option value="">Inconnu</option><option value="true">Oui</option><option value="false">Non</option></select>
+              : <input id={`candidate-${key}`} type={type} step={type === 'number' ? '0.1' : undefined} min={type === 'number' ? '0' : undefined}
+                placeholder={placeholder} value={field.value} disabled={!!selected.agentId} onChange={(e) => changeField(key, 'value', e.target.value)} />}
+            <select aria-label={`Vérification : ${label}`} value={field.status} disabled={!!selected.agentId} onChange={(e) => changeField(key, 'status', e.target.value)}>
+              {Object.entries(FIELD_STATES).map(([value, name]) => <option key={value} value={value}>{name}</option>)}
+            </select>
+            {evidence?.snippet ? <blockquote>{evidence.snippet}<cite>{evidence.location || (evidence.pageNumber ? `Page ${evidence.pageNumber}` : 'Extrait du CV')}</cite></blockquote> : <small>Aucun extrait disponible.</small>}
+            <input aria-label={`Note de vérification : ${label}`} placeholder="Note de vérification (facultative)" value={field.reviewNote} disabled={!!selected.agentId} onChange={(e) => changeField(key, 'reviewNote', e.target.value)} />
+          </div>;
+        })}</div>
+        <button className="btn-primary" disabled={!!busy || !dirty || !!selected.agentId} onClick={saveReview}><FiCheckCircle /> Enregistrer la vérification</button>
+        {dirty ? <p role="status">Enregistrez la vérification avant de prendre une décision.</p> : null}
+        {selected.evaluations?.length ? <details className="candidate-history"><summary>Historique des évaluations ({selected.evaluations.length})</summary>
+          <ul>{selected.evaluations.map((evaluation, index) => <li key={`${evaluation.evaluatedAt}-${index}`}>Profil v{evaluation.requirements?.version} · {evaluation.score}/100 · {REQUIRED[evaluation.requiredCriteriaStatus]} · {new Date(evaluation.evaluatedAt).toLocaleString('fr-FR')}</li>)}</ul>
+        </details> : null}
+        {selected.agentId ? <p className="candidate-notice">Compte chauffeur lié : <strong>{selected.agentMatricule || selected.agentId}</strong>. Ses informations se gèrent dans Agents.</p> : <p>Pour créer le chauffeur : vérifiez nom, prénom, CIN, email, téléphone, catégories, numéro et expiration du permis. Les critères obligatoires doivent être satisfaits ; deux ans de conduite restent une cible de scoring par défaut.</p>}
+        <label className="candidate-note">Notes du superviseur<textarea rows="3" value={notes} onChange={(e) => setNotes(e.target.value)} /></label>
+      </div>
+      <div className="modal-footer candidate-actions"><button className="btn-secondary" disabled={!!busy || dirty || !!selected.agentId} onClick={() => decide('REJETE')}>Rejeter</button>
+        <button className="btn-secondary" disabled={!!busy || dirty || !!selected.agentId} onClick={() => decide('EN_ENTRETIEN')}>Entretien</button>
+        <button className="btn-primary" disabled={!!busy || dirty} onClick={() => decide('ACCEPTE')}>{selected.agentId ? 'Enregistrer les notes' : 'Accepter et créer le chauffeur'}</button></div>
+    </div></div> : null}
+  </div>;
 }

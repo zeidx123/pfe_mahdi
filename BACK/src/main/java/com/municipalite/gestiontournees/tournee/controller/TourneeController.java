@@ -2,6 +2,9 @@ package com.municipalite.gestiontournees.tournee.controller;
 
 import com.municipalite.gestiontournees.tournee.dto.TourneeRequest;
 import com.municipalite.gestiontournees.tournee.dto.TourneeResponse;
+import com.municipalite.gestiontournees.tournee.dto.VisitCompletionRequest;
+import com.municipalite.gestiontournees.tournee.dto.VisitReviewRequest;
+import com.municipalite.gestiontournees.tournee.dto.FinishTourRequest;
 import com.municipalite.gestiontournees.tournee.model.StatutTournee;
 import com.municipalite.gestiontournees.tournee.service.TourneeService;
 import jakarta.validation.Valid;
@@ -42,6 +45,14 @@ public class TourneeController {
         return ResponseEntity.ok(tourneeService.getById(id));
     }
 
+    @GetMapping("/{id}/route-export")
+    @PreAuthorize("hasRole('SUPERVISEUR')")
+    public com.municipalite.gestiontournees.tournee.model.RoadRoute routeExport(@PathVariable String id) {
+        var route = tourneeService.getById(id).getRoute();
+        if (route == null) throw new org.springframework.web.server.ResponseStatusException(HttpStatus.CONFLICT, "Aucun itinéraire routier calculé");
+        return route;
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('SUPERVISEUR')")
     public ResponseEntity<TourneeResponse> create(@Valid @RequestBody TourneeRequest request) {
@@ -74,8 +85,9 @@ public class TourneeController {
     public ResponseEntity<TourneeResponse> uploadPointPhoto(
             @PathVariable String id,
             @PathVariable String pointId,
-            @RequestParam("photo") org.springframework.web.multipart.MultipartFile file) {
-        return ResponseEntity.ok(tourneeService.savePointPhoto(id, pointId, file));
+            @RequestParam("photo") org.springframework.web.multipart.MultipartFile file,
+            @RequestParam(defaultValue = "AFTER") String stage) {
+        return ResponseEntity.ok(tourneeService.savePointPhoto(id, pointId, file, stage));
     }
 
     @PostMapping(value = "/{id}/fin/photo", consumes = "multipart/form-data")
@@ -92,5 +104,36 @@ public class TourneeController {
     @PreAuthorize("hasRole('SUPERVISEUR')")
     public ResponseEntity<TourneeResponse> reoptimiser(@PathVariable String id) {
         return ResponseEntity.ok(tourneeService.reoptimiser(id));
+    }
+
+    @PostMapping("/{id}/start")
+    public TourneeResponse start(@PathVariable String id) { return tourneeService.start(id); }
+
+    @PostMapping("/{id}/finish")
+    public TourneeResponse finish(@PathVariable String id, @RequestBody FinishTourRequest request) {
+        return tourneeService.finish(id, request.isReturnedToDepot());
+    }
+
+    @PostMapping("/{id}/points/{pointId}/arrive")
+    public TourneeResponse arrive(@PathVariable String id, @PathVariable String pointId) {
+        return tourneeService.arrive(id, pointId);
+    }
+
+    @PostMapping("/{id}/points/{pointId}/complete")
+    public TourneeResponse complete(@PathVariable String id, @PathVariable String pointId,
+                                  @Valid @RequestBody VisitCompletionRequest request) {
+        return tourneeService.completeVisit(id, pointId, request);
+    }
+
+    @PostMapping("/{id}/points/{pointId}/analyse")
+    public TourneeResponse analyze(@PathVariable String id, @PathVariable String pointId) {
+        return tourneeService.analyzeVisit(id, pointId);
+    }
+
+    @PatchMapping("/{id}/points/{pointId}/review")
+    @PreAuthorize("hasRole('SUPERVISEUR')")
+    public TourneeResponse review(@PathVariable String id, @PathVariable String pointId,
+                                @Valid @RequestBody VisitReviewRequest request) {
+        return tourneeService.reviewVisit(id, pointId, request);
     }
 }

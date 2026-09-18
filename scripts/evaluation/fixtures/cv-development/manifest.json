@@ -1,0 +1,77 @@
+{
+  "datasetVersion": "fictional-cv-development-v1",
+  "datasetKind": "SYNTHETIC_DEVELOPMENT",
+  "profileVersion": 1,
+  "labelProvenance": {
+    "kind": "AUTHORED_SYNTHETIC",
+    "description": "Fictional CVs and reference expectations authored for software development. No independent human review, real applicant, or final evaluation dataset. Expectations were authored before requesting provider predictions.",
+    "independentOfPredictions": true,
+    "independentHumanReview": false
+  },
+  "cases": [
+    {
+      "id": "fictional-cv-dev-01",
+      "file": "fictional-driver-c.docx",
+      "split": "development",
+      "authoredBy": "Codex synthetic fixture author",
+      "authoredAt": "2026-09-17",
+      "documentSha256": "1d71fa6680c29449776f227f28b6eb79e49df3076b88fbe18aec51870d203d30",
+      "expectedFields": {
+        "typePermis": "C",
+        "anneesExperience": 1.0,
+        "formationSecurite": true,
+        "experienceCollecteConfirmee": false,
+        "cin": null,
+        "telephone": null
+      },
+      "expectedFieldStatuses": {
+        "typePermis": "UNCERTAIN",
+        "anneesExperience": "UNCERTAIN",
+        "formationSecurite": "UNCERTAIN",
+        "experienceCollecteConfirmee": "UNCERTAIN",
+        "cin": "MISSING",
+        "telephone": "MISSING"
+      },
+      "reviewedFields": {
+        "typePermis": "C",
+        "anneesExperience": 1.0,
+        "formationSecurite": true,
+        "experienceCollecteConfirmee": false
+      },
+      "expectedScore": 70,
+      "expectedRequiredCriteriaStatus": "MET"
+    },
+    {
+      "id": "fictional-cv-dev-02",
+      "file": "fictional-driver-b.docx",
+      "split": "development",
+      "authoredBy": "Codex synthetic fixture author",
+      "authoredAt": "2026-09-17",
+      "documentSha256": "c0263116126d64d6609f4ba310ba3a4e562e58cac5d05d1c0665cba10d0d5708",
+      "expectedFields": {
+        "typePermis": "B",
+        "anneesExperience": 0.5,
+        "formationSecurite": false,
+        "experienceCollecteConfirmee": false,
+        "cin": null,
+        "telephone": "123"
+      },
+      "expectedFieldStatuses": {
+        "typePermis": "UNCERTAIN",
+        "anneesExperience": "UNCERTAIN",
+        "formationSecurite": "UNCERTAIN",
+        "experienceCollecteConfirmee": "UNCERTAIN",
+        "cin": "MISSING",
+        "telephone": "INVALID"
+      },
+      "reviewedFields": {
+        "typePermis": "B",
+        "anneesExperience": 0.5,
+        "formationSecurite": false,
+        "experienceCollecteConfirmee": false
+      },
+      "expectedScore": 10,
+      "expectedRequiredCriteriaStatus": "UNMET"
+    }
+  ]
+}

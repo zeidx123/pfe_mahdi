@@ -1,5 +1,8 @@
 package com.municipalite.gestiontournees.reclamation.model;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,8 +20,11 @@ import java.time.LocalDateTime;
 public class Reclamation {
     @Id
     private String id;
+    @NotBlank @Size(max = 200)
     private String titre;
+    @NotBlank @Pattern(regexp = "PANNE_MECANIQUE|ROUTE_BLOQUEE|BAC_DEGRADE|AUTRE")
     private String type; // PANNE_MECANIQUE, ROUTE_BLOQUEE, BAC_DEGRADE, AUTRE
+    @NotBlank @Size(max = 5000)
     private String description;
     private String chauffeurId;
     private String chauffeurNom;

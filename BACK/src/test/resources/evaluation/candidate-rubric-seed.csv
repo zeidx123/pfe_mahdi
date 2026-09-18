@@ -1,0 +1,9 @@
+case,licence,licenceState,years,experienceState,safety,collection,expectedScore,expectedRequiredStatus
+full_profile,C,VERIFIED,2,VERIFIED,true,true,100,MET
+one_year_target,C,VERIFIED,1,VERIFIED,false,false,60,MET
+six_months_target,CE,VERIFIED,0.5,VERIFIED,false,false,50,MET
+licence_unmet,B,VERIFIED,5,VERIFIED,true,true,60,UNMET
+licence_missing,,MISSING,2,VERIFIED,false,false,40,NEEDS_REVIEW
+experience_uncertain,C,VERIFIED,3,UNCERTAIN,false,false,40,MET
+zero_experience,C,VERIFIED,0,VERIFIED,false,false,40,MET
+uncertain_licence,C,UNCERTAIN,1.5,VERIFIED,false,false,30,NEEDS_REVIEW

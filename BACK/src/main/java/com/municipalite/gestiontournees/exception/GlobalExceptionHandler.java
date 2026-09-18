@@ -28,6 +28,41 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<ApiError> handleAuthentication(org.springframework.security.core.AuthenticationException ex) {
+        return error(HttpStatus.UNAUTHORIZED, "Identifiants invalides ou compte désactivé");
+    }
+
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<ApiError> handleStatus(org.springframework.web.server.ResponseStatusException ex) {
+        return ResponseEntity.status(ex.getStatusCode()).body(ApiError.builder()
+                .status(ex.getStatusCode().value()).message(ex.getReason())
+                .timestamp(LocalDateTime.now()).build());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> handleInvalidArgument(IllegalArgumentException ex) {
+        return error(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    private ResponseEntity<ApiError> error(HttpStatus status, String message) {
+        return ResponseEntity.status(status).body(ApiError.builder().status(status.value())
+                .message(message).timestamp(LocalDateTime.now()).build());
+    }
+
+    @ExceptionHandler({org.springframework.http.converter.HttpMessageNotReadableException.class,
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
+            org.springframework.web.bind.MissingServletRequestParameterException.class,
+            org.springframework.web.multipart.support.MissingServletRequestPartException.class})
+    public ResponseEntity<ApiError> handleMalformedRequest(Exception ex) {
+        return error(HttpStatus.BAD_REQUEST, "Requête invalide : vérifiez les champs et leur format");
+    }
+
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleMissingResource(Exception ex) {
+        return error(HttpStatus.NOT_FOUND, "Ressource introuvable");
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationErrors(MethodArgumentNotValidException ex) {
         List<String> errors = ex.getBindingResult().getFieldErrors()

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'services/api_service.dart';
 import 'services/auth_service.dart';
@@ -11,9 +11,18 @@ import 'pages/onboarding_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  ApiService.init();
+  await ApiService.init();
+  ApiService.sessionExpired.addListener(() async {
+    if (ApiService.sessionExpired.value) {
+      await AuthService.logout();
+      appNavigator.currentState
+          ?.pushNamedAndRemoveUntil('/login', (_) => false);
+    }
+  });
   runApp(const GestiCollecteApp());
 }
+
+final appNavigator = GlobalKey<NavigatorState>();
 
 class GestiCollecteApp extends StatelessWidget {
   const GestiCollecteApp({super.key});
@@ -21,6 +30,7 @@ class GestiCollecteApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: appNavigator,
       title: 'GestiCollecte',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -32,8 +42,16 @@ class GestiCollecteApp extends StatelessWidget {
         fontFamily: 'Roboto',
         appBarTheme: const AppBarTheme(centerTitle: false),
       ),
-      home: const _SplashRouter(),
+      // A browser refresh has no Navigator arguments. Restore the driver
+      // session first, then reopen tours from their persisted assignments.
+      onGenerateInitialRoutes: (_) => [
+        MaterialPageRoute<void>(
+          settings: const RouteSettings(name: '/'),
+          builder: (_) => const _SplashRouter(),
+        ),
+      ],
       routes: {
+        '/': (_) => const _SplashRouter(),
         '/onboarding': (_) => const OnboardingPage(),
         '/login': (_) => const LoginPage(),
         '/home': (_) => const HomePage(),
@@ -94,9 +112,15 @@ class _SplashRouterState extends State<_SplashRouter> {
             children: [
               Icon(Icons.local_shipping_rounded, size: 80, color: Colors.white),
               SizedBox(height: 20),
-              Text('GestiCollecte', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -1)),
+              Text('GestiCollecte',
+                  style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: -1)),
               SizedBox(height: 8),
-              Text('Espace Chauffeur', style: TextStyle(fontSize: 16, color: Colors.white70)),
+              Text('Espace Chauffeur',
+                  style: TextStyle(fontSize: 16, color: Colors.white70)),
               SizedBox(height: 48),
               CircularProgressIndicator(color: Colors.white54, strokeWidth: 2),
             ],

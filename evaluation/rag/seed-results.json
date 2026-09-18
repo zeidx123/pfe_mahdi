@@ -1,0 +1,65 @@
+{
+  "fixtureVersion" : "rag-seed-v1",
+  "reviewStatus" : "AUTHOR_LABELLED_NOT_INDEPENDENTLY_REVIEWED",
+  "mode" : "LEXICAL_BM25",
+  "providerCalls" : 0,
+  "questionCount" : 10,
+  "answerableCount" : 8,
+  "recallAt3" : 1.0,
+  "mrrAt3" : 1.0,
+  "unanswerableCount" : 2,
+  "unanswerableEmptyRetrievalCount" : 2,
+  "semanticAndHybridEvaluation" : "NOT_RUN: compatible real document/query embeddings are required",
+  "answerGroundingAndCitationSupport" : "NOT_RUN: generation and independent manual review are required",
+  "rows" : [ {
+    "questionId" : "q1",
+    "retrievedIds" : [ "access" ],
+    "latencyMs" : 16.250866,
+    "relevantIds" : [ "access" ]
+  }, {
+    "questionId" : "q2",
+    "retrievedIds" : [ "photo", "resume", "uncertain" ],
+    "latencyMs" : 1.655302,
+    "relevantIds" : [ "photo" ]
+  }, {
+    "questionId" : "q3",
+    "retrievedIds" : [ "resume", "photo", "uncertain" ],
+    "latencyMs" : 1.464403,
+    "relevantIds" : [ "resume" ]
+  }, {
+    "questionId" : "q4",
+    "retrievedIds" : [ "depot" ],
+    "latencyMs" : 1.128981,
+    "relevantIds" : [ "depot" ]
+  }, {
+    "questionId" : "q5",
+    "retrievedIds" : [ "uncertain" ],
+    "latencyMs" : 0.924138,
+    "relevantIds" : [ "uncertain" ]
+  }, {
+    "questionId" : "q6",
+    "retrievedIds" : [ "outage" ],
+    "latencyMs" : 1.14069,
+    "relevantIds" : [ "outage" ]
+  }, {
+    "questionId" : "q7",
+    "retrievedIds" : [ "photo" ],
+    "latencyMs" : 1.19049,
+    "relevantIds" : [ "photo" ]
+  }, {
+    "questionId" : "q8",
+    "retrievedIds" : [ "resume" ],
+    "latencyMs" : 1.1314,
+    "relevantIds" : [ "resume" ]
+  }, {
+    "questionId" : "q9",
+    "retrievedIds" : [ ],
+    "latencyMs" : 0.994785,
+    "relevantIds" : [ ]
+  }, {
+    "questionId" : "q10",
+    "retrievedIds" : [ ],
+    "latencyMs" : 0.794258,
+    "relevantIds" : [ ]
+  } ]
+}

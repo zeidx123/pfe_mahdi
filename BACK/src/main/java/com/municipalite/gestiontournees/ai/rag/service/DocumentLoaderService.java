@@ -9,7 +9,7 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.*;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -34,6 +34,8 @@ public class DocumentLoaderService {
     public static class ExtractedPage {
         private int pageNumber;
         private String text;
+        private String sectionTitle;
+        public ExtractedPage(int pageNumber, String text) { this(pageNumber, text, null); }
     }
 
     /**
@@ -71,29 +73,30 @@ public class DocumentLoaderService {
     }
 
     private List<ExtractedPage> extractFromDocx(File file) throws IOException {
-        List<ExtractedPage> pages = new ArrayList<>();
-        try (FileInputStream fis = new FileInputStream(file);
-             XWPFDocument document = new XWPFDocument(fis)) {
-            
-            StringBuilder sb = new StringBuilder();
-            int pageEstimate = 1;
-
-            for (XWPFParagraph p : document.getParagraphs()) {
-                String text = p.getText().trim();
-                if (!text.isEmpty()) {
-                    sb.append(text).append("\n");
-                    // Simulation de fin de page toutes les ~2500 caractres
-                    if (sb.length() > 2500) {
-                        pages.add(new ExtractedPage(pageEstimate++, sb.toString().trim()));
-                        sb.setLength(0);
+        List<ExtractedPage> sections = new ArrayList<>();
+        try (FileInputStream fis = new FileInputStream(file); XWPFDocument document = new XWPFDocument(fis)) {
+            String heading = "Document";
+            int paragraph = 0;
+            int tableNumber = 0;
+            for (IBodyElement element : document.getBodyElements()) {
+                if (element instanceof XWPFParagraph p) {
+                    paragraph++;
+                    String text = p.getText().trim();
+                    if (text.isEmpty()) continue;
+                    if (p.getStyle() != null && p.getStyle().toLowerCase().matches(".*(heading|titre).*")) heading = text;
+                    sections.add(new ExtractedPage(0, text, heading + " — paragraphe " + paragraph));
+                } else if (element instanceof XWPFTable table) {
+                    tableNumber++;
+                    int rowNumber = 0;
+                    for (XWPFTableRow row : table.getRows()) {
+                        rowNumber++;
+                        String text = row.getTableCells().stream().map(XWPFTableCell::getText).collect(java.util.stream.Collectors.joining(" | ")).trim();
+                        if (!text.isBlank()) sections.add(new ExtractedPage(0, text, heading + " — tableau " + tableNumber + ", ligne " + rowNumber));
                     }
                 }
             }
-            if (sb.length() > 0) {
-                pages.add(new ExtractedPage(pageEstimate, sb.toString().trim()));
-            }
         }
-        return pages;
+        return sections;
     }
 
     private List<ExtractedPage> extractFromTxt(File file) throws IOException {
@@ -108,12 +111,12 @@ public class DocumentLoaderService {
         for (int i = 0; i < len; i += pageSize) {
             String pageText = content.substring(i, Math.min(len, i + pageSize)).trim();
             if (!pageText.isEmpty()) {
-                pages.add(new ExtractedPage(pageNumber++, pageText));
+                pages.add(new ExtractedPage(0, pageText, "Texte — segment " + pageNumber++));
             }
         }
 
         if (pages.isEmpty() && !content.trim().isEmpty()) {
-            pages.add(new ExtractedPage(1, content.trim()));
+            pages.add(new ExtractedPage(0, content.trim(), "Texte"));
         }
 
         return pages;

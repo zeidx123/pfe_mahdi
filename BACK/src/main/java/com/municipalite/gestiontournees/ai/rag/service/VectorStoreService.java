@@ -13,13 +13,18 @@ import java.util.List;
  */
 public interface VectorStoreService {
 
+    enum RetrievalMode { LEXICAL, SEMANTIC, HYBRID }
+
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     class ScoredChunk {
         private DocumentChunk chunk;
-        private double score; // Score de similarité combiné (0.0 à 1.0)
+        private double score;
+        private String retrievalMode;
+
+        public ScoredChunk(DocumentChunk chunk, double score) { this(chunk, score, null); }
     }
 
     void saveChunk(DocumentChunk chunk);
@@ -29,4 +34,6 @@ public interface VectorStoreService {
     List<ScoredChunk> searchSimilar(String queryText, List<Float> queryEmbedding, int topK, double minSimilarityThreshold);
 
     void deleteByDocumentId(String documentId);
+
+    int usableChunkCount(String documentId);
 }

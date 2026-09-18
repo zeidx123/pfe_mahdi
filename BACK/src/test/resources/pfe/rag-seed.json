@@ -1,0 +1,25 @@
+{
+  "version": "rag-seed-v1",
+  "reviewStatus": "AUTHOR_LABELLED_NOT_INDEPENDENTLY_REVIEWED",
+  "description": "Synthetic educational examples, not approved municipal procedures. For retrieval harness development only.",
+  "documents": [
+    {"id":"access","content":"Exercice pédagogique : en présence d'un obstacle bloquant l'accès, le code de suivi est ACCES. Le superviseur examine le signalement."},
+    {"id":"photo","content":"Exercice pédagogique : une photo APRÈS est nécessaire pour confirmer une collecte normale. Une photo AVANT reste facultative."},
+    {"id":"resume","content":"Exercice pédagogique : après redémarrage, la tournée reprend à partir des étapes enregistrées sur le serveur."},
+    {"id":"depot","content":"Exercice pédagogique : la tournée commence au dépôt configuré et termine par un retour au même dépôt."},
+    {"id":"uncertain","content":"Exercice pédagogique : une image floue conduit à CANNOT_DETERMINE. Le superviseur peut corriger l'observation après vérification."},
+    {"id":"outage","content":"Exercice pédagogique : si le fournisseur est indisponible, le résultat est ANALYSIS_UNAVAILABLE. Aucune propreté ne doit être déduite de cette panne."}
+  ],
+  "questions": [
+    {"id":"q1","question":"Quel code signale un obstacle bloquant l'accès ?","relevantIds":["access"]},
+    {"id":"q2","question":"La photo APRÈS est-elle nécessaire ?","relevantIds":["photo"]},
+    {"id":"q3","question":"Comment reprendre après redémarrage ?","relevantIds":["resume"]},
+    {"id":"q4","question":"Le retour au dépôt est-il prévu ?","relevantIds":["depot"]},
+    {"id":"q5","question":"Que signifie une image floue ?","relevantIds":["uncertain"]},
+    {"id":"q6","question":"Quel résultat si le fournisseur est indisponible ?","relevantIds":["outage"]},
+    {"id":"q7","question":"La photo AVANT est-elle facultative ?","relevantIds":["photo"]},
+    {"id":"q8","question":"Où sont enregistrées les étapes ?","relevantIds":["resume"]},
+    {"id":"q9","question":"Quel est le salaire annuel ?","relevantIds":[]},
+    {"id":"q10","question":"Quelle température pour les pneus ?","relevantIds":[]}
+  ]
+}

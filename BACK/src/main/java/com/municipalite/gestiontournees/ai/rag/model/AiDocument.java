@@ -31,6 +31,12 @@ public class AiDocument {
     private int chunkCount;
     private String errorMessage;
     
+    private boolean approved;
+    private String approvedBy;
+    private LocalDateTime approvedAt;
+    private String embeddingModel;
+    private String embeddingVersion;
+    private Integer embeddingDimensions;
     private String uploadedBy;
     private LocalDateTime createdAt;
     private LocalDateTime indexedAt;
@@ -39,6 +45,7 @@ public class AiDocument {
         UPLOADED,
         PROCESSING,
         INDEXED,
+        TEXT_READY,
         FAILED
     }
 }

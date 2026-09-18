@@ -54,4 +54,13 @@ public class TourneeResponse {
     // Photos terrain
     private java.util.Map<String, String> photosPoints;
     private String photoFin;
+    private List<com.municipalite.gestiontournees.tournee.model.TourneeVisit> visits;
+    private com.municipalite.gestiontournees.tournee.model.RoadRoute route;
+    private String routeError;
+    private boolean returnedToDepot;
+    private Double estimatedAtStartSeconds;
+    private Double estimatedServiceAtStartSeconds;
+    private Long actualDurationSeconds;
+    private Long observedServiceSeconds;
+    private Integer measuredServiceStops;
 }

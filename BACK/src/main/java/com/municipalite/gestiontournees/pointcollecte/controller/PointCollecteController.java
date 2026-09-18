@@ -4,6 +4,7 @@ import com.municipalite.gestiontournees.pointcollecte.dto.PointCollecteRequest;
 import com.municipalite.gestiontournees.pointcollecte.dto.PointCollecteResponse;
 import com.municipalite.gestiontournees.pointcollecte.service.PointCollecteService;
 import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class PointCollecteController {
     }
 
     @PostMapping
-    public ResponseEntity<PointCollecteResponse> create(@Valid @RequestBody PointCollecteRequest request) {
+    public ResponseEntity<PointCollecteResponse> create(@Validated({PointCollecteRequest.Create.class, jakarta.validation.groups.Default.class}) @RequestBody PointCollecteRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(pointCollecteService.create(request));
     }
 

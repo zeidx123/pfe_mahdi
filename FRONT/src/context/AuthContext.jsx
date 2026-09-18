@@ -14,32 +14,19 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
 
     if (token) {
       try {
         const userData = await authService.getMe();
+        if (userData.role !== 'SUPERVISEUR') throw new Error('Compte superviseur requis');
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
         setIsAuthenticated(true);
-      } catch (error) {
-        console.error('Erreur lors de la vérification de session', error);
-        if (storedUser) {
-          try {
-            setUser(JSON.parse(storedUser));
-            setIsAuthenticated(true);
-          } catch (e) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            setUser(null);
-            setIsAuthenticated(false);
-          }
-        } else {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          setUser(null);
-          setIsAuthenticated(false);
-        }
+      } catch {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+        setIsAuthenticated(false);
       }
     } else {
       setUser(null);
@@ -50,6 +37,11 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const data = await authService.login(email, password);
+    if (data.role !== 'SUPERVISEUR') {
+      const error = new Error("L'application web est réservée aux superviseurs. Utilisez l'application mobile chauffeur.");
+      error.response = { status: 403, data: { message: error.message } };
+      throw error;
+    }
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data));
     setUser(data);
