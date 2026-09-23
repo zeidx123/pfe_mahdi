@@ -61,8 +61,12 @@ public class Candidate {
     private String legacyRecommandation;
     private String agentId;
     private String agentMatricule;
-    private String extractionStatus; // EXTRACTED, PROVIDER_UNAVAILABLE, MANUAL_REVIEW_REQUIRED, LEGACY_REVIEW_REQUIRED
+    private String extractionStatus; // EXTRACTED, PROVIDER_UNAVAILABLE, INVALID_RESPONSE, MANUAL_REVIEW_REQUIRED, LEGACY_REVIEW_REQUIRED
+    private String extractionFailureCategory;
+    private Integer extractionHttpStatus;
+    private String extractionError; // Sanitized explanation only; no provider body or CV content.
     private String extractionModel;
+    private String extractionProvider;
     private String extractionPromptVersion;
     private Boolean formationSecurite;
     private Boolean experienceCollecteConfirmee;

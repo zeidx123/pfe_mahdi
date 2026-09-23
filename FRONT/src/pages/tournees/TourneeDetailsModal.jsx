@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { FiX, FiMapPin, FiCalendar, FiTruck, FiUser, FiCamera, FiCheck, FiAlertTriangle, FiRefreshCw, FiFileText } from 'react-icons/fi';
@@ -12,10 +12,17 @@ const assessmentLabels = {
   OBSTRUCTED: 'Point obstrué', CANNOT_DETERMINE: 'Impossible à déterminer', ANALYSIS_UNAVAILABLE: 'Analyse indisponible',
 };
 const visitLabels = { PENDING: 'À visiter', ARRIVED: 'Arrivé', COMPLETED_REPORTED: 'Collecte déclarée', ISSUE_REPORTED: 'Problème signalé' };
+const tourStatusLabels = { PLANIFIEE: 'Planifiée', EN_COURS: 'En cours', TERMINEE: 'Terminée', ANNULEE: 'Annulée' };
 const algorithmLabels = { MANUAL: 'Ordre manuel', NN: 'Plus proche voisin', NN_2OPT: 'Plus proche voisin + 2-opt', EXACT: 'Exact (Held–Karp)' };
 const seconds = value => Number.isFinite(value) ? `${(value / 60).toFixed(1)} min` : 'Non mesuré';
 const kilometers = value => Number.isFinite(value) ? `${(value / 1000).toFixed(2)} km` : 'Non disponible';
-const when = value => value ? new Date(value).toLocaleString('fr-FR') : 'Non enregistré';
+const when = value => value && !Number.isNaN(new Date(value).getTime()) ? new Date(value).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }) : 'Non enregistré';
+const plannedWhen = (date, time) => {
+  if (!date) return 'Date non renseignée';
+  const planned = new Date(`${date}T${time || '00:00:00'}`);
+  if (Number.isNaN(planned.getTime())) return 'Date non renseignée';
+  return `${planned.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}${time ? ` · ${planned.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}` : ''}`;
+};
 const coordinate = point => Number.isFinite(point?.latitude) && Number.isFinite(point?.longitude) && Math.abs(point.latitude) <= 90 && Math.abs(point.longitude) <= 180 ? [point.latitude, point.longitude] : null;
 
 function FitRoute({ coordinates }) {
@@ -35,9 +42,9 @@ function RouteMap({ route, points }) {
   return <MapContainer center={visible[0]} zoom={13} style={{ height: 290, width: '100%', borderRadius: 10 }} scrollWheelZoom={false}>
     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
     <FitRoute coordinates={visible} />
-    {geometry.length > 0 && <Polyline positions={geometry} pathOptions={{ color: '#0369a1', weight: 4 }} />}
-    {depot && <CircleMarker center={depot} radius={9} pathOptions={{ color: '#4338ca', fillOpacity: 1 }}><Popup>{route.depot?.label || 'Dépôt'} · départ et retour</Popup></CircleMarker>}
-    {points.map((point, i) => coordinate(point) && <CircleMarker key={point.id} center={coordinate(point)} radius={7} pathOptions={{ color: '#059669', fillOpacity: 1 }}><Popup>{i + 1}. {point.reference}<br />{point.adresse}</Popup></CircleMarker>)}
+    {geometry.length > 0 && <Polyline positions={geometry} pathOptions={{ color: '#209b75', weight: 4 }} />}
+    {depot && <CircleMarker center={depot} radius={9} pathOptions={{ color: '#22313e', fillOpacity: 1 }}><Popup>{route.depot?.label || 'Dépôt'} · départ et retour</Popup></CircleMarker>}
+    {points.map((point, i) => coordinate(point) && <CircleMarker key={point.id} center={coordinate(point)} radius={7} pathOptions={{ color: '#187d5e', fillOpacity: 1 }}><Popup>{i + 1}. {point.reference}<br />{point.adresse}</Popup></CircleMarker>)}
   </MapContainer>;
 }
 
@@ -63,7 +70,7 @@ function VisitEvidence({ tourId, point, visit, onRefresh, onZoom }) {
     <div className="visit-heading">
       <span className="point-number">{(visit.order ?? 0) + 1}</span>
       <div className="point-info"><strong>{point.reference || point.id}</strong><span>{point.adresse}</span></div>
-      <span className={visit.status === 'ISSUE_REPORTED' ? 'badge-pending' : handled ? 'badge-valid' : 'badge-pending'}>
+      <span className={visit.status === 'ISSUE_REPORTED' ? 'badge-issue' : handled ? 'badge-valid' : 'badge-pending'}>
         {handled && visit.status !== 'ISSUE_REPORTED' ? <FiCheck /> : <FiAlertTriangle />} {historyMissing ? 'Suivi historique non renseigné' : visitLabels[visit.status] || 'Historique sans suivi de visite'}
       </span>
     </div>
@@ -97,6 +104,24 @@ function VisitEvidence({ tourId, point, visit, onRefresh, onZoom }) {
 export default function TourneeDetailsModal({ isOpen, onClose, tournee, onRefresh }) {
   const [zoomedImage, setZoomedImage] = useState(null);
   const [reoptimising, setReoptimising] = useState(false);
+  const closeButtonRef = useRef(null);
+  const zoomCloseButtonRef = useRef(null);
+  const tourId = tournee?.id;
+
+  useEffect(() => {
+    if (!isOpen || !tourId) return;
+    const previousFocus = document.activeElement;
+    closeButtonRef.current?.focus();
+    return () => { if (previousFocus?.isConnected) previousFocus.focus(); };
+  }, [isOpen, tourId]);
+
+  useEffect(() => {
+    if (!zoomedImage) return;
+    const previousFocus = document.activeElement;
+    zoomCloseButtonRef.current?.focus();
+    return () => { if (previousFocus?.isConnected) previousFocus.focus(); };
+  }, [zoomedImage]);
+
   if (!isOpen || !tournee) return null;
   const route = tournee.route;
   const points = tournee.pointsCollecte || [];
@@ -111,6 +136,26 @@ export default function TourneeDetailsModal({ isOpen, onClose, tournee, onRefres
   const estimate = tournee.estimatedAtStartSeconds ?? route?.totalSeconds;
   const actual = tournee.actualDurationSeconds;
   const difference = Number.isFinite(actual) && Number.isFinite(estimate) ? actual - estimate : null;
+
+  const handleDialogKeyDown = event => {
+    if (event.key === 'Escape') {
+      event.stopPropagation();
+      if (zoomedImage) setZoomedImage(null);
+      else onClose();
+    }
+    if (event.key !== 'Tab') return;
+    const container = zoomedImage ? event.currentTarget.querySelector('.image-zoom-overlay') : event.currentTarget;
+    const controls = [...container.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])')];
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!controls.includes(document.activeElement) || (!event.shiftKey && document.activeElement === last)) {
+      event.preventDefault();
+      first?.focus();
+    }
+  };
 
   const handleDownloadPdf = async () => {
     try { await rapportService.downloadTourneePdf(tournee.id, tournee.reference); toast.success('Rapport PDF téléchargé'); }
@@ -131,24 +176,29 @@ export default function TourneeDetailsModal({ isOpen, onClose, tournee, onRefres
   };
 
   return <div className="modal-overlay">
-    <div className="modal-content modal-lg tour-execution-detail" role="dialog" aria-modal="true" aria-labelledby="tour-detail-title">
+    <div className="modal-content modal-lg tour-execution-detail" role="dialog" aria-modal="true" aria-labelledby="tour-detail-title" aria-describedby="tour-detail-description" onKeyDown={handleDialogKeyDown}>
       <div className="modal-header">
-        <h2 id="tour-detail-title">Tournée {tournee.reference}</h2>
-        <button className="btn-secondary" onClick={handleDownloadPdf}><FiFileText /> Rapport PDF</button>
-        <button className="close-btn" onClick={onClose} aria-label="Fermer les détails"><FiX /></button>
+        <div className="tour-detail-heading">
+          <h2 id="tour-detail-title"><span className="tour-detail-reference">{tournee.reference || 'Tournée de collecte'}</span>{tournee.nom || 'Détails de la tournée'}</h2>
+          <p id="tour-detail-description" className="modal-subtitle">Parcours, avancement de la collecte et revue des observations.</p>
+        </div>
+        <div className="tour-detail-header-actions">
+          <button type="button" className="btn-secondary" onClick={handleDownloadPdf}><FiFileText aria-hidden="true" /> Rapport PDF</button>
+          <button ref={closeButtonRef} type="button" className="close-btn" onClick={onClose} aria-label="Fermer les détails"><FiX aria-hidden="true" /></button>
+        </div>
       </div>
       <div className="modal-body" style={{ maxHeight: 'calc(100vh - 160px)', overflowY: 'auto' }}>
         <div className="info-grid-details">
-          <div className="info-card"><FiCalendar /><div><span>Date prévue</span><strong>{tournee.datePrevue} {tournee.heureDepartPrevue || ''}</strong></div></div>
+          <div className="info-card"><FiCalendar /><div><span>Date prévue</span><strong>{plannedWhen(tournee.datePrevue, tournee.heureDepartPrevue)}</strong></div></div>
           <div className="info-card"><FiTruck /><div><span>Camion</span><strong>{tournee.camionMatricule || 'Non affecté'}</strong></div></div>
           <div className="info-card"><FiUser /><div><span>Chauffeur</span><strong>{tournee.chauffeurNomComplet || 'Non affecté'}</strong></div></div>
-          <div className="info-card"><FiMapPin /><div><span>{tournee.statut || 'Statut inconnu'}</span><strong>{historyMissing ? `${completed} visite(s) confirmée(s) · historique incomplet` : `${completed} / ${visits.length} points traités`}</strong></div></div>
+          <div className="info-card"><FiMapPin /><div><span>{tourStatusLabels[tournee.statut] || 'Statut non renseigné'}</span><strong>{historyMissing ? `${completed} visite(s) confirmée(s) · historique incomplet` : `${completed} / ${visits.length} points traités`}</strong></div></div>
         </div>
         {historyMissing && <p className="notes-box">Le suivi de certains points n’a pas été enregistré dans cette ancienne tournée. Leur avancement historique reste inconnu ; les photos historiques sans étape précisée ne sont pas considérées comme des photos APRÈS.</p>}
         {tournee.description && <p className="notes-box">{tournee.description}</p>}
         <section className="optim-card">
-          <div className="optim-header"><h3>Parcours routier — départ et retour au dépôt</h3>
-            <button className="btn-primary" onClick={handleReoptimiser} disabled={reoptimising || tournee.statut !== 'PLANIFIEE'}><FiRefreshCw /> {reoptimising ? 'Calcul…' : 'Calculer / comparer'}</button>
+          <div className="optim-header"><div><h3>Parcours routier</h3><p className="field-help">Départ et retour au dépôt configuré</p></div>
+            <button className="btn-primary" onClick={handleReoptimiser} disabled={reoptimising || tournee.statut !== 'PLANIFIEE'}><FiRefreshCw /> {reoptimising ? 'Calcul en cours…' : 'Calculer et comparer'}</button>
           </div>
           {tournee.routeError && <p role="alert" className="notes-box">{tournee.routeError}</p>}
           {route ? <>
@@ -185,38 +235,73 @@ export default function TourneeDetailsModal({ isOpen, onClose, tournee, onRefres
         </section>
         {tournee.photoFin && <section><h3>Photo de fin de service (facultative)</h3><ProtectedImage path={tournee.photoFin} alt="Fin de service" className="evidence-image" onZoom={setZoomedImage} /></section>}
       </div>
-      {zoomedImage && <div className="image-zoom-overlay" role="dialog" aria-label="Photo de collecte agrandie" onClick={() => setZoomedImage(null)}>
-        <button className="close-zoom-btn" onClick={() => setZoomedImage(null)} aria-label="Fermer la photo"><FiX /></button>
+      {zoomedImage && <div className="image-zoom-overlay" role="dialog" aria-modal="true" aria-label="Photo de collecte agrandie" onClick={() => setZoomedImage(null)}>
+        <button ref={zoomCloseButtonRef} type="button" className="close-zoom-btn" onClick={() => setZoomedImage(null)} aria-label="Fermer la photo"><FiX /></button>
         <ProtectedImage path={zoomedImage} alt="Preuve de collecte agrandie" className="zoomed-img" />
       </div>}
     </div>
     <style>{`
-      .tour-execution-detail { max-width: 1050px; }
-      .tour-execution-detail h3 { font-size: 16px; margin: 0 0 12px; }
-      .tour-execution-detail section { margin: 20px 0; }
-      .info-grid-details { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 12px; }
-      .info-card { display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; }
-      .info-card svg { color: #0369a1; }.info-card span { display: block; font-size: 12px; color: #64748b; }
-      .notes-box { background: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 6px; padding: 12px; }
-      .optim-card { background: #eff6ff; border: 1px solid #bfdbfe; padding: 16px; border-radius: 12px; }
-      .optim-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-      .optim-header button { display: flex; align-items: center; gap: 6px; }
-      .optim-metrics { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 10px; margin: 12px 0; }
-      .optim-metrics > div { background: white; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; }
-      .optim-metrics span { display: block; color: #64748b; font-size: 12px; }.optim-metrics strong { display: block; font-size: 18px; margin-top: 4px; }
-      .visit-meta { font-size: 12px; color: #64748b; line-height: 1.5; margin: 10px 0; }
-      .selected-route { background: #dbeafe; }.visit-evidence { border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 12px 0; }
-      .visit-evidence.handled { border-color: #a7f3d0; }.visit-heading { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-      .point-number { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #e0f2fe; }
-      .point-info { display: flex; flex-direction: column; flex: 1; }.point-info span { color: #64748b; font-size: 12px; }
-      .badge-valid,.badge-pending { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }.badge-valid { color: #166534; }.badge-pending { color: #92400e; }
-      .evidence-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 14px; }.evidence-grid figure { margin: 0; }.evidence-grid figcaption { font-size: 12px; margin-bottom: 6px; }
-      .evidence-image { display: block; width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; background: #f1f5f9; }
-      .evidence-zoom-button { border: none; padding: 0; background: none; cursor: zoom-in; width: 100%; }
-      .visit-assessments p { font-size: 13px; margin: 7px 0; }.visit-review { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
-      .visit-review label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; flex: 1; min-width: 180px; }.visit-review textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; }
-      .image-zoom-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.85); display: flex; align-items: center; justify-content: center; padding: 32px; }
-      .zoomed-img { max-width: 94vw; max-height: 88vh; object-fit: contain; }.close-zoom-btn { position: absolute; right: 20px; top: 20px; background: white; padding: 8px; border-radius: 8px; border: none; cursor: pointer; }
+      .modal-content.tour-execution-detail { max-width: 1050px; }
+      .tour-execution-detail .tour-detail-heading { flex: 1; min-width: 0; }
+      .tour-execution-detail .tour-detail-reference { display: block; color: var(--primary-hover); font-size: 11px; font-weight: 650; letter-spacing: .5px; margin-bottom: 5px; }
+      .tour-execution-detail .tour-detail-heading h2 { overflow-wrap: anywhere; }
+      .tour-execution-detail .tour-detail-header-actions { display: flex; align-items: flex-start; gap: 10px; flex-shrink: 0; }
+      .tour-execution-detail h3 { font-size: 16px; color: var(--text-main); margin: 0 0 12px; }
+      .tour-execution-detail section { margin: 24px 0; }
+      .tour-execution-detail .info-grid-details { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+      .tour-execution-detail .info-card { display: flex; align-items: flex-start; gap: 10px; padding: 15px 13px; background: #f7f9f8; border: 1px solid var(--border-color); border-radius: 10px; min-width: 0; }
+      .tour-execution-detail .info-card > div { min-width: 0; }
+      .tour-execution-detail .info-card svg { color: var(--primary-hover); flex-shrink: 0; margin-top: 3px; }
+      .tour-execution-detail .info-card span { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+      .tour-execution-detail .info-card strong { display: block; color: var(--text-main); font-size: 13px; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+      .tour-execution-detail .notes-box { background: #f5f8f6; border: 1px solid var(--border-color); border-left: 3px solid #b2c9bd; color: #516259; border-radius: 8px; padding: 13px 15px; margin: 14px 0; font-size: 13px; line-height: 1.6; }
+      .tour-execution-detail .notes-box[role="alert"] { background: #fbf5f2; border-color: #eadbd4; border-left-color: #bc7862; color: #874d3b; }
+      .tour-execution-detail .optim-card { background: #f8fbf9; border: 1px solid #d8e8df; padding: 20px; border-radius: 12px; }
+      .tour-execution-detail .optim-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+      .tour-execution-detail .optim-header h3 { margin-bottom: 3px; }
+      .tour-execution-detail .optim-header button { display: flex; align-items: center; gap: 6px; }
+      .tour-execution-detail .optim-card > p { font-size: 13px; line-height: 1.65; }
+      .tour-execution-detail .optim-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 16px 0; }
+      .tour-execution-detail .optim-metrics > div { background: var(--bg-card); padding: 15px 13px; border: 1px solid var(--border-color); border-radius: 9px; min-width: 0; }
+      .tour-execution-detail .optim-metrics span { display: block; color: var(--text-muted); font-size: 11px; }
+      .tour-execution-detail .optim-metrics strong { display: block; color: var(--text-main); font-size: 19px; font-weight: 650; font-variant-numeric: tabular-nums; margin-top: 5px; }
+      .tour-execution-detail .optim-metrics small { color: var(--text-muted); font-size: 11px; }
+      .tour-execution-detail .visit-meta { font-size: 12px; color: var(--text-muted); line-height: 1.65; margin: 12px 0; }
+      .tour-execution-detail .selected-route { background: var(--primary-soft); }
+      .tour-execution-detail .selected-route td:first-child { color: var(--primary-hover); font-weight: 650; }
+      .tour-execution-detail .visit-evidence { border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; margin: 12px 0; background: var(--bg-card); }
+      .tour-execution-detail .visit-evidence.handled { border-color: #b8d7c8; }
+      .tour-execution-detail .visit-heading { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+      .tour-execution-detail .point-number { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; background: var(--primary-soft); color: var(--primary-hover); font-weight: 650; flex-shrink: 0; }
+      .tour-execution-detail .point-info { display: flex; flex-direction: column; flex: 1; min-width: 140px; }
+      .tour-execution-detail .point-info span { color: var(--text-muted); font-size: 12px; }
+      .tour-execution-detail .badge-valid, .tour-execution-detail .badge-pending, .tour-execution-detail .badge-issue { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 6px; font-size: 11px; line-height: 1.5; }
+      .tour-execution-detail .badge-valid { color: var(--primary-hover); background: var(--primary-soft); }
+      .tour-execution-detail .badge-pending { color: #63716a; background: #f2f5f3; }
+      .tour-execution-detail .badge-issue { color: #874d3b; background: #fbf1ec; }
+      .tour-execution-detail .evidence-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 14px; }
+      .tour-execution-detail .evidence-grid figure { margin: 0; }
+      .tour-execution-detail .evidence-grid figcaption { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 7px; }
+      .tour-execution-detail .evidence-image { display: block; width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; background: #f3f6f4; }
+      .tour-execution-detail .evidence-zoom-button { border: none; padding: 0; background: none; cursor: zoom-in; width: 100%; }
+      .tour-execution-detail .visit-assessments p { font-size: 13px; margin: 8px 0; }
+      .tour-execution-detail .visit-review { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; padding-top: 14px; margin-top: 14px; border-top: 1px solid var(--border-color); }
+      .tour-execution-detail .visit-review label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; flex: 1; min-width: min(180px, 100%); }
+      .tour-execution-detail .visit-review textarea { width: 100%; border: 1px solid var(--border-color); border-radius: 7px; padding: 9px; }
+      .tour-execution-detail .image-zoom-overlay { position: fixed; inset: 0; z-index: 9999; background: #14242ee8; display: flex; align-items: center; justify-content: center; padding: 32px; }
+      .tour-execution-detail .zoomed-img { max-width: 94vw; max-height: 88vh; object-fit: contain; }
+      .tour-execution-detail .close-zoom-btn { position: absolute; right: 20px; top: 20px; background: white; padding: 8px; border-radius: 8px; border: none; cursor: pointer; }
+      @media (max-width: 900px) {
+        .tour-execution-detail .info-grid-details, .tour-execution-detail .optim-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+      @media (max-width: 540px) {
+        .tour-execution-detail .modal-header { flex-wrap: wrap; }
+        .tour-execution-detail .tour-detail-heading { flex-basis: calc(100% - 50px); }
+        .tour-execution-detail .tour-detail-header-actions { width: 100%; justify-content: space-between; }
+        .tour-execution-detail .info-grid-details, .tour-execution-detail .optim-metrics { grid-template-columns: 1fr; }
+        .tour-execution-detail .optim-card, .tour-execution-detail .visit-evidence { padding: 14px; }
+        .tour-execution-detail .optim-header button { width: 100%; justify-content: center; }
+      }
     `}</style>
   </div>;
 }

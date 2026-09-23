@@ -176,7 +176,7 @@ def main():
     parser.add_argument('--api-port',type=int,default=18080)
     parser.add_argument('--mongo-port',type=int,default=27019)
     parser.add_argument('--fixture-port',type=int,default=18888)
-    parser.add_argument('--output',type=pathlib.Path,default=ROOT/'docs/evidence/implementation-staged-workflow.json')
+    parser.add_argument('--output',type=pathlib.Path,default=ROOT/'output/staged-workflow.json')
     parser.add_argument('--java',help='Java 17 executable; defaults to java from PATH')
     parser.add_argument('--mongod',help='MongoDB server executable; defaults to mongod from PATH')
     args=parser.parse_args()

@@ -9,6 +9,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @Service
 public class CvExtractionService {
@@ -23,10 +27,28 @@ public class CvExtractionService {
         }
         String name = file.getOriginalFilename() == null ? "" : file.getOriginalFilename().toLowerCase(Locale.ROOT);
         if (!name.endsWith(".pdf") && !name.endsWith(".docx")) throw new IllegalArgumentException("Format accepté : PDF ou DOCX");
+        try {
+            return extractContent(name, file.getBytes());
+        } catch (IOException error) {
+            return new Extraction(List.of(), "MANUAL_REVIEW_REQUIRED");
+        }
+    }
+
+    public Extraction extractStored(Path file) {
+        try {
+            if (Files.size(file) == 0 || Files.size(file) > 10 * 1024 * 1024) throw new IllegalArgumentException("Le CV doit contenir un fichier de 10 Mo maximum");
+            return extractContent(file.getFileName().toString().toLowerCase(Locale.ROOT), Files.readAllBytes(file));
+        } catch (IOException error) {
+            throw new IllegalArgumentException("Le fichier CV enregistré n'est pas accessible");
+        }
+    }
+
+    private Extraction extractContent(String name, byte[] bytes) {
+        if (!name.endsWith(".pdf") && !name.endsWith(".docx")) throw new IllegalArgumentException("Format accepté : PDF ou DOCX");
         var parts = new ArrayList<TextPart>();
         try {
             if (name.endsWith(".pdf")) {
-                try (var document = Loader.loadPDF(file.getBytes())) {
+                try (var document = Loader.loadPDF(bytes)) {
                     var stripper = new PDFTextStripper(); stripper.setSortByPosition(true);
                     for (int page = 1; page <= document.getNumberOfPages(); page++) {
                         stripper.setStartPage(page); stripper.setEndPage(page);
@@ -35,7 +57,7 @@ public class CvExtractionService {
                     }
                 }
             } else {
-                try (var document = new XWPFDocument(file.getInputStream())) {
+                try (var document = new XWPFDocument(new ByteArrayInputStream(bytes))) {
                     int index = 0;
                     for (var paragraph : document.getParagraphs()) {
                         index++;

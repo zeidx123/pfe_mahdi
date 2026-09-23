@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { APP_NAME } from '../utils/constants';
 import { FiMap } from 'react-icons/fi';
 
@@ -46,15 +46,15 @@ const LoginPage = () => {
 
   return (
     <div className="login-container">
-      <Toaster position="top-right" />
       <div className="login-card">
         <div className="login-header">
           <div className="login-logo">
             <FiMap />
           </div>
           <h1>{APP_NAME}</h1>
-          <p>Portail de gestion des tournées de collecte</p>
+          <p>Espace superviseur</p>
         </div>
+        <div className="login-intro"><h2>Heureux de vous retrouver.</h2><p>Connectez-vous pour organiser vos collectes et suivre vos équipes.</p></div>
         
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">

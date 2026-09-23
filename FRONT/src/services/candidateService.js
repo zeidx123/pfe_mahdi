@@ -12,6 +12,7 @@ export const candidateService = {
   },
   review: async (id, fields) => (await api.patch(`/ai/candidates/${id}/review`, { fields })).data,
   evaluate: async (id) => (await api.post(`/ai/candidates/${id}/evaluate`)).data,
+  reanalyze: async (id) => (await api.post(`/ai/candidates/${id}/reanalyze`, undefined, { timeout: 75000 })).data,
   decision: async (id, statut, notesSuperviseur) => (await api.patch(`/ai/candidates/${id}/decision`, { statut, notesSuperviseur })).data,
   download: async (candidate) => {
     const path = `/${candidate.cvFilePath || ''}`.replace(/^\/+/, '/');

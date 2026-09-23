@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiCheck, FiX } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiCheck, FiX, FiUsers } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { agentService } from '../../services/agentService';
 import AgentFormModal from './AgentFormModal';
@@ -52,7 +52,7 @@ const AgentListPage = () => {
         toast.success('Agent mis à jour avec succès');
       } else {
         await agentService.create(formData);
-        toast.success('Agent créé ! Son identifiant et mot de passe (CIN) lui ont été envoyés par email.');
+        toast.success('Chauffeur créé. Son matricule est disponible dans la liste.');
       }
       handleCloseModal();
       fetchAgents();
@@ -74,7 +74,7 @@ const AgentListPage = () => {
       toast.success(`${deleteModal.agent.prenom} ${deleteModal.agent.nom} a été désactivé`);
       setDeleteModal({ open: false, agent: null });
       fetchAgents();
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la désactivation');
     }
   };
@@ -85,26 +85,26 @@ const AgentListPage = () => {
       toast.success(`${deleteModal.agent.prenom} ${deleteModal.agent.nom} a été supprimé définitivement`);
       setDeleteModal({ open: false, agent: null });
       fetchAgents();
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la suppression');
     }
   };
 
   const filteredAgents = agents.filter(agent => 
-    agent.nom.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    agent.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    agent.cin.toLowerCase().includes(searchTerm.toLowerCase())
+    (agent.nom || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (agent.prenom || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (agent.cin || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="agent-page">
       <div className="page-header flex-between">
         <div>
-          <h1>Gestion des Agents / Chauffeurs</h1>
+          <h1>Chauffeurs</h1>
           <p>Gérez les chauffeurs affectés aux tournées de collecte.</p>
         </div>
         <button className="btn-primary" onClick={() => handleOpenModal()}>
-          <FiPlus style={{marginRight: '8px'}} /> Nouvel Agent
+          <FiPlus aria-hidden="true" /> Ajouter un chauffeur
         </button>
       </div>
 
@@ -125,12 +125,16 @@ const AgentListPage = () => {
           {loading ? (
             <div className="loading-state">Chargement des données...</div>
           ) : filteredAgents.length === 0 ? (
-            <div className="empty-state">Aucun agent trouvé.</div>
+            <div className="empty-state">
+              <FiUsers aria-hidden="true" />
+              <h3>{searchTerm ? 'Aucun chauffeur correspondant' : 'Aucun chauffeur pour le moment'}</h3>
+              <p>{searchTerm ? 'Essayez un autre nom, prénom ou numéro de CIN.' : 'Ajoutez un chauffeur pour lui affecter une tournée.'}</p>
+            </div>
           ) : (
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Agent</th>
+                  <th>Chauffeur</th>
                   <th>CIN</th>
                   <th>Matricule</th>
                   <th>Email</th>

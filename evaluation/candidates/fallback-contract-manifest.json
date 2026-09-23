@@ -11,7 +11,7 @@
   "cases": [
     {
       "id": "fictional-cv-dev-01",
-      "file": "../../scripts/evaluation/fixtures/cv-development/fictional-driver-c.docx",
+      "file": "fixtures/cv-development/fictional-driver-c.docx",
       "split": "development",
       "authoredBy": "Codex synthetic fixture author",
       "authoredAt": "2026-09-17",
@@ -43,7 +43,7 @@
     },
     {
       "id": "fictional-cv-dev-02",
-      "file": "../../scripts/evaluation/fixtures/cv-development/fictional-driver-b.docx",
+      "file": "fixtures/cv-development/fictional-driver-b.docx",
       "split": "development",
       "authoredBy": "Codex synthetic fixture author",
       "authoredAt": "2026-09-17",

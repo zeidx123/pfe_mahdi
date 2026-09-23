@@ -13,7 +13,7 @@ import 'package:gesticollecte_mobile/services/tournee_service.dart';
 import 'widget_test.dart' show FixtureAdapter;
 
 final photoBytes = base64Decode(
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=');
+    'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAb0lEQVR4nO3PQQ2AQBDAwJOIEtQhhw8/ZJwJkrLJJBXQWffzjm7lBwD1AUB9AFAfANQHAPUBQH0AUB8A1AcA9UEJuM7jkwAAAAAAAAAAAAAAAAAAAAAAZgH+EEAdQB1AHUAdQB1AHUAdQB1A3XjABhb2n4pG+dBrAAAAAElFTkSuQmCC');
 
 class EvidenceAdapter extends FixtureAdapter {
   int uploads = 0;
@@ -117,6 +117,13 @@ void main() {
     await openWithDraft(tester, adapter);
     final retry = find.text('Réessayer l’envoi');
     await pumpUntil(tester, () => retry.evaluate().isNotEmpty);
+    final automatic = find.byType(SwitchListTile);
+    await tester.ensureVisible(automatic);
+    await tester.pumpAndSettle();
+    tester.widget<SwitchListTile>(automatic).onChanged!(true);
+    await tester.pump();
+    await tester.ensureVisible(retry);
+    await tester.pumpAndSettle();
     await tester.tap(retry);
     await pumpUntil(tester, () => adapter.analyses == 1 && canComplete(tester));
     expect(adapter.uploads, 1);

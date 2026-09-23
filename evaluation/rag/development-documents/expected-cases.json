@@ -1,0 +1,45 @@
+{
+  "datasetVersion": "pfe-ui-development-documents-v1",
+  "scope": "Authored fictional development examples, not independently reviewed evaluation labels.",
+  "independentReview": false,
+  "accuracyMetricEligible": false,
+  "cases": [
+    {
+      "id": "after-photo",
+      "question": "Dans la démonstration GestiCollecte, quelle photo est obligatoire pour confirmer une collecte normale ? La photo AVANT est-elle obligatoire ?",
+      "answerable": true,
+      "expectedFacts": ["La photo APRÈS est obligatoire pour une collecte normale.", "La photo AVANT est facultative."],
+      "expectedSourceIds": ["PFE-DEMO-01"]
+    },
+    {
+      "id": "inaccessible-followup",
+      "question": "Et si ce point est inaccessible ?",
+      "followupOf": "after-photo",
+      "answerable": true,
+      "expectedFacts": ["Enregistrer un problème avec une raison et les preuves disponibles.", "Ne pas exiger une photographie dangereuse ou impossible.", "Le chauffeur peut poursuivre les autres points après le signalement."],
+      "expectedSourceIds": ["PFE-DEMO-02"]
+    },
+    {
+      "id": "exercise-reference",
+      "question": "Quelle est la référence pédagogique de l'exercice photo dans PFE-DEMO-01 ?",
+      "answerable": true,
+      "expectedFacts": ["JASMIN-PHOTO-23"],
+      "expectedSourceIds": ["PFE-DEMO-01"]
+    },
+    {
+      "id": "return-depot",
+      "question": "Dans CIRCUIT-JASMIN, après le dernier point, quelle est la destination suivante et que faut-il confirmer pour terminer la tournée ?",
+      "answerable": true,
+      "expectedFacts": ["La destination suivante est le dépôt.", "Chaque arrêt doit avoir une collecte confirmée ou un problème enregistré.", "Le chauffeur confirme le retour au dépôt."],
+      "expectedSourceIds": ["PFE-DEMO-03"]
+    },
+    {
+      "id": "unsupported-salary",
+      "question": "Quel est le salaire annuel du chauffeur et le montant de sa prime de nuit ?",
+      "answerable": false,
+      "expectedFacts": [],
+      "expectedBehavior": "Abstention sans salaire ni montant de prime inventé. Les documents ne contiennent pas ces informations.",
+      "expectedSourceIds": []
+    }
+  ]
+}

@@ -15,11 +15,16 @@ The demonstrated workflow covers tour planning, road optimization through OpenRo
 | `BACK` | Active Spring Boot API and backend tests |
 | `FRONT` | Active React/Vite supervisor application |
 | `MOBILE` | Active Flutter driver application |
-| `scripts` | Portable integration and evaluation helpers |
-| `evaluation` | Versioned experiment fixtures and result formats |
-| `docs` | Architecture, workflow, evidence and detailed PFE documentation |
+| `scripts` | Windows/Linux launchers, provider diagnostics and reproducible test/evaluation runners |
+| `evaluation` | Fictional or attributed development inputs, saved road matrices, evaluation methods and selected results |
+| `docs` | Current architecture, demonstration steps, delivery checks and concise PFE evidence |
+| `local-data/cvs` | Your private CVs, ignored by Git; create this folder locally when needed |
 
-Run frontend commands directly in `FRONT`. The nested `FRONT/gestion-tournees-front` directory is an older scaffold and is not the application entry point.
+Run frontend commands directly in `FRONT`. The old nested starter application has been removed.
+
+`evaluation/` is retained because the PFE must compare algorithms and review AI results reproducibly. It contains small, labelled development examples and saved inputs; it is not required for normal application startup and does not claim a completed accuracy benchmark. Fictional CV fixtures live in `evaluation/candidates/fixtures/`. Private applicant CVs belong in `local-data/cvs/`, not the repository root or a tracked evaluation dataset.
+
+The [scripts guide](scripts/README.md) explains the commands that launch Flutter, check providers and repeat experiments. The [evaluation guide](evaluation/README.md) explains the retained datasets and results. Generated builds, local uploads, private files and temporary `output/` results are ignored. Selected results are retained only when they support a documented experiment. See the [documentation index](docs/README.md) and [delivery checks](docs/DELIVERY_CHECKS.md) for the current status.
 
 ## Requirements
 
@@ -36,7 +41,7 @@ Install these tools before starting:
 | Edge or Chrome | Current stable | Flutter web run |
 | Python | 3.10+ | Optional evaluation and local web-serving tools |
 
-Gemini and OpenRouteService are optional for basic startup, but required for live AI and road-routing demonstrations. Obtain keys from [Google AI Studio](https://aistudio.google.com/app/apikey) and [OpenRouteService](https://openrouteservice.org/dev/#/signup). Keep both keys only in `BACK/.env`.
+Provider keys are optional for basic startup. Chatbot RAG generation and document embeddings use Gemini. Photo analysis and CV extraction use hosted Qwen through Groq's free plan by default; road routing uses OpenRouteService. Obtain keys from [Google AI Studio](https://aistudio.google.com/app/apikey), [GroqCloud](https://console.groq.com/keys) and [OpenRouteService](https://openrouteservice.org/dev/#/signup). OpenRouter remains an explicitly selectable alternative. Keep all provider keys only in `BACK/.env`.
 
 Official installers: [Git](https://git-scm.com/downloads), [Temurin JDK 17](https://adoptium.net/temurin/releases/?version=17), [Node.js](https://nodejs.org/en/download), [Docker Desktop](https://www.docker.com/products/docker-desktop/), [Flutter](https://docs.flutter.dev/get-started/install), and [Android Studio](https://developer.android.com/studio).
 
@@ -88,7 +93,7 @@ notepad .env
 
 In `.env`:
 
-1. paste the Gemini and ORS keys after `GEMINI_API_KEY=` and `ORS_API_KEY=`;
+1. paste the Gemini and ORS keys after `GEMINI_API_KEY=` and `ORS_API_KEY=`; for photos and CV extraction, also follow [Groq configuration](#free-hosted-photo-and-cv-analysis-with-groq);
 2. set `APP_BOOTSTRAP_ENABLED=true` for the first startup;
 3. replace the example supervisor email and password; the password needs at least 10 characters.
 
@@ -118,13 +123,13 @@ Open the URL printed by Vite, normally `http://localhost:5173`, and sign in with
 From the repository root:
 
 ```powershell
-.\run_mobile.bat
+.\scripts\run-mobile.bat
 ```
 
 The script installs Flutter packages and starts the driver application in Edge on port 8088. To use another backend address:
 
 ```powershell
-.\run_mobile.bat http://192.168.1.20:8080/api
+.\scripts\run-mobile.bat http://192.168.1.20:8080/api
 ```
 
 ### 6. Run on Android
@@ -185,7 +190,7 @@ sed -i "s|REPLACE_WITH_A_RANDOM_BASE64_SECRET|$(openssl rand -base64 48)|" .env
 ${EDITOR:-nano} .env
 ```
 
-Add the Gemini and ORS keys, set `APP_BOOTSTRAP_ENABLED=true`, and choose the initial supervisor email and a password of at least 10 characters. Start the backend:
+Add the Gemini and ORS keys and, for photos and CV extraction, follow [Groq configuration](#free-hosted-photo-and-cv-analysis-with-groq). Set `APP_BOOTSTRAP_ENABLED=true` and choose the initial supervisor email and a password of at least 10 characters. Start the backend:
 
 ```bash
 ./mvnw spring-boot:run
@@ -210,14 +215,14 @@ Open the Vite URL, normally `http://localhost:5173`.
 From the repository root:
 
 ```bash
-chmod +x run_mobile.sh
-./run_mobile.sh
+chmod +x scripts/run-mobile.sh
+./scripts/run-mobile.sh
 ```
 
 Pass another API address as the first argument when necessary:
 
 ```bash
-./run_mobile.sh http://192.168.1.20:8080/api
+./scripts/run-mobile.sh http://192.168.1.20:8080/api
 ```
 
 ### 6. Run on Android
@@ -289,9 +294,65 @@ The script uses disposable ports and storage and does not call live AI or road p
 
 - `BACK/.env` is ignored by Git. Never commit API keys, JWT secrets or mail credentials.
 - Start the backend from the `BACK` directory so `.env` and relative upload folders resolve there.
+- `COLLECTION_AI_PROVIDER` selects photo analysis and CV extraction: `GROQ` by default, or `OPENROUTER` when explicitly configured. Groq uses `GROQ_MODEL_VISION` and `GROQ_MODEL_TEXT`; the alternative uses `OPENROUTER_MODEL_VISION` and `OPENROUTER_MODEL_TEXT`. Only the chatbot uses `GEMINI_MODEL_TEXT`; its document embeddings use `GEMINI_EMBEDDING_MODEL`. Restart the backend to apply changes. Changing the collection provider does not require reindexing RAG documents.
+- Gemini allowances apply to the chatbot and its semantic retrieval/indexing. Check your project/model/tier limits in [Google AI Studio](https://aistudio.google.com/rate-limit); daily request quotas reset at midnight Pacific time. Groq and OpenRouter have separate photo/CV allowances, described below. HTTP 429 means quota/rate rejection, not a valid AI assessment.
 - The React API URL comes from `VITE_API_URL` at build/start time.
 - The Flutter API URL comes from `--dart-define=API_BASE_URL=...`; a value saved through **Configurer le serveur** takes priority.
 - Android emulator networking uses `10.0.2.2`; a physical phone uses the server's LAN address; browser clients use `localhost` when running on the same computer.
 - If port 8080, 5173, 8088 or 27017 is already occupied, stop the conflicting process or configure a different port consistently.
 
-For the complete demonstration sequence, evaluation commands and known limitations, see [the detailed setup guide](docs/DEMO_SETUP.md), [implementation progress](docs/IMPLEMENTATION_PROGRESS.md) and [P1 results](docs/evaluation/P1_RUN_RESULTS.md).
+## Free hosted photo and CV analysis with Groq
+
+Create a [GroqCloud API key](https://console.groq.com/keys) and keep the account on the free plan. No local model or billing setup is needed for this configuration. Edit the existing `BACK/.env`, replacing the placeholder with your key:
+
+```dotenv
+COLLECTION_AI_PROVIDER=GROQ
+GROQ_API_KEY=VOTRE_CLE_GROQ_ICI
+GROQ_MODEL_TEXT=qwen/qwen3.8-27b
+GROQ_MODEL_VISION=qwen/qwen3.8-27b
+GROQ_TIMEOUT_SECONDS=60
+```
+
+The shared timeout setting is optional and bounded to 1–120 seconds. Groq model IDs do not use the OpenRouter `:free` suffix; the Groq account plan governs the allowance. Qwen handles photo analysis and CV extraction; keep your Gemini settings for the chatbot and its embeddings. Candidate suitability scoring remains the deterministic backend rubric, with a human hiring decision. Keys belong in the ignored backend file, never in React, Flutter, browser storage or committed files.
+
+These short extraction/classification requests disable extended reasoning and cap output at 1,024 tokens for photos and 4,096 for CVs. This avoids the selected model's default extended-thinking workload, but does not remove provider capacity limits. A timed-out or truncated response remains unavailable and can be retried manually.
+
+The current [Groq free-plan rate table](https://console.groq.com/docs/rate-limits) lists these ceilings for `qwen/qwen3.8-27b`:
+
+| Requests per minute | Requests per day | Tokens per minute | Tokens per day |
+| ---: | ---: | ---: | ---: |
+| 30 | 1,000 | 8,000 | 200,000 |
+
+All four limits apply together; these are published ceilings, not a guaranteed number of photos per day. [Each image counts as 2,048 input tokens](https://console.groq.com/docs/vision), plus the prompt and generated response. CV extraction and retries also consume the model's allowance. An AFTER-only analysis uses one request and one image; a BEFORE/AFTER pair uses one request and two images. Check your account's current limits and honor `Retry-After` when a request is rate-limited. No provider switch occurs automatically.
+
+### Save AI requests while testing
+
+The driver app defaults to **manual image analysis**. Uploading an AFTER photo saves the evidence without calling an AI provider. Tap **Analyser la photo** only when you want a real assessment, or enable **Analyse IA automatique** on the current tour screen. To change the initial switch value for a Flutter build, add `--dart-define=AUTO_VISION_ANALYSIS=true`; it defaults to `false` on both web and Android.
+
+A valid saved visit assessment is shown without another analysis button. The backend also reuses that visit's original result when its photo references, provider, model and prompt version are unchanged. Replacing evidence clears the result; an unavailable assessment can still be retried manually. Concurrent requests for the same visit are rejected while the first is running. This guard is local to the single backend process used by the PFE, not a distributed queue. Supervisor evaluation requests always run a fresh assessment so experiment results are not silently reused.
+
+For example, uploading ten photos and explicitly analyzing two sends two image-analysis requests. Use AFTER-only evidence for ordinary tests; a BEFORE/AFTER pair still uses one request but contains two image inputs. Image compression reduces upload size, not request count or Groq's fixed per-image token count. Existing CV field review and score recalculation do not call an AI model. No prediction is invented when analysis is skipped.
+
+Stop and restart the backend from `BACK` after editing: `.\mvnw.cmd spring-boot:run` in Windows PowerShell, or `./mvnw spring-boot:run` in Linux Bash. The Windows and Linux setup sections above cover the remaining services.
+
+### Free hosted photo and CV analysis with OpenRouter
+
+OpenRouter is an explicit alternative, not an automatic fallback. To select it, create an [OpenRouter API key](https://openrouter.ai/settings/keys), replace these values in `BACK/.env`, and restart the backend:
+
+```dotenv
+COLLECTION_AI_PROVIDER=OPENROUTER
+OPENROUTER_API_KEY=VOTRE_CLE_OPENROUTER_ICI
+OPENROUTER_MODEL_TEXT=qwen/qwen3.8-27b:free
+OPENROUTER_MODEL_VISION=qwen/qwen3.8-27b:free
+OPENROUTER_TIMEOUT_SECONDS=60
+```
+
+Keep both `:free` suffixes. The OpenRouter adapter rejects paid/automatic model IDs and sets zero-price routing caps. OpenRouter currently allows a zero-credit account **50 free-model requests per day in total and up to 20 requests per minute**, shared across free models; see [official limits](https://openrouter.ai/docs/api/reference/limits). CV extraction, image analysis and retries share that allowance. Provider capacity and token limits can restrict usage further. Credit usage of zero does not establish how many free requests remain.
+
+Neither selection falls back automatically to another provider, paid model or Gemini. Photo failures remain `ANALYSIS_UNAVAILABLE`; failed CV extraction stays explicit and available for manual review.
+
+Verify live Qwen responses on your installation with your real key; a configured model name or a passing integration test does not establish classification or extraction accuracy. Follow the [CV and photo test steps](docs/LOCAL_AI_TEST_GUIDE.md) to verify the results in the application.
+
+For the complete demonstration sequence, evaluation commands and known limitations, see [the detailed setup guide](docs/DEMO_SETUP.md), [delivery checks](docs/DELIVERY_CHECKS.md) and [P1 results](docs/evaluation/P1_RUN_RESULTS.md).
+
+To test the chatbot, local CVs and image uploads in Flutter web, follow [the local AI test guide](docs/LOCAL_AI_TEST_GUIDE.md). It identifies the prepared documents and public photos, expected checks, and the difference between successful AI output and an unavailable provider.

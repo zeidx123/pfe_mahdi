@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiMessageSquare, FiSearch, FiCheck, FiSend, FiClock, FiAlertTriangle } from 'react-icons/fi';
+import { FiMessageSquare, FiSearch, FiCheck, FiSend, FiClock } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { reclamationService } from '../../services/reclamationService';
 
@@ -77,7 +77,7 @@ const ReclamationPage = () => {
     <div className="reclamation-page">
       <div className="page-header-row">
         <div>
-          <h1>Gestion des Réclamations</h1>
+          <h1>Réclamations</h1>
           <p>Consultez et traitez les réclamations et problèmes signalés par les chauffeurs sur le terrain.</p>
         </div>
       </div>

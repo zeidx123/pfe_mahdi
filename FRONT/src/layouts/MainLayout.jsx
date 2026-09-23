@@ -1,114 +1,82 @@
 import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { 
-  FiHome, FiUsers, FiTruck, FiMapPin, 
-  FiMap, FiAlertTriangle, FiFileText, 
-  FiLogOut, FiMenu, FiBell, FiMessageSquare
-} from 'react-icons/fi';
+import { FiHome, FiUsers, FiTruck, FiMapPin, FiMap, FiLogOut, FiMenu, FiMessageSquare, FiFileText, FiBookOpen, FiNavigation, FiChevronRight } from 'react-icons/fi';
 import { APP_NAME } from '../utils/constants';
-import { alerteService } from '../services/alerteService';
+import { getPageMeta } from '../utils/pageMeta';
+
+const navigation = [
+  { label: 'Pilotage', items: [
+    { path: '/dashboard', icon: FiHome, label: 'Tableau de bord' },
+    { path: '/tournees', icon: FiMap, label: 'Tournées' },
+    { path: '/tracking', icon: FiNavigation, label: 'Suivi GPS' },
+    { path: '/reclamations', icon: FiMessageSquare, label: 'Réclamations' },
+  ] },
+  { label: 'Ressources', items: [
+    { path: '/agents', icon: FiUsers, label: 'Chauffeurs' },
+    { path: '/camions', icon: FiTruck, label: 'Camions' },
+    { path: '/points', icon: FiMapPin, label: 'Points de collecte' },
+  ] },
+  { label: 'Accompagnement', items: [
+    { path: '/candidatures', icon: FiFileText, label: 'Candidatures' },
+    { path: '/documents-ia', icon: FiBookOpen, label: 'Base documentaire' },
+  ] },
+];
 
 const MainLayout = () => {
   const { user, logout } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [unreadAlerts, setUnreadAlerts] = useState(0);
+  const { pathname } = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 1100);
+  const page = getPageMeta(pathname);
 
   useEffect(() => {
-    fetchUnreadAlerts();
-    const interval = setInterval(fetchUnreadAlerts, 30000);
-    return () => clearInterval(interval);
+    const narrow = window.matchMedia('(max-width: 1099px)');
+    const handleChange = (event) => setSidebarOpen(!event.matches);
+    narrow.addEventListener('change', handleChange);
+    return () => narrow.removeEventListener('change', handleChange);
   }, []);
-
-  const fetchUnreadAlerts = async () => {
-    try {
-      const count = await alerteService.getUnreadCount();
-      setUnreadAlerts(count);
-    } catch (e) {
-      // fail silently
-    }
-  };
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  const menuItems = [
-    { path: '/dashboard', icon: <FiHome />, label: 'Tableau de bord' },
-    { path: '/agents', icon: <FiUsers />, label: 'Agents' },
-    { path: '/camions', icon: <FiTruck />, label: 'Camions' },
-    { path: '/points', icon: <FiMapPin />, label: 'Points de collecte' },
-    { path: '/tournees', icon: <FiMap />, label: 'Tournées' },
-    { path: '/tracking', icon: <FiMapPin />, label: 'Suivi GPS' },
-    { path: '/reclamations', icon: <FiMessageSquare />, label: 'Réclamations' },
-    { path: '/candidatures', icon: <span className="text-base">📄</span>, label: 'Espace des candidatures' },
-    { path: '/documents-ia', icon: <span className="text-base">📚</span>, label: 'Base documentaire' },
-  ];
 
   return (
     <div className="layout-container">
-      <style>{`
-        .notification-badge { position: absolute; top: 0; right: 0; background: #ef4444; color: white; font-size: 10px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transform: translate(25%, -25%); border: 2px solid white; }
-      `}</style>
-      {/* Sidebar */}
-      <aside className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
+      <a className="skip-link" href="#page-content">Aller au contenu</a>
+      {sidebarOpen && <button className="sidebar-backdrop" aria-label="Fermer le menu" onClick={() => setSidebarOpen(false)} />}
+      <aside id="app-sidebar" className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
         <div className="sidebar-header">
-          <div className="logo-icon"><FiMap /></div>
-          {sidebarOpen && <h2 className="logo-text">{APP_NAME}</h2>}
+          <div className="logo-icon" aria-hidden="true"><FiMap /></div>
+          <div className="brand-copy"><h2 className="logo-text">{APP_NAME}</h2><span>Gestion des collectes</span></div>
         </div>
-        
-        <div className="sidebar-menu">
-          {menuItems.map((item) => (
-            <NavLink 
-              key={item.path} 
-              to={item.path} 
-              className={({isActive}) => `menu-item ${isActive ? 'active' : ''}`}
-              title={!sidebarOpen ? item.label : ""}
+        <nav className="sidebar-menu" aria-label="Navigation principale">
+          {navigation.map((group) => <div className="nav-group" key={group.label}>
+            <p className="nav-group-label">{group.label}</p>
+            {group.items.map(({ path, icon: Icon, label }) => <NavLink
+              key={path} to={path} aria-label={label} title={sidebarOpen ? undefined : label}
+              onClick={() => { if (window.innerWidth < 640) setSidebarOpen(false); }}
+              className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`}
             >
-              <span className="menu-icon">{item.icon}</span>
-              {sidebarOpen && <span className="menu-label">{item.label}</span>}
-            </NavLink>
-          ))}
-        </div>
-        
+              <span className="menu-icon" aria-hidden="true"><Icon /></span>
+              <span className="menu-label">{label}</span>
+            </NavLink>)}
+          </div>)}
+        </nav>
         <div className="sidebar-footer">
-          <button className="logout-btn" onClick={logout} title={!sidebarOpen ? "Déconnexion" : ""}>
-            <FiLogOut className="menu-icon" />
-            {sidebarOpen && <span className="menu-label">Déconnexion</span>}
+          <div className="workspace-caption"><span className="workspace-dot" />Espace superviseur</div>
+          <button className="logout-btn" onClick={logout} title="Déconnexion" aria-label="Déconnexion">
+            <FiLogOut className="menu-icon" aria-hidden="true" /><span className="menu-label">Déconnexion</span>
           </button>
         </div>
       </aside>
-
-      {/* Main Content */}
       <div className="main-content">
-        {/* Navbar */}
         <header className="navbar">
           <div className="navbar-left">
-            <button className="toggle-btn" onClick={toggleSidebar}>
-              <FiMenu />
-            </button>
-            <div className="breadcrumb">
-              <span>Municipalité</span>
-            </div>
+            <button className="toggle-btn" aria-label={sidebarOpen ? 'Réduire le menu' : 'Ouvrir le menu'} aria-expanded={sidebarOpen} aria-controls="app-sidebar" onClick={() => setSidebarOpen((open) => !open)}><FiMenu /></button>
+            <div className="breadcrumb"><span>{page.section}</span><FiChevronRight aria-hidden="true" /><strong>{page.title}</strong></div>
           </div>
-          
-          <div className="navbar-right">
-            <div className="user-profile">
-              <div className="user-avatar">
-                {user?.prenom?.charAt(0)}{user?.nom?.charAt(0)}
-              </div>
-              <div className="user-info">
-                <span className="user-name">{user?.prenom} {user?.nom}</span>
-                <span className="user-role">{user?.role}</span>
-              </div>
-            </div>
+          <div className="user-profile">
+            <div className="user-avatar" aria-hidden="true">{user?.prenom?.charAt(0)}{user?.nom?.charAt(0)}</div>
+            <div className="user-info"><span className="user-name">{user?.prenom} {user?.nom}</span><span className="user-role">Superviseur</span></div>
           </div>
         </header>
-
-        {/* Page Content */}
-        <main className="page-content">
-          <Outlet />
-        </main>
+        <main id="page-content" className="page-content" tabIndex={-1}><Outlet /></main>
       </div>
     </div>
   );

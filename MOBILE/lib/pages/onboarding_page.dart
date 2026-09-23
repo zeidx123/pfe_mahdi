@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../core/app_theme.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -11,43 +12,42 @@ class OnboardingPage extends StatefulWidget {
 class _OnboardingPageState extends State<OnboardingPage> {
   final PageController _controller = PageController();
   int _currentPage = 0;
+  bool _finishing = false;
 
-  List<_OnboardingSlide> get _slides => const [
-        _OnboardingSlide(
-          icon: Icons.local_shipping_rounded,
-          iconColor: Color(0xFF0369a1),
-          bgGradient: [Color(0xFFe0f2fe), Color(0xFFbae6fd)],
-          title: 'Bienvenue dans GestiCollecte',
-          subtitle:
-              'Application de gestion des tournees de collecte pour les chauffeurs municipaux.',
-        ),
-        _OnboardingSlide(
-          icon: Icons.map_rounded,
-          iconColor: Color(0xFF059669),
-          bgGradient: [Color(0xFFd1fae5), Color(0xFFa7f3d0)],
-          title: 'Suivez vos Tournees',
-          subtitle:
-              'Consultez vos tournees du jour, visualisez les points de collecte et mettez a jour le statut en temps reel.',
-        ),
-        _OnboardingSlide(
-          icon: Icons.report_problem_rounded,
-          iconColor: Color(0xFFd97706),
-          bgGradient: [Color(0xFFfef3c7), Color(0xFFfde68a)],
-          title: 'Signalez les Incidents',
-          subtitle:
-              'Declarez tout probleme rencontre sur le terrain — obstacles, bacs manquants ou situations dangereuses.',
-        ),
-        _OnboardingSlide(
-          icon: Icons.smart_toy_rounded,
-          iconColor: Color(0xFF7c3aed),
-          bgGradient: [Color(0xFFede9fe), Color(0xFFddd6fe)],
-          title: 'Assistant Intelligent',
-          subtitle:
-              'Posez vos questions a l assistant qui vous guide grace aux documents et procedures de votre municipalite.',
-        ),
-      ];
+  static const _slides = [
+    _OnboardingSlide(
+      icon: Icons.local_shipping_outlined,
+      label: 'VOTRE ESPACE CHAUFFEUR',
+      title: 'Vos tournées,\nau même endroit',
+      subtitle:
+          'Retrouvez les tournées qui vous sont affectées, leurs points de collecte et votre progression enregistrée.',
+    ),
+    _OnboardingSlide(
+      icon: Icons.route_outlined,
+      label: 'UN PARCOURS À SUIVRE',
+      title: 'Le prochain arrêt,\ntoujours à portée de main',
+      subtitle:
+          'Suivez l’ordre prévu, ouvrez la navigation vers le prochain point, puis retrouvez votre tournée jusqu’au retour au dépôt.',
+    ),
+    _OnboardingSlide(
+      icon: Icons.add_a_photo_outlined,
+      label: 'LE SUIVI SUR LE TERRAIN',
+      title: 'Chaque collecte\ngarde une trace',
+      subtitle:
+          'Ajoutez une photo après la collecte. Si un point est inaccessible ou dangereux, signalez le problème et poursuivez votre suivi.',
+    ),
+    _OnboardingSlide(
+      icon: Icons.forum_outlined,
+      label: 'VOTRE ASSISTANT',
+      title: 'Des réponses\navec leurs sources',
+      subtitle:
+          'Posez vos questions sur les procédures. L’assistant s’appuie sur les documents approuvés et indique quand les sources ne suffisent pas.',
+    ),
+  ];
 
   Future<void> _finishOnboarding() async {
+    if (_finishing) return;
+    setState(() => _finishing = true);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('onboarding_completed', true);
     if (!mounted) return;
@@ -55,10 +55,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   void _nextPage() {
-    final slides = _slides;
-    if (_currentPage < slides.length - 1) {
+    if (_currentPage < _slides.length - 1) {
       _controller.nextPage(
-        duration: const Duration(milliseconds: 400),
+        duration: const Duration(milliseconds: 250),
         curve: Curves.easeInOut,
       );
     } else {
@@ -74,107 +73,109 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final slides = _slides;
-    final slide = slides[_currentPage];
+    final text = Theme.of(context).textTheme;
     return Scaffold(
-      body: AnimatedContainer(
-        duration: const Duration(milliseconds: 400),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: slide.bgGradient,
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Skip button
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: TextButton(
-                    onPressed: _finishOnboarding,
-                    child: const Text(
-                      'Passer',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
+      backgroundColor: GestiTheme.bg,
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 680),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 12, 12, 0),
+                  child: Row(children: [
+                    const Icon(Icons.local_shipping_rounded,
+                        color: GestiTheme.primaryDark, size: 26),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text('GestiCollecte',
+                          style: text.titleMedium
+                              ?.copyWith(color: GestiTheme.navy)),
                     ),
+                    TextButton(
+                      onPressed: _finishing ? null : _finishOnboarding,
+                      child: const Text('Passer'),
+                    ),
+                  ]),
+                ),
+                Expanded(
+                  child: PageView.builder(
+                    controller: _controller,
+                    onPageChanged: (i) => setState(() => _currentPage = i),
+                    itemCount: _slides.length,
+                    itemBuilder: (context, index) =>
+                        _SlideContent(slide: _slides[index]),
                   ),
                 ),
-              ),
-
-              // PageView
-              Expanded(
-                child: PageView.builder(
-                  controller: _controller,
-                  onPageChanged: (i) => setState(() => _currentPage = i),
-                  itemCount: slides.length,
-                  itemBuilder: (context, index) =>
-                      _SlideContent(slide: slides[index]),
-                ),
-              ),
-
-              // Indicators + buttons
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 36),
-                child: Column(
-                  children: [
-                    // Dot indicators
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+                  child: Column(children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        slides.length,
-                        (i) => AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: i == _currentPage ? 24 : 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: i == _currentPage
-                                ? slide.iconColor
-                                : Colors.black26,
-                            borderRadius: BorderRadius.circular(4),
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            'Étape ${_currentPage + 1} sur ${_slides.length}',
+                            style: text.bodySmall,
+                          ),
+                        ),
+                        ExcludeSemantics(
+                          child: Row(
+                            children: List.generate(
+                              _slides.length,
+                              (i) => AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                margin: const EdgeInsets.only(left: 6),
+                                width: i == _currentPage ? 24 : 8,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: i == _currentPage
+                                      ? GestiTheme.primaryDark
+                                      : GestiTheme.border,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Row(children: [
+                      if (_currentPage > 0) ...[
+                        OutlinedButton(
+                          onPressed: _finishing
+                              ? null
+                              : () => _controller.previousPage(
+                                    duration: const Duration(milliseconds: 250),
+                                    curve: Curves.easeInOut,
+                                  ),
+                          child: const Text('Retour'),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      Expanded(
+                        child: SizedBox(
+                          height: 52,
+                          child: FilledButton.icon(
+                            onPressed: _finishing ? null : _nextPage,
+                            icon: const Icon(Icons.arrow_forward_rounded,
+                                size: 20),
+                            label: Text(
+                              _currentPage == _slides.length - 1
+                                  ? 'Commencer'
+                                  : 'Suivant',
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Action button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _nextPage,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: slide.iconColor,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          _currentPage == slides.length - 1
-                              ? 'Commencer'
-                              : 'Suivant',
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                    ]),
+                  ]),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -188,70 +189,59 @@ class _SlideContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha(179),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: slide.iconColor.withAlpha(51),
-                  blurRadius: 40,
-                  spreadRadius: 10,
+    final text = Theme.of(context).textTheme;
+    return LayoutBuilder(builder: (context, constraints) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 28),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+              minHeight:
+                  (constraints.maxHeight - 56).clamp(0, double.infinity)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 104,
+                height: 104,
+                decoration: BoxDecoration(
+                  color: GestiTheme.soft,
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(color: GestiTheme.border),
                 ),
-              ],
-            ),
-            child: Icon(
-              slide.icon,
-              size: 96,
-              color: slide.iconColor,
-            ),
+                child:
+                    Icon(slide.icon, size: 46, color: GestiTheme.primaryDark),
+              ),
+              const SizedBox(height: 32),
+              Text(slide.label,
+                  style: text.labelSmall?.copyWith(
+                    color: GestiTheme.primaryDark,
+                    letterSpacing: 1.2,
+                    fontWeight: FontWeight.w700,
+                  )),
+              const SizedBox(height: 12),
+              Text(slide.title,
+                  style: text.headlineLarge?.copyWith(color: GestiTheme.navy)),
+              const SizedBox(height: 20),
+              Text(slide.subtitle,
+                  style: text.bodyLarge?.copyWith(color: GestiTheme.muted)),
+            ],
           ),
-          const SizedBox(height: 48),
-          Text(
-            slide.title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF0f172a),
-              height: 1.2,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            slide.subtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Color(0xFF475569),
-              height: 1.6,
-            ),
-          ),
-        ],
-      ),
-    );
+        ),
+      );
+    });
   }
 }
 
 class _OnboardingSlide {
   final IconData icon;
-  final Color iconColor;
-  final List<Color> bgGradient;
+  final String label;
   final String title;
   final String subtitle;
 
   const _OnboardingSlide({
     required this.icon,
-    required this.iconColor,
-    required this.bgGradient,
+    required this.label,
     required this.title,
     required this.subtitle,
   });

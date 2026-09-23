@@ -10,7 +10,7 @@ Each requirements edit creates a new version. Every evaluation preserves the req
 
 Run `mvn -f BACK/pom.xml -Dtest=CandidateScoringTest,CandidateReviewTest,DriverRequirementsTest,CvExtractionTest test` from the workspace root.
 
-The CSV at `BACK/src/test/resources/evaluation/candidate-rubric-seed.csv` contains eight synthetic rubric cases with explicit expected scores and required-criteria states. Additional tests cover identity/age independence, version preservation, provider outage, citations, safe human correction, repeat acceptance, real PDF page extraction and DOCX tables. These checks establish software behavior; they do not establish Gemini extraction accuracy on real CVs.
+The CSV at `BACK/src/test/resources/evaluation/candidate-rubric-seed.csv` contains eight synthetic rubric cases with explicit expected scores and required-criteria states. Additional tests cover identity/age independence, version preservation, provider outage, citations, safe human correction, repeat acceptance, real PDF page extraction and DOCX tables. These checks establish software behavior; they do not establish model extraction accuracy on real CVs. CV extraction uses the configured collection provider (Groq by default); Gemini is reserved for RAG.
 
 ## Evaluation runner and authored development fixtures
 
@@ -20,13 +20,13 @@ Run the evaluator tests without a backend, token or provider:
 python3 -m unittest discover -s scripts/evaluation -p 'test_evaluate_candidates.py' -v
 ```
 
-The regression bundle at [candidate-development.json](../../scripts/evaluation/fixtures/candidate-development.json) has simulated extraction/review responses and synthetic labels. Tests create temporary DOCX containers, inject an endpoint allowlist, and forbid network requests. They check field-status confusion metrics, missing labels, separate split results, actual provider strata, identity leading zeros, rubric denominators, upload failure coverage, provenance and source-hash validation. These are software checks, not a final reviewed dataset.
+The regression bundle at [candidate-development.json](../../evaluation/candidates/fixtures/candidate-development.json) has simulated extraction/review responses and synthetic labels. Tests create temporary DOCX containers, inject an endpoint allowlist, and forbid network requests. They check field-status confusion metrics, missing labels, separate split results, actual provider strata, identity leading zeros, rubric denominators, upload failure coverage, provenance and source-hash validation. These are software checks, not a final reviewed dataset.
 
 Two fictional documents are ready for a real-provider or fallback **development** run:
 
-- [Category C, one year of experience](../../scripts/evaluation/fixtures/cv-development/fictional-driver-c.docx): authored rubric expectation 70/100 and required criterion MET.
-- [Category B, half a year of experience](../../scripts/evaluation/fixtures/cv-development/fictional-driver-b.docx): authored rubric expectation 10/100 and required criterion UNMET; includes an intentionally invalid telephone.
-- [Runnable development manifest](../../scripts/evaluation/fixtures/cv-development/manifest.json): both documents, reference field values/statuses, optional review submissions and source hashes.
+- [Category C, one year of experience](../../evaluation/candidates/fixtures/cv-development/fictional-driver-c.docx): authored rubric expectation 70/100 and required criterion MET.
+- [Category B, half a year of experience](../../evaluation/candidates/fixtures/cv-development/fictional-driver-b.docx): authored rubric expectation 10/100 and required criterion UNMET; includes an intentionally invalid telephone.
+- [Runnable development manifest](../../evaluation/candidates/fixtures/cv-development/manifest.json): both documents, reference field values/statuses, optional review submissions and source hashes.
 
 These documents describe no real people. Their expectations were authored for development; **no independent human review has occurred**. The manifest declares `datasetKind: SYNTHETIC_DEVELOPMENT`, `labelProvenance.kind: AUTHORED_SYNTHETIC`, and `independentHumanReview: false`. Reports retain those declarations and use `evidenceClass: SYNTHETIC_CONTRACT_CHECKS`. Their model results must not be described as final CV accuracy.
 
@@ -35,8 +35,8 @@ The command uses a supervisor token already provided through `GESTI_EVAL_TOKEN`.
 ```bash
 python3 scripts/evaluation/evaluate_candidates.py \
   --base-url http://127.0.0.1:18080/api \
-  --manifest scripts/evaluation/fixtures/cv-development/manifest.json \
-  --output /tmp/cv-development-results.json
+  --manifest evaluation/candidates/fixtures/cv-development/manifest.json \
+  --output output/cv-development-results.json
 ```
 
 The example manifest freezes requirements version 1 and assumes the initial 40/40/10/10 rubric. If the demonstration has another version, check the actual requirements and update the manifest version and expected scores deliberately. A mismatch stops before any upload. Do not change expected extraction labels after viewing predictions just to improve reported performance.

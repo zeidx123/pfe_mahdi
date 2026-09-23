@@ -29,6 +29,10 @@ jobs:
           cache: npm
           cache-dependency-path: FRONT/package-lock.json
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.5'
@@ -51,6 +55,14 @@ jobs:
           npm ci
           npm run lint
           npm run build
+
+      - name: Offline provider and evaluation checks
+        run: |
+          python -m unittest discover -s scripts -p "test_*.py"
+          python -m unittest discover -s scripts/evaluation -p "test_*.py"
+          python -m unittest discover -s evaluation/rag -p "test_*.py"
+          python -m unittest discover -s evaluation/vision -p "test_*.py"
+          python -m unittest discover -s evaluation/timing -p "test_*.py"
 
       - name: Driver application checks
         working-directory: MOBILE

@@ -1,6 +1,6 @@
 # GestiCollecte supervisor web application
 
-This is the active React/Vite application for supervisors. Run commands from this `FRONT` directory. The nested `gestion-tournees-front` directory is a historical scaffold and is not used by the current application.
+This is the React/Vite application for supervisors. Run commands from this `FRONT` directory.
 
 Requirements: Node.js 22 LTS (or at least 20.19) and the GestiCollecte backend.
 

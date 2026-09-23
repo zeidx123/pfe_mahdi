@@ -8,6 +8,7 @@ import 'pages/tournee_detail_page.dart';
 import 'pages/reclamations_page.dart';
 import 'pages/assistant_page.dart';
 import 'pages/onboarding_page.dart';
+import 'core/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,15 +34,7 @@ class GestiCollecteApp extends StatelessWidget {
       navigatorKey: appNavigator,
       title: 'GestiCollecte',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0369a1),
-          primary: const Color(0xFF0369a1),
-        ),
-        fontFamily: 'Roboto',
-        appBarTheme: const AppBarTheme(centerTitle: false),
-      ),
+      theme: GestiTheme.light,
       // A browser refresh has no Navigator arguments. Restore the driver
       // session first, then reopen tours from their persisted assignments.
       onGenerateInitialRoutes: (_) => [
@@ -78,9 +71,6 @@ class _SplashRouterState extends State<_SplashRouter> {
   }
 
   Future<void> _redirect() async {
-    await Future.delayed(const Duration(milliseconds: 1500));
-    if (!mounted) return;
-
     final prefs = await SharedPreferences.getInstance();
     final onboardingDone = prefs.getBool('onboarding_completed') ?? false;
 
@@ -103,7 +93,7 @@ class _SplashRouterState extends State<_SplashRouter> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF0369a1), Color(0xFF0c4a6e)],
+            colors: [GestiTheme.navy, Color(0xFF234638)],
           ),
         ),
         child: const Center(

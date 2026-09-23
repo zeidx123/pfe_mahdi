@@ -44,3 +44,7 @@ __pycache__/
 
 # Local browser automation state
 .playwright-cli/
+
+# Local-only delivery inputs, screenshots, and generated reports
+/local-data/
+/output/

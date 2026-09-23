@@ -1,0 +1,45 @@
+{
+  "datasetVersion": "internet-development-2026-09-23",
+  "dataKind": "INTERNET_DEVELOPMENT_PHOTOS",
+  "sources": [
+    {
+      "file": "street-litter.jpg",
+      "sourceTitle": "File:Litter on Carling Street in London, Ontario.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Litter_on_Carling_Street_in_London,_Ontario.jpg",
+      "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c4/Litter_on_Carling_Street_in_London%2C_Ontario.jpg/1280px-Litter_on_Carling_Street_in_London%2C_Ontario.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "author": "Gogerr",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+      "description": "Litter on Carling Street in London, Ontario",
+      "downloadDate": "2026-09-23",
+      "sha256": "e9627de0ed4f0fab9dc5d8dafbd684996bba2a40f0edf343e589919dac8a622f",
+      "usage": "Internet development example; not local execution evidence; independent single scene; no before/after pair."
+    },
+    {
+      "file": "public-bin.jpg",
+      "sourceTitle": "File:Public Litter Bin (0923) - Railway Street, Gillingham, Medway.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Public_Litter_Bin_(0923)_-_Railway_Street,_Gillingham,_Medway.jpg",
+      "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Public_Litter_Bin_%280923%29_-_Railway_Street%2C_Gillingham%2C_Medway.jpg/1280px-Public_Litter_Bin_%280923%29_-_Railway_Street%2C_Gillingham%2C_Medway.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "author": "Sunolafjagtenben-hur",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "description": "Public Litter Bin (0923) - Railway Street, Gillingham, Medway",
+      "downloadDate": "2026-09-23",
+      "sha256": "07ff0e27aee7db9bb3647379aa5abe169de6ab8e5077c0c4e0802f35f6a6de40",
+      "usage": "Internet development example; not local execution evidence; independent single scene; no before/after pair."
+    },
+    {
+      "file": "collected-beach-litter.jpg",
+      "sourceTitle": "File:Collected Beach Litter at Scabbacombe Sands.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Collected_Beach_Litter_at_Scabbacombe_Sands.jpg",
+      "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3b/Collected_Beach_Litter_at_Scabbacombe_Sands.jpg/1280px-Collected_Beach_Litter_at_Scabbacombe_Sands.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "author": "Partonez",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "description": "A variety of litter recovered from Scabbacombe Sands placed at the back of the beach for collection. The beach is located between Brixham and Kingswear in Devon, England.",
+      "downloadDate": "2026-09-23",
+      "sha256": "d05b0047195a493620ddf35f650c6dbc601fa444c0cc3a477f2bae192e15e394",
+      "usage": "Internet development example; not local execution evidence; independent single scene; no before/after pair."
+    }
+  ]
+}

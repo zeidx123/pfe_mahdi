@@ -13,7 +13,7 @@ flutter run --dart-define=API_BASE_URL=http://ADRESSE_LAN_DU_SERVEUR:8080/api
 
 Sur un téléphone, `localhost` désigne le téléphone. Utiliser une adresse du serveur accessible depuis le réseau du téléphone. Le bouton **Configurer le serveur** de l’écran de connexion permet aussi d’enregistrer cette adresse ; cette préférence prend priorité sur la valeur de compilation. Le défaut Android `10.0.2.2` convient à l’émulateur Android standard.
 
-Se connecter avec un compte `CHAUFFEUR` actif. Les comptes superviseurs utilisent le web. Les jetons restent dans les requêtes authentifiées, jamais dans les liens Google Maps ou les URL des photos. Les clés Gemini/OpenRouteService restent côté serveur.
+Se connecter avec un compte `CHAUFFEUR` actif. Les comptes superviseurs utilisent le web. Les jetons restent dans les requêtes authentifiées, jamais dans les liens Google Maps ou les URL des photos. Les clés Groq, Gemini, OpenRouter et OpenRouteService restent côté serveur dans `BACK/.env`.
 
 Le manifeste autorise HTTP pour la démonstration sur réseau local. Android SDK 35 et les licences/outils Android correspondants sont nécessaires pour construire un APK. Aucun parcours complet sur téléphone physique n’est revendiqué par les tests automatiques.
 
@@ -21,12 +21,26 @@ Le manifeste autorise HTTP pour la démonstration sur réseau local. Android SDK
 
 Le même projet Flutter fonctionne dans un navigateur. Cela reste l’espace chauffeur ; React est l’espace superviseur.
 
-```sh
-flutter build web --no-pub --no-web-resources-cdn --dart-define=API_BASE_URL=http://127.0.0.1:18080/api
+Windows PowerShell, depuis la racine du projet :
+
+```powershell
+.\scripts\run-mobile.bat
+```
+
+Linux Bash, depuis la racine du projet :
+
+```bash
+./scripts/run-mobile.sh
+```
+
+Pour servir une compilation statique sous Linux, depuis `MOBILE` :
+
+```bash
+flutter build web --no-web-resources-cdn --dart-define=API_BASE_URL=http://127.0.0.1:8080/api
 python3 -m http.server 8088 --bind 127.0.0.1 --directory build/web
 ```
 
-Ouvrir `http://127.0.0.1:8088` après avoir démarré le backend correspondant. Adapter le port API à votre serveur ; `18080` est celui de la démonstration locale. Autoriser cette origine dans la configuration CORS du backend. Une ancienne adresse enregistrée dans **Configurer le serveur** prend priorité sur la valeur de compilation : la corriger si nécessaire. `--no-web-resources-cdn` fournit CanvasKit depuis ce serveur local et évite un écran blanc si son CDN est inaccessible.
+Ouvrir `http://127.0.0.1:8088` après avoir démarré le backend sur le port `8080`. Adapter le port API si nécessaire. Autoriser cette origine dans la configuration CORS du backend. Une ancienne adresse enregistrée dans **Configurer le serveur** prend priorité sur la valeur de compilation : la corriger si nécessaire. `--no-web-resources-cdn` fournit CanvasKit depuis ce serveur local et évite un écran blanc si son CDN est inaccessible.
 
 Dans le navigateur, **Choisir la photo APRÈS** ouvre un sélecteur de fichier JPEG/PNG (10 Mo maximum). **Photo AVANT facultative** utilise le même sélecteur. Sur Android, les boutons continuent d’utiliser la caméra. Le brouillon unique est conservé dans IndexedDB, par chauffeur, pour permettre le réessai et la reprise après rechargement ; une erreur de stockage est affichée avant de déclarer la photo enregistrée. Les anciens brouillons du navigateur restent lisibles. Supprimer les données du site supprime aussi les brouillons et la connexion locale.
 
@@ -40,7 +54,7 @@ Google Maps s’ouvre dans un nouvel onglet ; autoriser les fenêtres contextuel
 2. Le chauffeur ouvre sa tournée et appuie sur **Démarrer**. Sans parcours routier, le départ reste bloqué.
 3. **Naviguer avec Google Maps** ouvre uniquement la destination suivante. Maps peut choisir d’autres routes, sans changer l’ordre des visites dans GestiCollecte.
 4. Sur place, **Je suis arrivé**, puis collecte et **Prendre la photo APRÈS**. La photo AVANT est facultative et se prend avant la photo APRÈS.
-5. La preuve est d’abord enregistrée, puis analysée. Une erreur d’analyse ne devient jamais une validation de propreté. Le chauffeur peut ajouter sa propre observation et continuer.
+5. La preuve est enregistrée sans appel IA par défaut. **Analyser la photo** lance une analyse manuelle ; **Analyse IA automatique** permet de l’activer pour cet écran. Un résultat valide est réutilisé tant que la preuve et la configuration restent identiques. Une erreur d’analyse ne devient jamais une validation de propreté. Le chauffeur peut ajouter sa propre observation et continuer.
 6. Pour une obstruction, utiliser **Signaler un problème**, avec un motif. Cette action est disponible avant l’arrivée si le point est inaccessible : aucune arrivée ni photo ne doit être inventée. Si photographier est impossible ou dangereux, expliquer pourquoi.
 7. Après chaque visite, le point suivant provient de l’état enregistré par le serveur. Après fermeture/reconnexion, rouvrir la tournée reprend cet état.
 8. Après tous les points, naviguer vers le dépôt et confirmer le retour. Le superviseur consulte ensuite les preuves, les observations et les durées.

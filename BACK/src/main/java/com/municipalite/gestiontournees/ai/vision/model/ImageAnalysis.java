@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 
 /**
- * Entité représentant une analyse d'image de point de collecte par Gemini Vision.
+ * Image evidence assessment with provider metadata and separate human review.
  */
 @Document(collection = "image_analyses")
 @Data
@@ -32,6 +32,9 @@ public class ImageAnalysis {
     private String provider;
     private String model;
     private String promptVersion;
+    // Sanitized diagnostics only; never persist provider bodies, credentials or image payloads here.
+    private String failureCategory;
+    private Integer providerHttpStatus;
     private String reviewedLabel;
     private String reviewNotes;
     private String reviewedBy;

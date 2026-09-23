@@ -2,7 +2,8 @@ package com.municipalite.gestiontournees.ai.cv.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.municipalite.gestiontournees.ai.common.GeminiClient;
+import com.municipalite.gestiontournees.ai.common.CollectionAiClient;
+import com.municipalite.gestiontournees.ai.common.AiServiceException;
 import com.municipalite.gestiontournees.ai.config.AiProperties;
 import com.municipalite.gestiontournees.ai.cv.dto.CandidateReviewRequest;
 import com.municipalite.gestiontournees.ai.cv.model.*;
@@ -29,7 +30,7 @@ import java.util.regex.Pattern;
 @Service @RequiredArgsConstructor
 public class CvAnalysisService {
     private final CvExtractionService extraction;
-    private final GeminiClient gemini;
+    private final CollectionAiClient qwen;
     private final AiProperties properties;
     private final CandidateRepository candidates;
     private final UserRepository users;
@@ -42,6 +43,7 @@ public class CvAnalysisService {
     public static final List<String> FIELDS = List.of("nom", "prenom", "cin", "email", "telephone", "adresse",
             "dateNaissance", "numeroPermis", "typePermis", "dateExpirationPermis", "anneesExperience",
             "experienceChauffeur", "experienceCollecte", "formations", "certifications", "formationSecurite", "experienceCollecteConfirmee");
+    private static final Map<String, Object> RESPONSE_SCHEMA = responseSchema();
     private static final Set<String> STATUSES = Set.of("VERIFIED", "MISSING", "INVALID", "UNCERTAIN");
 
     public Candidate analyzeAndSaveCv(MultipartFile file) {
@@ -49,26 +51,67 @@ public class CvAnalysisService {
         var candidate = new Candidate();
         candidate.setCvFilePath(saveFile(file));
         candidate.setCvFileName(file.getOriginalFilename());
-        candidate.setFieldEvidence(emptyEvidence());
-        candidate.setExtractionStatus(document.status());
-        candidate.setExtractionPromptVersion(PROMPT_VERSION);
         candidate.setStatut("EN_ATTENTE");
         candidate.setDateDepot(LocalDateTime.now());
-        if (!document.parts().isEmpty()) {
-            // Record the attempted configuration even when the provider cannot return an extraction.
-            candidate.setExtractionModel(properties.getGemini().getModelText());
-            try {
-                parseEvidence(candidate, gemini.generateJson(prompt(document.text())), document);
-            } catch (Exception unavailable) {
-                candidate.setExtractionStatus("PROVIDER_UNAVAILABLE");
-                candidate.setFieldEvidence(localEvidence(document));
-            }
-        }
+        applyExtraction(candidate, document);
         synchronizeValues(candidate);
         candidate.setAnalyseIa("Les valeurs extraites sont des propositions à vérifier dans le CV. Le score utilise uniquement les champs validés par le superviseur.");
         scoring.evaluate(candidate, requirements.current());
         candidate.setDateMiseAJour(LocalDateTime.now());
         return candidates.save(candidate);
+    }
+
+    private void applyExtraction(Candidate candidate, CvExtractionService.Extraction document) {
+        candidate.setFieldEvidence(emptyEvidence());
+        candidate.setExtractionStatus(document.status());
+        candidate.setExtractionPromptVersion(PROMPT_VERSION);
+        candidate.setExtractionProvider(null);
+        candidate.setExtractionModel(null);
+        candidate.setExtractionFailureCategory(null);
+        candidate.setExtractionHttpStatus(null);
+        candidate.setExtractionError(null);
+        if (!document.parts().isEmpty()) {
+            candidate.setExtractionProvider(properties.getCollectionProvider().name());
+            candidate.setExtractionModel(properties.getCollectionTextModel());
+            try {
+                String json = qwen.generateJson(prompt(document.text()), RESPONSE_SCHEMA);
+                try {
+                    parseEvidence(candidate, json, document);
+                } catch (Exception invalid) {
+                    candidate.setExtractionStatus("INVALID_RESPONSE");
+                    candidate.setExtractionFailureCategory("INVALID_EXTRACTION_RESPONSE");
+                    candidate.setExtractionError("La réponse IA ne respecte pas le format d'extraction attendu. Les propositions locales restent à vérifier.");
+                    candidate.setFieldEvidence(localEvidence(document));
+                }
+            } catch (AiServiceException unavailable) {
+                String category = unavailable.getCategory();
+                candidate.setExtractionStatus(Set.of("EMPTY_RESPONSE", "INVALID_PROVIDER_RESPONSE").contains(category) ? "INVALID_RESPONSE" : "PROVIDER_UNAVAILABLE");
+                candidate.setExtractionFailureCategory(category);
+                candidate.setExtractionHttpStatus(unavailable.getProviderHttpStatus());
+                candidate.setExtractionError(unavailable.getProviderHttpStatus() != null
+                        ? "Le fournisseur IA a refusé la requête (HTTP " + unavailable.getProviderHttpStatus() + "). Réessayez ultérieurement."
+                        : "PROVIDER_TIMEOUT".equals(category) ? "Le délai de réponse du fournisseur IA est dépassé. Réessayez ultérieurement."
+                        : "Le fournisseur IA n'a pas retourné de réponse exploitable. Les propositions locales restent à vérifier.");
+                candidate.setFieldEvidence(localEvidence(document));
+            } catch (Exception unavailable) {
+                candidate.setExtractionStatus("PROVIDER_UNAVAILABLE");
+                candidate.setExtractionFailureCategory("PROVIDER_UNAVAILABLE");
+                candidate.setExtractionError("L'appel au fournisseur IA n'a pas abouti. Réessayez ultérieurement.");
+                candidate.setFieldEvidence(localEvidence(document));
+            }
+        }
+    }
+
+    private static Map<String, Object> responseSchema() {
+        Map<String, Object> field = Map.of("type", "object", "properties", Map.of(
+                "value", Map.of("type", List.of("string", "number", "boolean", "null")),
+                "snippet", Map.of("type", List.of("string", "null"))),
+                "required", List.of("value", "snippet"), "additionalProperties", false);
+        Map<String, Object> fields = new LinkedHashMap<>();
+        FIELDS.forEach(name -> fields.put(name, field));
+        return Map.of("type", "object", "properties", Map.of("fields",
+                Map.of("type", "object", "properties", fields, "required", FIELDS, "additionalProperties", false)),
+                "required", List.of("fields"), "additionalProperties", false);
     }
 
     private String prompt(String text) {
@@ -126,23 +169,24 @@ public class CvAnalysisService {
         labels.put("anneesExperience", "exp[eé]rience (?:de conduite|chauffeur)(?: explicitement d[eé]clar[eé]e)?");
         labels.put("formationSecurite", "formation de s[eé]curit[eé](?: pertinente)?");
         labels.put("experienceCollecteConfirmee", "exp[eé]rience de collecte(?: des d[eé]chets)?");
-        String boundary = "(?:^|[.;|])\\h*";
+        String boundary = "(?:^|[.;|]|(?<=\\h))\\h*";
         String delimiter = "\\h*[:=-]\\h*";
-        var nextLabel = Pattern.compile("(?iu)" + boundary + "(?:" + String.join("|", labels.values()) + ")" + delimiter);
+        String namedLabels = labels.entrySet().stream().map(entry -> "(?<" + entry.getKey() + ">" + entry.getValue() + ")")
+                .collect(java.util.stream.Collectors.joining("|"));
+        var labelPattern = Pattern.compile("(?iu)" + boundary + "(?:" + namedLabels + ")" + delimiter);
         var explicitFields = new HashSet<String>();
-        fields: for (var entry : labels.entrySet()) {
-            var label = Pattern.compile("(?iu)" + boundary + "(?:" + entry.getValue() + ")" + delimiter);
-            for (var part : document.parts()) {
-                // Horizontal whitespace cannot absorb a blank field's following line.
-                for (String line : part.text().split("\\R", -1)) {
-                    var match = label.matcher(line);
-                    if (!match.find()) continue;
-                    var next = nextLabel.matcher(line);
+        for (var part : document.parts()) {
+            // Consume complete recognized labels, including adjacent columns on the same line.
+            // This also prevents "permis" inside "numéro permis" becoming a category label.
+            for (String line : part.text().split("\\R", -1)) {
+                var match = labelPattern.matcher(line);
+                while (match.find()) {
+                    String key = labels.keySet().stream().filter(label -> match.group(label) != null).findFirst().orElseThrow();
+                    if (!explicitFields.add(key)) continue;
+                    var next = labelPattern.matcher(line);
                     int end = next.find(match.end()) ? next.start() : line.length();
-                    result.put(entry.getKey(), localField(entry.getKey(), line.substring(match.end(), end),
+                    result.put(key, localField(key, line.substring(match.end(), end),
                             line.substring(match.start(), end).trim(), part));
-                    explicitFields.add(entry.getKey());
-                    continue fields;
                 }
             }
         }
@@ -175,6 +219,8 @@ public class CvAnalysisService {
             switch (key) {
                 case "typePermis" -> value = value.replaceFirst("(?iu)^cat[eé]gories?\\h+", "")
                         .split("(?iu)\\h*(?:;|\\bseulement\\b|\\buniquement\\b)", 2)[0].trim()
+                        // Strip only known category descriptions, never restrictions such as "annulé".
+                        .replaceFirst("(?iu)\\h*\\((?:permis\\h+)?(?:poids|super)\\h+lourds(?:\\h*(?:&|et)\\h*super\\h+lourds|\\h+porteur)?\\)\\h*$", "")
                         .replaceAll("(?iu)\\h+et\\h+", ",");
                 case "cin", "telephone" -> {
                     var number = Pattern.compile("^[+0-9][0-9 ()-]*").matcher(value);
@@ -234,6 +280,38 @@ public class CvAnalysisService {
         scoring.evaluate(candidate, requirements.current());
         candidate.setDateMiseAJour(LocalDateTime.now());
         return candidates.save(candidate);
+    }
+
+    /** Manual retry reuses the stored source and keeps every supervisor-reviewed field. */
+    public Candidate reanalyze(String id) {
+        var candidate = getCandidateById(id);
+        if (candidate.getAgentId() != null) throw new IllegalArgumentException("Le compte agent existe déjà ; modifier ses informations dans Agents");
+        var reviewed = new LinkedHashMap<String, FieldEvidence>();
+        if (candidate.getFieldEvidence() != null) candidate.getFieldEvidence().forEach((key, field) -> {
+            if (field != null && (field.getReviewedAt() != null || "MANUAL".equals(field.getSource()) || "VERIFIED".equals(field.getStatus()))) reviewed.put(key, field);
+        });
+        var document = extraction.extractStored(storedCvPath(candidate));
+        applyExtraction(candidate, document);
+        candidate.getFieldEvidence().putAll(reviewed);
+        synchronizeValues(candidate);
+        scoring.evaluate(candidate, requirements.current());
+        candidate.setDateMiseAJour(LocalDateTime.now());
+        return candidates.save(candidate);
+    }
+
+    private Path storedCvPath(Candidate candidate) {
+        String path = candidate.getCvFilePath();
+        if (path == null || !path.startsWith("/uploads/cv/")) throw new IllegalArgumentException("Le fichier CV enregistré n'est pas accessible");
+        String filename = path.substring("/uploads/cv/".length());
+        if (!filename.matches("[A-Za-z0-9._-]+") || filename.contains("..")) throw new IllegalArgumentException("Chemin du CV invalide");
+        try {
+            Path root = Path.of(properties.getStorage().getCvDir()).toRealPath();
+            Path target = root.resolve(filename).toRealPath();
+            if (!target.startsWith(root) || !Files.isRegularFile(target)) throw new IllegalArgumentException("Chemin du CV invalide");
+            return target;
+        } catch (java.io.IOException error) {
+            throw new IllegalArgumentException("Le fichier CV enregistré n'est pas accessible");
+        }
     }
 
     public List<Candidate> getAllCandidates() {

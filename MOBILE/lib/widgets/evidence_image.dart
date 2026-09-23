@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import '../core/app_theme.dart';
 import '../services/api_service.dart';
 
 class EvidenceImage extends StatefulWidget {
@@ -33,32 +34,76 @@ class _EvidenceImageState extends State<EvidenceImage> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(widget.label, style: const TextStyle(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 6),
-        FutureBuilder<Uint8List>(
-            future: _bytes,
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return TextButton.icon(
-                    onPressed: () => setState(() => _bytes = _load()),
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Recharger la photo'));
-              }
-              if (!snapshot.hasData) {
-                return const SizedBox(
-                    height: 100,
-                    child: Center(child: CircularProgressIndicator()));
-              }
-              return ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.memory(snapshot.data!,
-                      height: 170,
+  Widget build(BuildContext context) => Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: GestiTheme.border),
+            borderRadius: BorderRadius.circular(12)),
+        child:
+            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(children: [
+                const Icon(Icons.image_outlined,
+                    color: GestiTheme.primaryDark, size: 17),
+                const SizedBox(width: 8),
+                Expanded(
+                    child: Text(widget.label,
+                        style: const TextStyle(
+                            color: GestiTheme.ink,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600))),
+              ])),
+          Container(
+            height: 200,
+            color: GestiTheme.bg,
+            child: FutureBuilder<Uint8List>(
+                future: _bytes,
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.broken_image_outlined,
+                              color: GestiTheme.muted, size: 28),
+                          const SizedBox(height: 8),
+                          const Text('Photo indisponible',
+                              style: TextStyle(
+                                  color: GestiTheme.muted, fontSize: 12)),
+                          TextButton.icon(
+                              style: TextButton.styleFrom(
+                                  minimumSize: const Size(0, 48)),
+                              onPressed: () => setState(() => _bytes = _load()),
+                              icon: const Icon(Icons.refresh, size: 18),
+                              label: const Text('Recharger la photo')),
+                        ]);
+                  }
+                  if (!snapshot.hasData) {
+                    return const Center(
+                        child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                                color: GestiTheme.primary, strokeWidth: 2)));
+                  }
+                  return Image.memory(snapshot.data!,
                       width: double.infinity,
                       fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) =>
-                          const Text('Photo illisible')));
-            }),
-      ]);
+                      semanticLabel: 'Photo ${widget.label}',
+                      errorBuilder: (_, __, ___) => const Center(
+                              child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                Icon(Icons.broken_image_outlined,
+                                    color: GestiTheme.muted, size: 28),
+                                SizedBox(height: 8),
+                                Text('Photo illisible',
+                                    style: TextStyle(
+                                        color: GestiTheme.muted, fontSize: 12)),
+                              ])));
+                }),
+          ),
+        ]),
+      );
 }

@@ -41,9 +41,10 @@ class VisionEvaluationAccessTest {
     @Test @WithMockUser(roles = "SUPERVISEUR")
     void supervisorCanReadOnlyNonSecretConfiguration() throws Exception {
         when(vision.evaluationConfiguration()).thenReturn(
-                new ImageAnalysisService.EvaluationConfiguration("GEMINI", "test-model", "point-cleanliness-v1"));
+                new ImageAnalysisService.EvaluationConfiguration("OPENROUTER", "test-model", "point-cleanliness-v1"));
         mvc.perform(get("/api/ai/vision/evaluation-config")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.model").value("test-model"))
+                .andExpect(jsonPath("$.provider").value("OPENROUTER"))
                 .andExpect(jsonPath("$.apiKey").doesNotExist());
         verify(access).requireSupervisor();
     }

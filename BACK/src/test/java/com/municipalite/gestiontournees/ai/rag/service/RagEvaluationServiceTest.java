@@ -112,7 +112,7 @@ class RagEvaluationServiceTest {
         assertThat(evaluation.evaluate(request).embeddingStatus()).isEqualTo("INDEX_NOT_READY");
     }
 
-    @Test void followUpUsesFixedHistoryAndInvalidCitationsRemainExcerpts() {
+    @Test void followUpUsesFixedHistoryButUnrelatedInvalidCitationsDoNotBecomeExcerpts() {
         when(gemini.generateJson(anyString())).thenReturn("{\"status\":\"ANSWERED\",\"answer\":\"invented\",\"citations\":[{\"chunkId\":\"private\",\"quote\":\"secret\"}]}");
         var request = request(true); request.setQuestion("Et si ce point est inaccessible ?");
         request.setHistory(List.of(new RagEvaluationRequest.HistoryTurn("USER", "photo après ?")));
@@ -120,7 +120,8 @@ class RagEvaluationServiceTest {
         assertThat(result.retrievalQuery()).startsWith("photo après ?\n");
         assertThat(result.results()).allSatisfy(mode -> {
             assertThat(mode.generationStatus()).isEqualTo("INVALID_RESPONSE");
-            assertThat(mode.status()).isEqualTo("SOURCE_EXCERPTS");
+            assertThat(mode.status()).isEqualTo("INSUFFICIENT_INFORMATION");
+            assertThat(mode.citations()).isEmpty();
             assertThat(mode.answer()).doesNotContain("invented", "secret");
         });
         verifyNoInteractions(histories);

@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const AgentFormModal = ({ isOpen, onClose, onSubmit, agent = null, isLoading = false }) => {
+  const firstInputRef = useRef(null);
   const [formData, setFormData] = useState({
     nom: '',
     prenom: '',
@@ -40,6 +41,13 @@ const AgentFormModal = ({ isOpen, onClose, onSubmit, agent = null, isLoading = f
     }
   }, [agent, isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousFocus = document.activeElement;
+    firstInputRef.current?.focus();
+    return () => previousFocus?.focus();
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleChange = (e) => {
@@ -59,58 +67,85 @@ const AgentFormModal = ({ isOpen, onClose, onSubmit, agent = null, isLoading = f
     onSubmit(formData);
   };
 
+  const handleDialogKeyDown = (event) => {
+    if (event.key === 'Escape' && !isLoading) onClose();
+    if (event.key !== 'Tab') return;
+    const controls = [...event.currentTarget.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href]')];
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first?.focus();
+    }
+  };
+
   return (
     <div className="modal-overlay">
-      <div className="modal-content">
+      <div className="modal-content entity-form-modal" role="dialog" aria-modal="true" aria-labelledby="agent-form-title" aria-describedby="agent-form-description" onKeyDown={handleDialogKeyDown}>
         <div className="modal-header">
-          <h2>{agent ? 'Modifier l\'agent' : 'Nouvel agent'}</h2>
-          <button className="close-btn" onClick={onClose}><FiX /></button>
+          <div>
+            <h2 id="agent-form-title">{agent ? 'Modifier le chauffeur' : 'Ajouter un chauffeur'}</h2>
+            <p id="agent-form-description" className="modal-subtitle">Renseignez son identité et ses informations professionnelles. Les champs marqués * sont obligatoires.</p>
+          </div>
+          <button type="button" className="close-btn" onClick={onClose} disabled={isLoading} aria-label="Fermer le formulaire"><FiX aria-hidden="true" /></button>
         </div>
         
         <form onSubmit={handleSubmit}>
-          <div className="modal-body form-grid">
+          <div className="modal-body">
+            <section className="form-section" aria-labelledby="agent-identity-title">
+              <h3 id="agent-identity-title" className="form-section-title">Identité et coordonnées</h3>
+              <div className="form-grid">
             <div className="form-group">
-              <label>Nom *</label>
-              <input type="text" name="nom" value={formData.nom} onChange={handleChange} required />
+              <label htmlFor="agent-nom">Nom *</label>
+              <input ref={firstInputRef} id="agent-nom" type="text" name="nom" autoComplete="family-name" value={formData.nom} onChange={handleChange} required />
             </div>
             <div className="form-group">
-              <label>Prénom *</label>
-              <input type="text" name="prenom" value={formData.prenom} onChange={handleChange} required />
+              <label htmlFor="agent-prenom">Prénom *</label>
+              <input id="agent-prenom" type="text" name="prenom" autoComplete="given-name" value={formData.prenom} onChange={handleChange} required />
             </div>
             
             <div className="form-group">
-              <label>CIN *</label>
-              <input type="text" name="cin" value={formData.cin} onChange={handleChange} required />
+              <label htmlFor="agent-cin">Numéro de CIN *</label>
+              <input id="agent-cin" type="text" name="cin" value={formData.cin} onChange={handleChange} required />
             </div>
             <div className="form-group">
-              <label>Email Personnel (pour recevoir l'identifiant) *</label>
+              <label htmlFor="agent-email">Adresse e-mail *</label>
               <input
+                id="agent-email"
                 type="email"
                 name="email"
+                autoComplete="email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                placeholder="ex: jean.dupont@gmail.com"
+                placeholder="prenom.nom@exemple.tn"
               />
             </div>
             
             <div className="form-group">
-              <label>Téléphone *</label>
-              <input type="text" name="telephone" value={formData.telephone} onChange={handleChange} required />
+              <label htmlFor="agent-telephone">Téléphone *</label>
+              <input id="agent-telephone" type="tel" name="telephone" autoComplete="tel" value={formData.telephone} onChange={handleChange} required />
             </div>
             <div className="form-group">
-              <label>Adresse</label>
-              <input type="text" name="adresse" value={formData.adresse} onChange={handleChange} />
+              <label htmlFor="agent-adresse">Adresse</label>
+              <input id="agent-adresse" type="text" name="adresse" autoComplete="street-address" value={formData.adresse} onChange={handleChange} />
             </div>
-            
+              </div>
+            </section>
+            <section className="form-section" aria-labelledby="agent-professional-title">
+              <h3 id="agent-professional-title" className="form-section-title">Permis et affectation</h3>
+              <div className="form-grid">
             <div className="form-group">
-              <label>N° Permis</label>
-              <input type="text" name="numeroPermis" value={formData.numeroPermis} onChange={handleChange} />
+              <label htmlFor="agent-permis">Numéro de permis</label>
+              <input id="agent-permis" type="text" name="numeroPermis" value={formData.numeroPermis} onChange={handleChange} />
             </div>
             <div className="form-group">
-              <label>Type de permis</label>
-              <select name="typePermis" value={formData.typePermis} onChange={handleChange} className="form-select">
-                <option value="">Sélectionner</option>
+              <label htmlFor="agent-type-permis">Catégorie de permis</label>
+              <select id="agent-type-permis" name="typePermis" value={formData.typePermis} onChange={handleChange} className="form-select">
+                <option value="">Choisir une catégorie</option>
                 <option value="B">Permis B (Léger)</option>
                 <option value="C">Permis C (Lourd)</option>
                 <option value="E">Permis E (Remorque)</option>
@@ -118,89 +153,32 @@ const AgentFormModal = ({ isOpen, onClose, onSubmit, agent = null, isLoading = f
             </div>
             
             <div className="form-group">
-              <label>Expiration du permis</label>
-              <input type="date" name="dateExpirationPermis" value={formData.dateExpirationPermis} onChange={handleChange} />
+              <label htmlFor="agent-permis-expiration">Expiration du permis</label>
+              <input id="agent-permis-expiration" type="date" name="dateExpirationPermis" value={formData.dateExpirationPermis} onChange={handleChange} />
             </div>
             <div className="form-group">
-              <label>Date d'embauche *</label>
-              <input type="date" name="dateEmbauche" value={formData.dateEmbauche} onChange={handleChange} required />
+              <label htmlFor="agent-embauche">Date d'embauche *</label>
+              <input id="agent-embauche" type="date" name="dateEmbauche" value={formData.dateEmbauche} onChange={handleChange} required />
             </div>
-            
-            <div className="form-group full-width" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-              <input type="checkbox" id="actif" name="actif" checked={formData.actif} onChange={handleChange} style={{width: 'auto'}} />
-              <label htmlFor="actif" style={{marginBottom: 0}}>Agent actif (Autorisé à se connecter et à conduire)</label>
+              </div>
+            </section>
+            <div className="checkbox-field">
+              <input type="checkbox" id="agent-actif" name="actif" checked={formData.actif} onChange={handleChange} aria-describedby="agent-actif-help" />
+              <div>
+                <label htmlFor="agent-actif">Chauffeur actif</label>
+                <p id="agent-actif-help" className="field-help">Autorise l'accès à l'application et l'affectation aux tournées.</p>
+              </div>
             </div>
           </div>
           
           <div className="modal-footer">
             <button type="button" className="btn-secondary" onClick={onClose} disabled={isLoading}>Annuler</button>
             <button type="submit" className="btn-primary" disabled={isLoading}>
-              {isLoading ? 'Enregistrement...' : 'Enregistrer'}
+              {isLoading ? 'Enregistrement…' : agent ? 'Enregistrer les modifications' : 'Créer le chauffeur'}
             </button>
           </div>
         </form>
       </div>
-      
-      <style>{`
-        .modal-overlay {
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0,0,0,0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-        }
-        .modal-content {
-          background: var(--bg-card);
-          border-radius: var(--radius-lg);
-          width: 90%;
-          max-width: 650px;
-          max-height: 90vh;
-          overflow-y: auto;
-          box-shadow: var(--shadow-lg);
-        }
-        .modal-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 1.5rem;
-          border-bottom: 1px solid var(--border-color);
-        }
-        .modal-header h2 { font-size: 1.25rem; font-weight: 600; }
-        .close-btn { font-size: 1.5rem; color: var(--text-muted); }
-        .close-btn:hover { color: var(--text-main); }
-        .modal-body { padding: 1.5rem; }
-        .form-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1rem;
-        }
-        .full-width { grid-column: 1 / -1; }
-        .form-select {
-          width: 100%;
-          padding: 0.75rem;
-          border: 1px solid var(--border-color);
-          border-radius: var(--radius-md);
-          background: white;
-          font-family: inherit;
-        }
-        .modal-footer {
-          padding: 1.5rem;
-          border-top: 1px solid var(--border-color);
-          display: flex;
-          justify-content: flex-end;
-          gap: 1rem;
-        }
-        .btn-secondary {
-          padding: 0.75rem 1.5rem;
-          border-radius: var(--radius-md);
-          background: #f1f5f9;
-          color: #475569;
-          font-weight: 500;
-        }
-        .btn-secondary:hover { background: #e2e8f0; }
-      `}</style>
     </div>
   );
 };

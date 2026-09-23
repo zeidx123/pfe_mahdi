@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { aiService } from '../../services/aiService';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 import { 
   FiFileText, FiUpload, FiRefreshCw, FiTrash2, 
-  FiCheckCircle, FiAlertCircle, FiClock, FiFile
+  FiCheckCircle, FiAlertCircle, FiClock, FiFile, FiDownload, FiX, FiShield
 } from 'react-icons/fi';
+import './DocumentManagementPage.css';
 
 const DocumentManagementPage = () => {
   const [documents, setDocuments] = useState([]);
@@ -15,6 +16,7 @@ const DocumentManagementPage = () => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [busy, setBusy] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -65,7 +67,7 @@ const DocumentManagementPage = () => {
       await aiService.deleteDocument(id);
       toast.success('Document et tranches vectorielles supprimés');
       fetchDocuments();
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la suppression');
     }
   };
@@ -75,7 +77,7 @@ const DocumentManagementPage = () => {
       await aiService.reindexDocument(id);
       toast.success(`Réindexation lancée pour "${name}"`);
       fetchDocuments();
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de la réindexation');
     }
   };
@@ -112,159 +114,147 @@ const DocumentManagementPage = () => {
     switch (status) {
       case 'INDEXED':
         return (
-          <span className="badge badge-success" style={{ background: '#dcfce7', color: '#15803d', padding: '6px 12px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600' }}>
-            <FiCheckCircle /> INDEXÉ
+          <span className="status-badge docs-status-success">
+            <FiCheckCircle aria-hidden="true" /> Indexé
           </span>
         );
       case 'TEXT_READY':
-        return <span className="badge badge-warning">Extraits disponibles — IA indisponible</span>;
+        return <span className="status-badge docs-status-warning"><FiFileText aria-hidden="true" /> Extraits disponibles</span>;
       case 'PROCESSING':
         return (
-          <span className="badge badge-warning" style={{ background: '#fef3c7', color: '#b45309', padding: '6px 12px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600' }}>
-            <FiRefreshCw className="animate-spin" /> EN COURS
+          <span className="status-badge docs-status-warning">
+            <span className="docs-spinner"><FiRefreshCw aria-hidden="true" /></span> En cours
           </span>
         );
       case 'FAILED':
         return (
-          <span className="badge badge-danger" style={{ background: '#fee2e2', color: '#b91c1c', padding: '6px 12px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600' }}>
-            <FiAlertCircle /> ÉCHEC
+          <span className="status-badge docs-status-danger">
+            <FiAlertCircle aria-hidden="true" /> Échec
           </span>
         );
       default:
         return (
-          <span className="badge badge-secondary" style={{ background: '#f3f4f6', color: '#4b5563', padding: '6px 12px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600' }}>
-            <FiClock /> TÉLÉVERSÉ
+          <span className="status-badge docs-status-neutral">
+            <FiClock aria-hidden="true" /> Téléversé
           </span>
         );
     }
   };
 
   return (
-    <div className="page-container" style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', background: 'white', padding: '20px 24px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+    <div className="document-page">
+      <div className="page-header flex-between">
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '28px' }}>📚</span> Base Documentaire
-          </h1>
-          <p style={{ color: '#6b7280', marginTop: '4px', marginBottom: 0, fontSize: '14px' }}>
-            Gérez les documents de la municipalité (règlements, consignes, procédures) utilisés par l'assistant après votre approbation.
-          </p>
+          <h1>Base documentaire</h1>
+          <p>Les consignes et procédures approuvées pour l’assistant des chauffeurs.</p>
         </div>
-
-        <div>
-          <label className="btn btn-primary" style={{ cursor: 'pointer', background: '#2563eb', color: 'white', padding: '10px 18px', borderRadius: '8px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 4px rgba(37, 99, 235, 0.2)' }}>
-            <FiUpload />
-            {uploading ? 'Téléversement...' : '+ Ajouter un document'}
-            <input 
-              type="file" 
-              accept=".pdf,.docx,.txt,.md" 
-              onChange={handleFileUpload} 
-              style={{ display: 'none' }} 
-              disabled={uploading}
-            />
-          </label>
+        <div className="docs-upload-action">
+          <button type="button" className="btn-primary" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+            <FiUpload aria-hidden="true" />
+            {uploading ? 'Téléversement…' : 'Ajouter un document'}
+          </button>
+          <input ref={fileInputRef} type="file" accept=".pdf,.docx,.txt,.md" onChange={handleFileUpload} hidden disabled={uploading} aria-label="Document à téléverser" />
+          <span>PDF, DOCX, TXT ou Markdown</span>
         </div>
       </div>
 
-      {/* Cartes d'information rapide */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-        <div style={{ background: 'white', padding: '20px', borderRadius: '12px', borderLeft: '4px solid #2563eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '600' }}>TOTAL DOCUMENTS</div>
-          <div style={{ fontSize: '28px', fontWeight: '800', color: '#111827', marginTop: '6px' }}>{documents.length}</div>
+      <div className="docs-summary-grid" aria-label="État de la base documentaire">
+        <div className="card docs-summary-card">
+          <span className="docs-summary-icon"><FiFileText aria-hidden="true" /></span>
+          <div><span className="docs-summary-label">Documents</span><strong>{loading || loadError ? '—' : documents.length}</strong></div>
         </div>
-        <div style={{ background: 'white', padding: '20px', borderRadius: '12px', borderLeft: '4px solid #16a34a', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '600' }}>DOCUMENTS INDEXÉS</div>
-          <div style={{ fontSize: '28px', fontWeight: '800', color: '#16a34a', marginTop: '6px' }}>
-            {documents.filter(d => d.status === 'INDEXED').length}
-          </div>
+        <div className="card docs-summary-card">
+          <span className="docs-summary-icon docs-summary-icon-green"><FiShield aria-hidden="true" /></span>
+          <div><span className="docs-summary-label">Sources approuvées</span><strong>{loading || loadError ? '—' : documents.filter(d => d.approved).length}</strong></div>
         </div>
-        <div style={{ background: 'white', padding: '20px', borderRadius: '12px', borderLeft: '4px solid #9333ea', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ fontSize: '13px', color: '#6b7280', fontWeight: '600' }}>PASSAGES EXTRAITS</div>
-          <div style={{ fontSize: '28px', fontWeight: '800', color: '#9333ea', marginTop: '6px' }}>
-            {documents.reduce((sum, d) => sum + (d.chunkCount || 0), 0)}
-          </div>
+        <div className="card docs-summary-card">
+          <span className="docs-summary-icon docs-summary-icon-green"><FiCheckCircle aria-hidden="true" /></span>
+          <div><span className="docs-summary-label">Index sémantique prêt</span><strong>{loading || loadError ? '—' : documents.filter(d => d.semanticIndexReady).length}</strong></div>
+        </div>
+        <div className="card docs-summary-card">
+          <span className="docs-summary-icon"><FiFile aria-hidden="true" /></span>
+          <div><span className="docs-summary-label">Passages extraits</span><strong>{loading || loadError ? '—' : documents.reduce((sum, d) => sum + (d.chunkCount || 0), 0)}</strong></div>
         </div>
       </div>
 
-      {loadError && <p role="alert">{loadError}</p>}
-      {/* Tableau des documents */}
-      <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+      <div className="docs-guidance">
+        <FiShield aria-hidden="true" />
+        <p>Vérifiez chaque document avant de l’approuver. Si la recherche sémantique est indisponible, les textes exploitables et approuvés restent accessibles sous forme d’extraits.</p>
+      </div>
+
+      {loadError && <div className="docs-load-error" role="alert"><FiAlertCircle aria-hidden="true" /><p>{loadError}</p><button type="button" className="btn-secondary" onClick={fetchDocuments}>Réessayer</button></div>}
+      <section className="card docs-library" aria-labelledby="docs-library-title">
+        <div className="docs-library-header">
+          <div><h2 id="docs-library-title">Documents de la municipalité</h2><p>Approbation et disponibilité des sources</p></div>
+          <button type="button" className="btn-secondary docs-refresh-button" onClick={fetchDocuments} disabled={loading}><FiRefreshCw aria-hidden="true" /> Actualiser</button>
+        </div>
         {loading ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#6b7280' }}>
-            <FiRefreshCw className="animate-spin" style={{ fontSize: '24px', marginBottom: '8px' }} />
-            <p>Chargement des documents de la base IA...</p>
+          <div className="empty-state docs-empty-state" role="status">
+            <span className="docs-empty-icon docs-spinner"><FiRefreshCw aria-hidden="true" /></span>
+            <h3>Chargement des documents…</h3>
+            <p>Récupération des sources et de leur état de traitement.</p>
           </div>
         ) : documents.length === 0 ? (
-          <div style={{ padding: '60px 20px', textAlign: 'center', color: '#6b7280' }}>
-            <FiFileText style={{ fontSize: '48px', color: '#9ca3af', marginBottom: '12px' }} />
-            <h3 style={{ fontSize: '18px', color: '#374151', margin: '0 0 6px 0' }}>Aucun document indexé</h3>
-            <p style={{ fontSize: '14px', margin: 0 }}>Ajoutez des fichiers PDF, DOCX ou TXT pour alimenter le GestiCollecte.</p>
+          <div className="empty-state docs-empty-state">
+            <span className="docs-empty-icon"><FiFileText aria-hidden="true" /></span>
+            <h3>{loadError ? 'Documents indisponibles' : 'Votre base documentaire est prête à accueillir ses sources'}</h3>
+            <p>{loadError ? 'Le chargement a échoué. Réessayez pour consulter les documents.' : 'Ajoutez une consigne, un règlement ou une procédure, puis approuvez son utilisation par l’assistant.'}</p>
+            {!loadError && <button type="button" className="btn-secondary" onClick={() => fileInputRef.current?.click()} disabled={uploading}><FiUpload aria-hidden="true" /> Ajouter le premier document</button>}
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
+          <div className="docs-table-scroll">
+            <table className="data-table docs-table">
               <thead>
-                <tr style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb', color: '#4b5563', textTransform: 'uppercase', fontSize: '12px', letterSpacing: '0.05em' }}>
-                  <th style={{ padding: '16px 20px' }}>Nom du document</th>
-                  <th style={{ padding: '16px 20px' }}>Type</th>
-                  <th style={{ padding: '16px 20px' }}>Taille</th>
-                  <th style={{ padding: '16px 20px' }}>Statut Indexation</th>
-                  <th style={{ padding: '16px 20px' }}>Passages / Approbation</th>
-                  <th style={{ padding: '16px 20px' }}>Ajouté par</th>
-                  <th style={{ padding: '16px 20px' }}>Date</th>
-                  <th style={{ padding: '16px 20px', textAlign: 'right' }}>Actions</th>
+                <tr>
+                  <th scope="col">Document</th>
+                  <th scope="col">Disponibilité</th>
+                  <th scope="col">Approbation</th>
+                  <th scope="col">Ajout</th>
+                  <th scope="col" className="docs-actions-heading">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {documents.map((doc) => (
-                  <tr key={doc.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                    <td style={{ padding: '16px 20px', fontWeight: '600', color: '#111827', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <FiFile style={{ color: '#2563eb', fontSize: '18px' }} />
-                      <div>
-                        <div>{doc.originalName}</div>
-                        {doc.errorMessage && (
-                          <div style={{ fontSize: '12px', color: '#dc2626', marginTop: '2px', cursor: 'pointer' }} onClick={() => { setSelectedDoc(doc); setShowErrorModal(true); }}>
-                            ⚠️ Voir l'erreur d'indexation
-                          </div>
-                        )}
+                  <tr key={doc.id}>
+                    <td>
+                      <div className="docs-file-cell">
+                        <span className="docs-file-icon"><FiFileText aria-hidden="true" /></span>
+                        <div>
+                          <strong className="docs-file-name">{doc.originalName}</strong>
+                          <div className="docs-file-meta"><span>{doc.fileType || 'Document'}</span><span>{formatFileSize(doc.fileSize)}</span></div>
+                          {doc.errorMessage && <button type="button" className="docs-error-link" onClick={() => { setSelectedDoc(doc); setShowErrorModal(true); }}><FiAlertCircle aria-hidden="true" /> Voir l’erreur de traitement</button>}
+                        </div>
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px' }}>
-                      <span style={{ background: '#eff6ff', color: '#1d4ed8', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '700' }}>
-                        {doc.fileType}
-                      </span>
+                    <td>
+                      <div className="docs-cell-stack">
+                        {getStatusBadge(doc.status)}
+                        <span className="docs-cell-detail">{doc.chunkCount || 0} passage{doc.chunkCount !== 1 ? 's' : ''} extrait{doc.chunkCount !== 1 ? 's' : ''}</span>
+                        <span className="docs-cell-detail">{doc.textReady ? 'Texte exploitable' : 'Texte indisponible'}</span>
+                        <span className="docs-cell-detail">{doc.semanticIndexReady ? 'Recherche sémantique prête' : 'Recherche sémantique indisponible'}</span>
+                      </div>
                     </td>
-                    <td style={{ padding: '16px 20px', color: '#6b7280' }}>{formatFileSize(doc.fileSize)}</td>
-                    <td style={{ padding: '16px 20px' }}>{getStatusBadge(doc.status)}</td>
-                    <td style={{ padding: '16px 20px', fontWeight: '600', color: '#4b5563' }}>{doc.chunkCount || 0}<br />
-                      <strong>{doc.approved ? 'Approuvé' : 'À examiner'}</strong><br />
-                      <small>{doc.semanticIndexReady ? 'Recherche sémantique prête' : doc.textReady ? 'Recherche textuelle disponible' : 'Texte indisponible'}</small>
+                    <td>
+                      <div className="docs-cell-stack">
+                        <span className={`status-badge ${doc.approved ? 'docs-status-success' : 'docs-status-neutral'}`}>
+                          {doc.approved ? <FiCheckCircle aria-hidden="true" /> : <FiClock aria-hidden="true" />}{doc.approved ? 'Approuvé' : 'À examiner'}
+                        </span>
+                        <button type="button" className="btn-secondary docs-approval-button" disabled={busy === doc.id || (!doc.approved && !doc.textReady)} onClick={() => toggleApproval(doc)} title={!doc.approved && !doc.textReady ? 'Le texte doit être exploitable avant l’approbation' : undefined}>
+                          {busy === doc.id ? 'Mise à jour…' : doc.approved ? 'Retirer l’approbation' : 'Approuver'}
+                        </button>
+                      </div>
                     </td>
-                    <td style={{ padding: '16px 20px', color: '#6b7280' }}>{doc.uploadedBy || 'Admin'}</td>
-                    <td style={{ padding: '16px 20px', color: '#6b7280', fontSize: '13px' }}>
-                      {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString('fr-FR') : '-'}
+                    <td>
+                      <div className="docs-cell-stack">
+                        <span>{doc.createdAt ? new Date(doc.createdAt).toLocaleDateString('fr-FR') : 'Date non renseignée'}</span>
+                        <span className="docs-cell-detail">{doc.uploadedBy || 'Auteur non renseigné'}</span>
+                      </div>
                     </td>
-                    <td style={{ padding: '16px 20px', textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: '8px', flexWrap: 'wrap' }}>
-                        <button type="button" onClick={() => downloadSource(doc)}>Source</button>
-                        <button type="button" disabled={busy === doc.id || (!doc.approved && !doc.textReady)} onClick={() => toggleApproval(doc)}>
-                          {doc.approved ? "Retirer l'approbation" : 'Approuver'}
-                        </button>
-                        <button 
-                          onClick={() => handleReindex(doc.id, doc.originalName)}
-                          title="Réindexer le document"
-                          style={{ padding: '8px', background: '#f3f4f6', border: 'none', borderRadius: '6px', cursor: 'pointer', color: '#4b5563' }}
-                        >
-                          <FiRefreshCw />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(doc.id, doc.originalName)}
-                          title="Supprimer"
-                          style={{ padding: '8px', background: '#fee2e2', border: 'none', borderRadius: '6px', cursor: 'pointer', color: '#dc2626' }}
-                        >
-                          <FiTrash2 />
-                        </button>
+                    <td>
+                      <div className="docs-row-actions">
+                        <button type="button" className="btn-secondary docs-icon-button" onClick={() => downloadSource(doc)} title="Télécharger la source" aria-label={`Télécharger la source : ${doc.originalName}`}><FiDownload aria-hidden="true" /></button>
+                        <button type="button" className="btn-secondary docs-icon-button" onClick={() => handleReindex(doc.id, doc.originalName)} title="Réindexer le document" aria-label={`Réindexer : ${doc.originalName}`}><FiRefreshCw aria-hidden="true" /></button>
+                        <button type="button" className="btn-secondary docs-icon-button docs-delete-button" onClick={() => handleDelete(doc.id, doc.originalName)} title="Supprimer le document" aria-label={`Supprimer : ${doc.originalName}`}><FiTrash2 aria-hidden="true" /></button>
                       </div>
                     </td>
                   </tr>
@@ -273,23 +263,21 @@ const DocumentManagementPage = () => {
             </table>
           </div>
         )}
-      </div>
+      </section>
 
-      {/* Modal d'affichage de l'erreur d'indexation */}
       {showErrorModal && selectedDoc && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
-          <div style={{ background: 'white', borderRadius: '12px', maxWidth: '600px', width: '100%', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
-            <h3 style={{ marginTop: 0, color: '#dc2626', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FiAlertCircle /> Erreur d'indexation RAG
-            </h3>
-            <p style={{ fontWeight: '600', color: '#374151' }}>Fichier : {selectedDoc.originalName}</p>
-            <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '16px', color: '#991b1b', fontFamily: 'monospace', fontSize: '13px', whiteSpace: 'pre-wrap', maxHeight: '200px', overflowY: 'auto' }}>
-              {selectedDoc.errorMessage || 'Erreur inconnue lors du traitement du document.'}
+        <div className="modal-overlay document-error-modal" onKeyDown={(event) => { if (event.key === 'Escape') setShowErrorModal(false); }}>
+          <div className="modal-content" role="dialog" aria-modal="true" aria-labelledby="document-error-title" aria-describedby="document-error-details">
+            <div className="modal-header">
+              <h2 id="document-error-title"><FiAlertCircle aria-hidden="true" /> Erreur de traitement</h2>
+              <button type="button" className="close-btn" aria-label="Fermer l’erreur de traitement" onClick={() => setShowErrorModal(false)}><FiX aria-hidden="true" /></button>
             </div>
-            <div style={{ marginTop: '20px', textAlign: 'right' }}>
-              <button onClick={() => setShowErrorModal(false)} style={{ background: '#374151', color: 'white', padding: '8px 16px', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>
-                Fermer
-              </button>
+            <div className="modal-body">
+              <p className="docs-error-filename">{selectedDoc.originalName}</p>
+              <div id="document-error-details" className="docs-error-details">{selectedDoc.errorMessage || 'Erreur inconnue lors du traitement du document.'}</div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn-secondary" autoFocus onClick={() => setShowErrorModal(false)}>Fermer</button>
             </div>
           </div>
         </div>

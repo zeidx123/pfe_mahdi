@@ -3,13 +3,15 @@ package com.municipalite.gestiontournees.ai.vision.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.municipalite.gestiontournees.ai.common.AiServiceException;
-import com.municipalite.gestiontournees.ai.common.GeminiClient;
+import com.municipalite.gestiontournees.ai.common.CollectionAiClient;
+import com.municipalite.gestiontournees.ai.common.VisionImageInput;
 import com.municipalite.gestiontournees.ai.config.AiProperties;
 import com.municipalite.gestiontournees.ai.vision.model.AiProblem;
 import com.municipalite.gestiontournees.ai.vision.model.ImageAnalysis;
 import com.municipalite.gestiontournees.ai.vision.repository.AiProblemRepository;
 import com.municipalite.gestiontournees.ai.vision.repository.ImageAnalysisRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,15 +28,17 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ImageAnalysisService {
     public static final String PROMPT_VERSION = "point-cleanliness-v1";
     public static final Set<String> OBSERVATION_LABELS = Set.of("CLEANED", "NOT_CLEANED", "OBSTRUCTED", "CANNOT_DETERMINE");
-    private final GeminiClient geminiClient;
+    private final CollectionAiClient collectionAiClient;
     private final AiProperties aiProperties;
     private final ImageAnalysisRepository imageAnalysisRepository;
     private final AiProblemRepository aiProblemRepository;
@@ -44,13 +48,31 @@ public class ImageAnalysisService {
     public record EvaluationConfiguration(String provider, String model, String promptVersion) {}
 
     public EvaluationConfiguration evaluationConfiguration() {
-        return new EvaluationConfiguration("GEMINI", aiProperties.getGemini().getModelVision(), PROMPT_VERSION);
+        return new EvaluationConfiguration(aiProperties.getCollectionProvider().name(), aiProperties.getCollectionVisionModel(), PROMPT_VERSION);
+    }
+
+    /** Reuse only this visit's original assessment of the same immutable photo references. */
+    public Optional<ImageAnalysis> reusableVisitAnalysis(String analysisId, String afterPhotoUrl,
+            String beforePhotoUrl, String pointId, String tourId, String driverId) {
+        if (analysisId == null || analysisId.isBlank() || tourId == null || pointId == null) return Optional.empty();
+        EvaluationConfiguration configuration = evaluationConfiguration();
+        return imageAnalysisRepository.findById(analysisId).filter(previous ->
+                OBSERVATION_LABELS.contains(previous.getStatus() == null ? "" : previous.getStatus())
+                && previous.getFailureCategory() == null
+                && Objects.equals(previous.getTourneeId(), tourId)
+                && Objects.equals(previous.getPointCollecteId(), pointId)
+                && Objects.equals(previous.getChauffeurId(), driverId)
+                && Objects.equals(previous.getAfterPhotoUrl(), afterPhotoUrl)
+                && Objects.equals(previous.getBeforePhotoUrl(), beforePhotoUrl)
+                && Objects.equals(previous.getProvider(), configuration.provider())
+                && Objects.equals(previous.getModel(), configuration.model())
+                && Objects.equals(previous.getPromptVersion(), configuration.promptVersion()));
     }
 
     /** Supervisor experiment: reuse the operational prompt without modifying a tour. */
     public ImageAnalysis evaluateEvidence(MultipartFile after, MultipartFile before,
                                           String expectedModel, String expectedPromptVersion) {
-        if (!Objects.equals(expectedModel, aiProperties.getGemini().getModelVision()) ||
+        if (!Objects.equals(expectedModel, evaluationConfiguration().model()) ||
                 !Objects.equals(expectedPromptVersion, PROMPT_VERSION)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La configuration d'évaluation a changé.");
         }
@@ -73,30 +95,54 @@ public class ImageAnalysisService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Une photo APRÈS est requise pour l'analyse.");
         }
         boolean paired = beforePhotoUrl != null && !beforePhotoUrl.isBlank();
+        EvaluationConfiguration configuration = evaluationConfiguration();
         ImageAnalysis analysis = ImageAnalysis.builder()
                 .photoUrl(afterPhotoUrl).afterPhotoUrl(afterPhotoUrl).beforePhotoUrl(paired ? beforePhotoUrl : null)
                 .inputMode(paired ? "BEFORE_AFTER" : "AFTER_ONLY")
                 .pointCollecteId(pointCollecteId).tourneeId(tourneeId).chauffeurId(chauffeurId)
-                .provider("GEMINI").model(aiProperties.getGemini().getModelVision()).promptVersion(PROMPT_VERSION)
+                .provider(configuration.provider()).model(configuration.model()).promptVersion(PROMPT_VERSION)
                 .createdAt(LocalDateTime.now()).problemCreated(false).build();
         try {
-            List<GeminiClient.ImageInput> images = new ArrayList<>();
+            List<VisionImageInput> images = new ArrayList<>();
             if (paired) images.add(readStoredPhoto(beforePhotoUrl));
             images.add(readStoredPhoto(afterPhotoUrl));
-            JsonNode result = objectMapper.readTree(geminiClient.analyzeImages(images, buildVisionPrompt(paired)));
+            String prompt = buildVisionPrompt(paired);
+            String response = collectionAiClient.analyzeImages(images, prompt);
+            JsonNode result = objectMapper.readTree(response);
+            if (result == null || !result.isObject()) {
+                throw new AiServiceException("Réponse d'analyse invalide.", "INVALID_ANALYSIS_RESPONSE", null, null);
+            }
             String label = result.path("status").asText("");
             String description = result.path("description").asText("").trim();
-            if (!OBSERVATION_LABELS.contains(label) || description.isBlank() || description.length() > 2000) {
-                throw new AiServiceException("Réponse d'analyse invalide.");
+            if (!result.path("status").isTextual() || !result.path("description").isTextual()
+                    || !OBSERVATION_LABELS.contains(label) || description.isBlank() || description.length() > 2000) {
+                throw new AiServiceException("Réponse d'analyse invalide.", "INVALID_ANALYSIS_RESPONSE", null, null);
             }
             analysis.setStatus(label);
             analysis.setDescription(description);
+        } catch (AiServiceException e) {
+            markUnavailable(analysis, e.getCategory(), e.getProviderHttpStatus());
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            markUnavailable(analysis, "INVALID_ANALYSIS_RESPONSE", null);
+        } catch (IOException e) {
+            markUnavailable(analysis, "EVIDENCE_UNAVAILABLE", null);
         } catch (Exception e) {
-            analysis.setStatus("ANALYSIS_UNAVAILABLE");
-            analysis.setDescription("Analyse indisponible. Les photos restent enregistrées pour la vérification humaine. Vous pouvez réessayer.");
+            markUnavailable(analysis, "ANALYSIS_FAILED", null);
         }
         // A model output is evidence for review, not an automatically established incident.
         return imageAnalysisRepository.save(analysis);
+    }
+
+    private void markUnavailable(ImageAnalysis analysis, String category, Integer providerHttpStatus) {
+        analysis.setStatus("ANALYSIS_UNAVAILABLE");
+        analysis.setFailureCategory(category);
+        analysis.setProviderHttpStatus(providerHttpStatus);
+        String explanation = Integer.valueOf(429).equals(providerHttpStatus)
+                ? "La limite temporaire du service IA est atteinte. Réessayez plus tard."
+                : "Analyse indisponible. Vous pouvez réessayer.";
+        analysis.setDescription(explanation + " Les photos restent enregistrées pour la vérification humaine.");
+        log.warn("Vision unavailable: provider={} model={} category={} httpStatus={}",
+                analysis.getProvider(), analysis.getModel(), category, providerHttpStatus);
     }
 
     private String buildVisionPrompt(boolean paired) {
@@ -145,7 +191,7 @@ public class ImageAnalysisService {
         return imageAnalysisRepository.save(analysis);
     }
 
-    private GeminiClient.ImageInput readStoredPhoto(String reference) throws IOException {
+    private VisionImageInput readStoredPhoto(String reference) throws IOException {
         String clean = reference.startsWith("/") ? reference.substring(1) : reference;
         if (!clean.startsWith("uploads/photos/")) throw new IOException("Référence photo invalide.");
         String filename = clean.substring("uploads/photos/".length());
@@ -161,19 +207,19 @@ public class ImageAnalysisService {
         return validatedImage(bytes);
     }
 
-    private GeminiClient.ImageInput validatedImage(byte[] bytes) throws IOException {
+    private VisionImageInput validatedImage(byte[] bytes) throws IOException {
         if (bytes.length == 0 || bytes.length > 10 * 1024 * 1024 || ImageIO.read(new ByteArrayInputStream(bytes)) == null) {
             throw new IOException("Photo JPEG ou PNG lisible requise (10 Mo maximum).");
         }
         boolean jpeg = bytes.length > 2 && (bytes[0] & 255) == 255 && (bytes[1] & 255) == 216;
         boolean png = bytes.length > 8 && (bytes[0] & 255) == 137 && bytes[1] == 80 && bytes[2] == 78 && bytes[3] == 71;
         if (!jpeg && !png) throw new IOException("Photo JPEG ou PNG requise.");
-        return new GeminiClient.ImageInput(bytes, jpeg ? "image/jpeg" : "image/png");
+        return new VisionImageInput(bytes, jpeg ? "image/jpeg" : "image/png");
     }
 
     private String savePhotoFile(MultipartFile file) {
         try {
-            GeminiClient.ImageInput input = validatedImage(file.getBytes());
+            VisionImageInput input = validatedImage(file.getBytes());
             Path root = Paths.get(aiProperties.getStorage().getPhotosDir()).toAbsolutePath().normalize();
             Files.createDirectories(root);
             String filename = UUID.randomUUID() + (input.mimeType().equals("image/png") ? ".png" : ".jpg");

@@ -47,6 +47,11 @@ public class CvController {
         return ResponseEntity.ok(cvAnalysisService.evaluate(id));
     }
 
+    @PostMapping("/candidates/{id}/reanalyze")
+    public ResponseEntity<Candidate> reanalyze(@PathVariable String id) {
+        return ResponseEntity.ok(cvAnalysisService.reanalyze(id));
+    }
+
 
     /**
      * Upload et analyse automatique d'un CV PDF.

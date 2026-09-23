@@ -102,4 +102,42 @@ class RagServiceTest {
         assertThat(response.getSources().get(0).getSnippet()).isEqualTo(chunk.getContent());
         verifyNoInteractions(gemini);
     }
+
+    @Test void generationOutageDoesNotPresentGenericDriverMatchesAsSalaryEvidence() {
+        chunk.setContent("Le chauffeur prend une photo APRÈS la collecte normale et retourne au dépôt.");
+        when(embeddings.generateEmbedding(anyString())).thenReturn(List.of(1f));
+        retrievedSource();
+        when(gemini.generateJson(anyString())).thenThrow(new AiServiceException("Provider unavailable"));
+        RagResponse response = service.query(new RagQueryRequest(null,
+                "Quel est le salaire annuel du chauffeur et le montant de sa prime de nuit ?"), "driver");
+        assertThat(response.getStatus()).isEqualTo("INSUFFICIENT_INFORMATION");
+        assertThat(response.getSources()).isEmpty();
+        assertThat(response.isRelevantContextFound()).isFalse();
+        assertThat(response.getAnswer()).isEqualTo(RagService.NO_RELEVANT_CONTEXT_MESSAGE);
+    }
+
+    @Test void lexicalOutageFallbackKeepsRelevantExcerptsAndRemovesUnrelatedHits() {
+        DocumentChunk unrelated = DocumentChunk.builder().id("other").documentId("other-doc")
+                .content("Le point de collecte est illustré par une photo APRÈS.").build();
+        when(embeddings.generateEmbedding(anyString())).thenThrow(new AiServiceException("Unavailable"));
+        when(store.searchSimilar(anyString(), any(), anyInt(), anyDouble())).thenReturn(List.of(
+                new VectorStoreService.ScoredChunk(chunk, .8), new VectorStoreService.ScoredChunk(unrelated, .7)));
+        RagResponse response = service.query(new RagQueryRequest(null, "Point inaccessible ?"), "driver");
+        assertThat(response.getStatus()).isEqualTo("SOURCE_EXCERPTS");
+        assertThat(response.getSources()).extracting(SourceDto::getChunkId).containsExactly("source-1");
+        assertThat(response.getAnswer()).doesNotContain(unrelated.getContent());
+        verifyNoInteractions(gemini);
+    }
+
+    @Test void shortFollowUpCanUseThePreviousQuestionForLiteralExcerpts() {
+        String previous = "Point inaccessible ?";
+        when(histories.findById("existing")).thenReturn(Optional.of(RagConversation.builder().id("existing").userId("driver")
+                .messages(new ArrayList<>(List.of(RagMessage.builder().sender("USER").content(previous).build()))).build()));
+        when(embeddings.generateEmbedding(anyString())).thenThrow(new AiServiceException("Unavailable"));
+        retrievedSource();
+        RagResponse response = service.query(new RagQueryRequest("existing", "Et ensuite ?"), "driver");
+        assertThat(response.getStatus()).isEqualTo("SOURCE_EXCERPTS");
+        assertThat(response.getSources()).extracting(SourceDto::getChunkId).containsExactly("source-1");
+        verifyNoInteractions(gemini);
+    }
 }

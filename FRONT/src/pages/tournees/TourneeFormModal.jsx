@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiX, FiMapPin, FiArrowUp, FiArrowDown } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { agentService } from '../../services/agentService';
@@ -6,6 +6,7 @@ import { camionService } from '../../services/camionService';
 import { pointCollecteService } from '../../services/pointCollecteService';
 
 const TourneeFormModal = ({ isOpen, onClose, onSubmit, tournee = null, isLoading = false }) => {
+  const firstInputRef = useRef(null);
   const [formData, setFormData] = useState({
     reference: '', nom: '', description: '', datePrevue: '',
     heureDepartPrevue: '', camionId: '', chauffeurId: '',
@@ -53,6 +54,13 @@ const TourneeFormModal = ({ isOpen, onClose, onSubmit, tournee = null, isLoading
     }
     setLocalSubmitting(false);
   }, [tournee, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousFocus = document.activeElement;
+    firstInputRef.current?.focus();
+    return () => previousFocus?.focus();
+  }, [isOpen]);
 
   const loadResources = async () => {
     try {
@@ -107,83 +115,115 @@ const TourneeFormModal = ({ isOpen, onClose, onSubmit, tournee = null, isLoading
     finally { setLocalSubmitting(false); }
   };
 
+  const handleDialogKeyDown = (event) => {
+    if (event.key === 'Escape' && !isLoading && !localSubmitting) onClose();
+    if (event.key !== 'Tab') return;
+    const controls = [...event.currentTarget.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href]')];
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first?.focus();
+    }
+  };
+
   return (
     <div className="modal-overlay">
-      <div className="modal-content modal-xl">
+      <div className="modal-content entity-form-modal modal-xl tournee-form-modal" role="dialog" aria-modal="true" aria-labelledby="tournee-form-title" aria-describedby="tournee-form-description" onKeyDown={handleDialogKeyDown}>
         <div className="modal-header">
-          <h2>{tournee ? 'Modifier la tournée' : 'Nouvelle tournée'}</h2>
-          <button className="close-btn" onClick={onClose}><FiX /></button>
+          <div>
+            <h2 id="tournee-form-title">{tournee ? 'Modifier la tournée' : 'Planifier une tournée'}</h2>
+            <p id="tournee-form-description" className="modal-subtitle">Choisissez le chauffeur, le véhicule et les points à collecter. Les champs marqués * sont obligatoires.</p>
+          </div>
+          <button type="button" className="close-btn" onClick={onClose} disabled={isLoading || localSubmitting} aria-label="Fermer le formulaire"><FiX aria-hidden="true" /></button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
-            <div className="form-grid">
+            <section className="form-section" aria-labelledby="tournee-schedule-title">
+              <h3 id="tournee-schedule-title" className="form-section-title">Identification et horaire</h3>
+              <div className="form-grid">
               <div className="form-group">
-                <label>Référence * <small>(ex: T-2024-001)</small></label>
-                <input type="text" name="reference" value={formData.reference} onChange={handleChange} required placeholder="T-2024-001" />
+                <label htmlFor="tournee-reference">Référence *</label>
+                <input ref={firstInputRef} id="tournee-reference" type="text" name="reference" value={formData.reference} onChange={handleChange} required placeholder={`T-${new Date().getFullYear()}-001`} />
               </div>
               <div className="form-group">
-                <label>Nom de la tournée *</label>
-                <input type="text" name="nom" value={formData.nom} onChange={handleChange} required placeholder="Tournée Centre-Ville Matin" />
+                <label htmlFor="tournee-nom">Nom de la tournée *</label>
+                <input id="tournee-nom" type="text" name="nom" value={formData.nom} onChange={handleChange} required placeholder="Ex. Centre-ville · Matin" />
               </div>
               <div className="form-group">
-                <label>Date prévue *</label>
-                <input type="date" name="datePrevue" value={formData.datePrevue} onChange={handleChange} required />
+                <label htmlFor="tournee-date">Date prévue *</label>
+                <input id="tournee-date" type="date" name="datePrevue" value={formData.datePrevue} onChange={handleChange} required />
               </div>
               <div className="form-group">
-                <label>Heure de départ</label>
-                <input type="time" name="heureDepartPrevue" value={formData.heureDepartPrevue} onChange={handleChange} />
+                <label htmlFor="tournee-heure-depart">Heure de départ</label>
+                <input id="tournee-heure-depart" type="time" name="heureDepartPrevue" value={formData.heureDepartPrevue} onChange={handleChange} />
               </div>
+              </div>
+            </section>
+            <section className="form-section" aria-labelledby="tournee-assignment-title">
+              <h3 id="tournee-assignment-title" className="form-section-title">Chauffeur et véhicule</h3>
+              <div className="form-grid">
               <div className="form-group">
-                <label>Camion (disponibles) *</label>
-                <select name="camionId" value={formData.camionId} onChange={handleChange} className="form-select" required>
-                  <option value="">-- Sélectionner un camion --</option>
+                <label htmlFor="tournee-camion">Camion disponible *</label>
+                <select id="tournee-camion" name="camionId" value={formData.camionId} onChange={handleChange} className="form-select" required aria-describedby={camions.length === 0 ? 'tournee-camion-help' : undefined}>
+                  <option value="">Choisir un camion</option>
                   {camions.map(c => (
-                    <option key={c.id} value={c.id}>🚛 {c.matricule} — {c.marque} {c.modele}</option>
+                    <option key={c.id} value={c.id}>{c.matricule} — {c.marque} {c.modele}</option>
                   ))}
                 </select>
-                {camions.length === 0 && <small style={{color:'#f59e0b'}}>Aucun camion disponible</small>}
+                {camions.length === 0 && <p id="tournee-camion-help" className="field-help">Aucun camion disponible. Ajoutez un véhicule actif ou vérifiez son statut.</p>}
               </div>
               <div className="form-group">
-                <label>Chauffeur *</label>
-                <select name="chauffeurId" value={formData.chauffeurId} onChange={handleChange} className="form-select" required>
-                  <option value="">-- Sélectionner un chauffeur --</option>
+                <label htmlFor="tournee-chauffeur">Chauffeur *</label>
+                <select id="tournee-chauffeur" name="chauffeurId" value={formData.chauffeurId} onChange={handleChange} className="form-select" required>
+                  <option value="">Choisir un chauffeur</option>
                   {agents.map(a => (
-                    <option key={a.id} value={a.id}>👤 {a.prenom} {a.nom} ({a.cin})</option>
+                    <option key={a.id} value={a.id}>{a.prenom} {a.nom} ({a.cin})</option>
                   ))}
                 </select>
               </div>
               <div className="form-group">
-                <label>Statut</label>
-                <input value="Planifiée" readOnly />
-                <small>Le chauffeur démarre et termine la tournée depuis son application.</small>
+                <label htmlFor="tournee-statut">Statut initial</label>
+                <input id="tournee-statut" value="Planifiée" readOnly aria-describedby="tournee-statut-help" />
+                <p id="tournee-statut-help" className="field-help">Le chauffeur démarre et termine la tournée depuis son application.</p>
+              </div>
+              </div>
+            </section>
+            <section className="form-section" aria-labelledby="tournee-instructions-title">
+              <h3 id="tournee-instructions-title" className="form-section-title">Informations complémentaires</h3>
+              <div className="form-grid">
+              <div className="form-group full-width">
+                <label htmlFor="tournee-description">Description</label>
+                <input id="tournee-description" type="text" name="description" value={formData.description} onChange={handleChange} placeholder="Ex. Circuit matinal du centre-ville" />
               </div>
               <div className="form-group full-width">
-                <label>Description</label>
-                <input type="text" name="description" value={formData.description} onChange={handleChange} placeholder="Circuit matinal du centre-ville..." />
+                <label htmlFor="tournee-notes">Notes</label>
+                <input id="tournee-notes" type="text" name="notes" value={formData.notes} onChange={handleChange} placeholder="Consignes ou particularités à connaître" />
               </div>
-              <div className="form-group full-width">
-                <label>Notes</label>
-                <input type="text" name="notes" value={formData.notes} onChange={handleChange} placeholder="Remarques particulières..." />
               </div>
-            </div>
+            </section>
 
-            <div className="points-selector">
-              <h3 className="section-title mt-3">
-                <FiMapPin style={{marginRight:6}} />
+            <section className="points-selector form-section" aria-labelledby="tournee-points-title">
+              <h3 id="tournee-points-title" className="form-section-title">
+                <FiMapPin aria-hidden="true" />{' '}
                 Points de collecte ({formData.pointsCollecteIds.length} sélectionnés)
               </h3>
               <div className="points-grid">
                 {points.length === 0 ? (
-                  <p style={{color:'var(--text-muted)',fontSize:13}}>Aucun point actif disponible.</p>
+                  <p className="field-help">Aucun point actif disponible. Ajoutez un point de collecte pour composer la tournée.</p>
                 ) : points.map(point => (
-                  <label key={point.id} className={`point-item ${formData.pointsCollecteIds.includes(point.id) ? 'selected' : ''}`}>
+                  <label key={point.id} htmlFor={`tournee-point-${point.id}`} className={`point-item ${formData.pointsCollecteIds.includes(point.id) ? 'selected' : ''}`}>
                     <input
+                      id={`tournee-point-${point.id}`}
                       type="checkbox"
                       checked={formData.pointsCollecteIds.includes(point.id)}
                       onChange={() => togglePoint(point.id)}
                       className="point-choice-input"
                     />
-                    <span className="point-check">{formData.pointsCollecteIds.includes(point.id) ? '✓' : ''}</span>
+                    <span className="point-check" aria-hidden="true">{formData.pointsCollecteIds.includes(point.id) ? '✓' : ''}</span>
                     <div>
                       <strong>{point.reference}</strong>
                       <p>{point.adresse}</p>
@@ -192,8 +232,8 @@ const TourneeFormModal = ({ isOpen, onClose, onSubmit, tournee = null, isLoading
                 ))}
               </div>
               {formData.pointsCollecteIds.length > 0 && <div className="manual-route-order">
-                <h3 className="section-title mt-3">Ordre manuel de référence</h3>
-                <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Définissez votre circuit habituel. Les algorithmes seront comparés à cet ordre, avec départ et retour au dépôt configuré.</p>
+                <h3 className="form-section-title">Ordre manuel de référence</h3>
+                <p className="field-help">Définissez votre circuit habituel. Les algorithmes seront comparés à cet ordre, avec départ et retour au dépôt configuré.</p>
                 <ol>{formData.pointsCollecteIds.map((id, index) => {
                   const point = points.find(p => p.id === id) || tournee?.pointsCollecte?.find(p => p.id === id);
                   return <li key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0' }}>
@@ -203,20 +243,18 @@ const TourneeFormModal = ({ isOpen, onClose, onSubmit, tournee = null, isLoading
                   </li>;
                 })}</ol>
               </div>}
-            </div>
+            </section>
           </div>
           <div className="modal-footer">
             <button type="button" className="btn-secondary" onClick={onClose} disabled={isLoading || localSubmitting}>Annuler</button>
             <button type="submit" className="btn-primary" disabled={isLoading || localSubmitting}>
-              {(isLoading || localSubmitting) ? 'Enregistrement...' : 'Enregistrer'}
+              {(isLoading || localSubmitting) ? 'Enregistrement…' : tournee ? 'Enregistrer les modifications' : 'Créer la tournée'}
             </button>
           </div>
         </form>
       </div>
       <style>{`
         .modal-xl { max-width: 860px; }
-        .section-title { font-size: 1rem; color: var(--primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.75rem; display: flex; align-items: center; }
-        .mt-3 { margin-top: 1.25rem; }
         .points-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; max-height: 220px; overflow-y: auto; padding: 4px; }
         .point-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px; border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
         .point-choice-input { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }

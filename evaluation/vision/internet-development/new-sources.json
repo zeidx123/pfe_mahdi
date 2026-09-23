@@ -1,0 +1,36 @@
+{
+  "datasetVersion": "internet-development-2026-09-23-additions",
+  "dataKind": "INTERNET_DEVELOPMENT_PHOTOS",
+  "sources": [
+    {
+      "file": "clear-bin-surroundings.jpg",
+      "sourceTitle": "File:Litter bin, Belfast - geograph.org.uk - 1677964.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Litter_bin,_Belfast_-_geograph.org.uk_-_1677964.jpg",
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Litter_bin%2C_Belfast_-_geograph.org.uk_-_1677964.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "author": "Rossographer",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "description": "Litter bin, Belfast",
+      "downloadDate": "2026-09-23",
+      "sha256": "df0e1f52512a420ae7647dce46aa33fd06d35e5dff51a2527426f17c332e997e",
+      "changes": "Unmodified Wikimedia-provided image or thumbnail.",
+      "visualInspection": "The visible pavement immediately around the black bin has no obvious loose litter. The framing shows only the nearby ground; it does not show bin contents or prove a collection took place.",
+      "usage": "Internet development contrast example only; not local execution evidence or a reviewed final benchmark label; independent single scene; not a before/after pair."
+    },
+    {
+      "file": "clear-park-bin-area.jpg",
+      "sourceTitle": "File:Bench and litter bin on a green, Gilfach - geograph.org.uk - 6243907.jpg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Bench_and_litter_bin_on_a_green,_Gilfach_-_geograph.org.uk_-_6243907.jpg",
+      "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7d/Bench_and_litter_bin_on_a_green%2C_Gilfach_-_geograph.org.uk_-_6243907.jpg/1280px-Bench_and_litter_bin_on_a_green%2C_Gilfach_-_geograph.org.uk_-_6243907.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "author": "Jaggery",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "description": "Bench and litter bin on a green, Gilfach",
+      "downloadDate": "2026-09-23",
+      "sha256": "6b62f920f8bad468cac3639fdffb36ae85424469bd0c8c8f558d38d6fb1243e5",
+      "changes": "Unmodified Wikimedia-provided image or thumbnail.",
+      "visualInspection": "The bench, bin and surrounding path/lawn appear broadly clear of loose litter in this wide view. Small objects are difficult to assess at this distance; no before image or task causality is established.",
+      "usage": "Internet development contrast example only; not local execution evidence or a reviewed final benchmark label; independent single scene; not a before/after pair."
+    }
+  ]
+}

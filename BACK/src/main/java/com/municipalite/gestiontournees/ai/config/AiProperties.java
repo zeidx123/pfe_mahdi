@@ -12,16 +12,46 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AiProperties {
 
     private Gemini gemini = new Gemini();
+    private OpenRouter openRouter = new OpenRouter();
+    private Groq groq = new Groq();
+    private CollectionProvider collectionProvider = CollectionProvider.GROQ;
     private Storage storage = new Storage();
     private Rag rag = new Rag();
+
+    public enum CollectionProvider { GROQ, OPENROUTER }
+
+    public String getCollectionTextModel() {
+        return collectionProvider == CollectionProvider.GROQ ? groq.getModelText() : openRouter.getModelText();
+    }
+
+    public String getCollectionVisionModel() {
+        return collectionProvider == CollectionProvider.GROQ ? groq.getModelVision() : openRouter.getModelVision();
+    }
+
+    @Data
+    public static class Groq {
+        private String apiKey;
+        private String baseUrl = "https://api.groq.com/openai/v1";
+        private String modelText = "qwen/qwen3.8-27b";
+        private String modelVision = "qwen/qwen3.8-27b";
+        private int timeoutSeconds = 60;
+    }
 
     @Data
     public static class Gemini {
         private String apiKey;
         private String baseUrl = "https://generativelanguage.googleapis.com/v1beta";
         private String modelText = "gemini-3.8-flash";
-        private String modelVision = "gemini-3.8-flash";
         private int timeoutSeconds = 30;
+    }
+
+    @Data
+    public static class OpenRouter {
+        private String apiKey;
+        private String baseUrl = "https://openrouter.ai/api/v1";
+        private String modelText = "qwen/qwen3.8-27b:free";
+        private String modelVision = "qwen/qwen3.8-27b:free";
+        private int timeoutSeconds = 60;
     }
 
     @Data

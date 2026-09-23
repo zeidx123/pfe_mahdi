@@ -68,15 +68,15 @@ const CamionListPage = () => {
         await camionService.delete(id);
         toast.success('Camion désactivé');
         fetchCamions();
-      } catch (error) {
+      } catch {
         toast.error('Erreur lors de la suppression');
       }
     }
   };
 
   const filteredCamions = camions.filter(camion => {
-    const matchesSearch = camion.matricule.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          camion.marque.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (camion.matricule || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (camion.marque || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatut = filterStatut === 'ALL' || camion.statut === filterStatut;
     
     return matchesSearch && matchesStatut;
@@ -104,11 +104,11 @@ const CamionListPage = () => {
     <div className="camion-page">
       <div className="page-header flex-between">
         <div>
-          <h1>Parc de Camions</h1>
+          <h1>Parc de camions</h1>
           <p>Gérez les véhicules, leur état et leur disponibilité.</p>
         </div>
         <button className="btn-primary" onClick={() => handleOpenModal()}>
-          <FiPlus style={{marginRight: '8px'}} /> Nouveau Camion
+          <FiPlus /> Ajouter un camion
         </button>
       </div>
 
@@ -142,7 +142,11 @@ const CamionListPage = () => {
           {loading ? (
             <div className="loading-state">Chargement des données...</div>
           ) : filteredCamions.length === 0 ? (
-            <div className="empty-state">Aucun camion trouvé.</div>
+            <div className="empty-state">
+              <FiTruck aria-hidden="true" />
+              <h3>{searchTerm || filterStatut !== 'ALL' ? 'Aucun camion correspondant' : 'Votre parc commence ici'}</h3>
+              <p>{searchTerm || filterStatut !== 'ALL' ? 'Modifiez votre recherche ou le filtre de statut.' : 'Ajoutez un camion pour préparer vos premières tournées.'}</p>
+            </div>
           ) : (
             <table className="data-table">
               <thead>

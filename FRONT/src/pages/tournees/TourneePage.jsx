@@ -122,13 +122,13 @@ const TourneePage = () => {
 
   return (
     <div className="tournee-page">
-      <div className="tournee-header">
+      <div className="tournee-header page-header">
         <div>
-          <h1>Gestion des Tournées</h1>
+          <h1>Tournées</h1>
           <p>Planifiez et suivez les circuits de collecte des déchets.</p>
         </div>
         <button className="btn-primary" onClick={() => handleOpenModal()}>
-          <FiPlus style={{marginRight:8}} /> Nouvelle Tournée
+          <FiPlus /> Créer une tournée
         </button>
       </div>
 
@@ -159,7 +159,11 @@ const TourneePage = () => {
           {loading ? (
             <div className="empty-state">Chargement...</div>
           ) : filtered.length === 0 ? (
-            <div className="empty-state">Aucune tournée trouvée.</div>
+            <div className="empty-state">
+              <FiMapPin aria-hidden="true" />
+              <h3>Aucune tournée trouvée</h3>
+              <p>Préparez un circuit en affectant un chauffeur, un camion et des points de collecte.</p>
+            </div>
           ) : (
             <table className="data-table">
               <thead>

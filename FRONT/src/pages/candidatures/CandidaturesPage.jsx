@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FiUploadCloud, FiSearch, FiEye, FiX, FiDownload, FiCheckCircle } from 'react-icons/fi';
+import { FiUploadCloud, FiSearch, FiEye, FiX, FiDownload, FiCheckCircle, FiRefreshCw } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { candidateService } from '../../services/candidateService';
 import './candidatures.css';
@@ -18,6 +18,23 @@ const FIELDS = [
 const FIELD_STATES = { MISSING: 'Manquant', UNCERTAIN: 'À vérifier', INVALID: 'Invalide', VERIFIED: 'Vérifié' };
 const REQUIRED = { MET: 'Satisfaits', UNMET: 'Non satisfaits', NEEDS_REVIEW: 'À vérifier', NOT_REQUIRED: 'Facultatif' };
 const DECISIONS = { EN_ATTENTE: 'En attente', EN_ENTRETIEN: 'Entretien', ACCEPTE: 'Accepté', REJETE: 'Rejeté' };
+const EXTRACTION_STATES = {
+  EXTRACTED: 'Informations extraites · à vérifier',
+  PROVIDER_UNAVAILABLE: 'Extraction IA indisponible',
+  INVALID_RESPONSE: 'Réponse IA inexploitable',
+  MANUAL_REVIEW_REQUIRED: 'Saisie manuelle requise',
+  LEGACY_REVIEW_REQUIRED: 'Ancien dossier à vérifier',
+};
+const EXTRACTION_FAILURES = {
+  PROVIDER_HTTP_ERROR: 'Le fournisseur IA a refusé ou interrompu la demande.',
+  PROVIDER_TIMEOUT: 'Le fournisseur IA n’a pas répondu dans le délai prévu.',
+  NOT_CONFIGURED: 'Le service IA n’est pas configuré. Vérifiez sa configuration avant de relancer.',
+  INVALID_MODEL_CONFIGURATION: 'Le modèle configuré n’est pas disponible. Vérifiez la configuration du service IA.',
+  EMPTY_RESPONSE: 'Le fournisseur IA a renvoyé une réponse vide.',
+  INVALID_PROVIDER_RESPONSE: 'La réponse du fournisseur IA n’a pas pu être interprétée.',
+  INVALID_EXTRACTION_RESPONSE: 'La réponse IA ne contient pas une extraction de CV exploitable.',
+  PROVIDER_UNAVAILABLE: 'Le fournisseur IA est momentanément indisponible.',
+};
 const WEIGHTS = [
   ['licenceWeight', 'licenceRequired', 'Permis accepté'],
   ['experienceWeight', 'experienceRequired', 'Expérience de conduite'],
@@ -25,6 +42,30 @@ const WEIGHTS = [
   ['collectionWeight', 'collectionRequired', 'Expérience de collecte'],
 ];
 const errorMessage = (error) => error.response?.data?.message || error.message || 'Action impossible. Réessayez.';
+const criterionValue = (value) => {
+  if (value == null || value === '') return 'Non renseigné';
+  if (value === true || value === 'true') return 'Oui';
+  if (value === false || value === 'false') return 'Non';
+  return value;
+};
+const canRetryExtraction = (candidate) => ['PROVIDER_UNAVAILABLE', 'INVALID_RESPONSE'].includes(candidate?.extractionStatus);
+const extractionFailureMessage = (candidate) => candidate.extractionError
+  || EXTRACTION_FAILURES[candidate.extractionFailureCategory]
+  || (candidate.extractionStatus === 'INVALID_RESPONSE' ? 'La réponse IA ne contient pas une extraction exploitable.' : 'Le fournisseur IA est indisponible.');
+
+function ExtractionNotice({ candidate }) {
+  if (candidate.extractionStatus === 'MANUAL_REVIEW_REQUIRED') {
+    return <p role="status" className="candidate-notice">Le document ne contient pas de texte exploitable. Saisissez et vérifiez les informations manuellement.</p>;
+  }
+  if (!canRetryExtraction(candidate)) return null;
+  const httpStatus = candidate.extractionHttpStatus;
+  return <div role="status" className="candidate-notice">
+    <strong>{EXTRACTION_STATES[candidate.extractionStatus]}</strong>
+    <p>{extractionFailureMessage(candidate)}</p>
+    {Number.isInteger(httpStatus) && httpStatus >= 100 && httpStatus <= 599 ? <small>Code de réponse du service distant : HTTP {httpStatus}.</small> : null}
+    <p>Le CV est enregistré. Vous pouvez réessayer l’extraction ou vérifier les champs manuellement. Les informations déjà vérifiées et la décision enregistrée sont conservées.</p>
+  </div>;
+}
 
 function reviewFields(candidate) {
   return Object.fromEntries(FIELDS.map(([key]) => [key, {
@@ -89,6 +130,7 @@ export default function CandidaturesPage() {
     }
   };
   const run = async (name, action) => {
+    if (busy) return;
     setBusy(name);
     try { await action(); }
     catch (failure) { toast.error(errorMessage(failure)); }
@@ -107,6 +149,28 @@ export default function CandidaturesPage() {
     updateCandidate(await candidateService.review(selected.id, fields));
     toast.success('Vérification enregistrée et score recalculé.');
   });
+  const retryExtraction = () => {
+    if (!selected || selected.agentId || dirty || busy) return;
+    run('reanalyze', async () => {
+      try {
+        const candidate = await candidateService.reanalyze(selected.id);
+        updateCandidate(candidate);
+        if (candidate.extractionStatus === 'EXTRACTED') {
+          toast.success('Extraction terminée. Vérifiez les nouvelles informations proposées.');
+        } else if (candidate.extractionStatus === 'MANUAL_REVIEW_REQUIRED') {
+          toast('Ce document nécessite une saisie manuelle.');
+        } else {
+          toast.error(extractionFailureMessage(candidate));
+        }
+      } catch (failure) {
+        if (failure.code === 'ECONNABORTED' || failure.code === 'ETIMEDOUT') {
+          toast.error('Délai d’attente dépassé. Actualisez la page pour vérifier le résultat avant de relancer.');
+          return;
+        }
+        throw failure;
+      }
+    });
+  };
   const decide = (statut) => run('decision', async () => {
     updateCandidate(await candidateService.decision(selected.id, statut, notes));
     toast.success('Décision enregistrée.');
@@ -122,7 +186,7 @@ export default function CandidaturesPage() {
 
   return <div className="agent-page candidates-page">
     <div className="page-header flex-between">
-      <div><h1>Espace des candidatures</h1><p>Vérifier les faits du CV, comparer au profil du poste, puis décider.</p></div>
+      <div><h1>Candidatures</h1><p>Vérifiez les informations des CV et comparez chaque profil aux critères du poste.</p></div>
       <label className="btn-primary">
         <FiUploadCloud /> {busy === 'upload' ? 'Extraction en cours…' : 'Importer un CV'}
         <input type="file" accept=".pdf,.docx" onChange={upload} disabled={!!busy} hidden />
@@ -156,11 +220,11 @@ export default function CandidaturesPage() {
       </div>
       <div className="table-container">{loading ? <p className="loading-state">Chargement…</p> : filtered.length === 0 ? <p className="empty-state">Aucune candidature. Importez un PDF ou DOCX.</p>
         : <table className="data-table"><thead><tr><th>Candidat</th><th>Permis / conduite</th><th>Points confirmés</th><th>Critères requis</th><th>Décision</th><th>Action</th></tr></thead><tbody>
-          {filtered.map((candidate) => <tr key={candidate.id}><td><strong>{`${candidate.prenom || ''} ${candidate.nom || ''}`.trim() || candidate.cvFileName}</strong><small>{candidate.email || 'Email à renseigner'}</small></td>
+          {filtered.map((candidate) => <tr key={candidate.id}><td><strong>{`${candidate.prenom || ''} ${candidate.nom || ''}`.trim() || candidate.cvFileName}</strong><small>{candidate.email || 'Email à renseigner'}</small><small>{EXTRACTION_STATES[candidate.extractionStatus] || 'Extraction à vérifier'}</small></td>
             <td>{candidate.typePermis || 'À vérifier'}<small>{candidate.anneesExperience == null ? 'Durée inconnue' : `${candidate.anneesExperience} an(s)`}</small></td>
             <td><Score candidate={candidate} /><small>Profil {candidate.requirementsVersion ? `v${candidate.requirementsVersion}` : 'ancien'}</small></td>
             <td>{REQUIRED[candidate.requiredCriteriaStatus] || 'À vérifier'}</td><td>{DECISIONS[candidate.statut] || candidate.statut}</td>
-            <td><button className="btn-secondary" onClick={() => showCandidate(candidate)}><FiEye /> Examiner</button></td></tr>)}
+            <td><button className="btn-secondary" disabled={!!busy} onClick={() => showCandidate(candidate)}><FiEye /> Examiner</button></td></tr>)}
         </tbody></table>}</div>
     </div>
 
@@ -169,18 +233,21 @@ export default function CandidaturesPage() {
         <button className="close-btn" aria-label="Fermer la candidature" disabled={!!busy} onClick={() => {
           if ((!dirty && !notesDirty) || window.confirm('Fermer sans enregistrer les modifications ?')) setSelected(null);
         }}><FiX /></button></div>
-      <div className="modal-body">
+      <div className="modal-body" aria-busy={busy === 'reanalyze'}>
         <div className="candidate-summary"><div><strong>Points confirmés</strong><div><Score candidate={selected} /></div></div>
           <div><strong>Critères obligatoires</strong><div>{REQUIRED[selected.requiredCriteriaStatus] || 'À vérifier'}</div></div>
           <div><strong>Profil utilisé</strong><div>{selected.requirementsVersion ? `Version ${selected.requirementsVersion}` : 'Ancien barème'}</div></div></div>
         <p className="candidate-notice">Le score est calculé par les règles du poste à partir des champs vérifiés. Les informations manquantes restent à examiner. L'âge, le CIN et le téléphone ne donnent aucun point. La décision de recrutement reste humaine.</p>
-        {selected.extractionStatus === 'PROVIDER_UNAVAILABLE' ? <p role="status" className="candidate-notice">Le fournisseur IA est indisponible. Les champs proposés proviennent d'une extraction locale limitée ; vérifiez le CV.</p> : null}
-        {selected.extractionStatus === 'MANUAL_REVIEW_REQUIRED' ? <p role="status" className="candidate-notice">Le document ne contient pas de texte exploitable. Saisissez et vérifiez les informations manuellement.</p> : null}
+        <ExtractionNotice candidate={selected} />
         <div className="candidate-actions"><button className="btn-secondary" disabled={!!busy} onClick={() => run('download', () => candidateService.download(selected))}><FiDownload /> Télécharger le CV</button>
-          <button className="btn-secondary" disabled={!!busy || dirty} onClick={() => run('evaluate', async () => updateCandidate(await candidateService.evaluate(selected.id)))}>Réévaluer avec le profil v{profile?.version || 'courant'}</button></div>
+          <button className="btn-secondary" disabled={!!busy || dirty} onClick={() => run('evaluate', async () => updateCandidate(await candidateService.evaluate(selected.id)))}>Réévaluer avec le profil v{profile?.version || 'courant'}</button>
+          {canRetryExtraction(selected) && !selected.agentId ? <button className="btn-secondary" disabled={!!busy || dirty} onClick={retryExtraction} title={dirty ? 'Enregistrez vos corrections avant de relancer l’extraction.' : undefined}><FiRefreshCw aria-hidden="true" /> {busy === 'reanalyze' ? 'Extraction en cours…' : 'Réessayer l’extraction IA'}</button> : null}
+        </div>
+        {busy === 'reanalyze' ? <p role="status">Le CV enregistré est en cours d’analyse. Cette opération peut prendre environ une minute.</p> : null}
+        {canRetryExtraction(selected) && dirty ? <p role="status">Enregistrez vos corrections avant de réessayer l’extraction IA.</p> : null}
         <div className="table-container"><table className="data-table"><thead><tr><th>Critère</th><th>Valeur / vérification</th><th>Points</th><th>Règle</th></tr></thead><tbody>
           {(selected.criterionScores || []).map((criterion) => <tr key={criterion.key}><td>{criterion.label}<small>{criterion.required ? 'Obligatoire' : 'Scoring'}</small></td>
-            <td>{criterion.value ?? 'Non renseigné'}<small>{FIELD_STATES[criterion.evidenceStatus]} · {REQUIRED[criterion.requiredStatus]}</small></td>
+            <td>{criterionValue(criterion.value)}<small>{FIELD_STATES[criterion.evidenceStatus]} · {REQUIRED[criterion.requiredStatus]}</small></td>
             <td>{criterion.points} / {criterion.maxPoints}</td><td>{criterion.explanation}</td></tr>)}
         </tbody></table></div>
         <h3>Vérification des informations</h3><p>Corrigez la valeur si nécessaire, puis choisissez « Vérifié ». Les extraits restent disponibles pour comparer avec le document.</p>
@@ -188,15 +255,15 @@ export default function CandidaturesPage() {
           const field = fields[key]; const evidence = selected.fieldEvidence?.[key];
           return <div className="candidate-field" key={key}>
             <label htmlFor={`candidate-${key}`}>{label}</label>
-            {type === 'boolean' ? <select id={`candidate-${key}`} value={field.value} disabled={!!selected.agentId} onChange={(e) => changeField(key, 'value', e.target.value)}>
+            {type === 'boolean' ? <select id={`candidate-${key}`} value={field.value} disabled={!!selected.agentId || !!busy} onChange={(e) => changeField(key, 'value', e.target.value)}>
               <option value="">Inconnu</option><option value="true">Oui</option><option value="false">Non</option></select>
               : <input id={`candidate-${key}`} type={type} step={type === 'number' ? '0.1' : undefined} min={type === 'number' ? '0' : undefined}
-                placeholder={placeholder} value={field.value} disabled={!!selected.agentId} onChange={(e) => changeField(key, 'value', e.target.value)} />}
-            <select aria-label={`Vérification : ${label}`} value={field.status} disabled={!!selected.agentId} onChange={(e) => changeField(key, 'status', e.target.value)}>
+                placeholder={placeholder} value={field.value} disabled={!!selected.agentId || !!busy} onChange={(e) => changeField(key, 'value', e.target.value)} />}
+            <select aria-label={`Vérification : ${label}`} value={field.status} disabled={!!selected.agentId || !!busy} onChange={(e) => changeField(key, 'status', e.target.value)}>
               {Object.entries(FIELD_STATES).map(([value, name]) => <option key={value} value={value}>{name}</option>)}
             </select>
             {evidence?.snippet ? <blockquote>{evidence.snippet}<cite>{evidence.location || (evidence.pageNumber ? `Page ${evidence.pageNumber}` : 'Extrait du CV')}</cite></blockquote> : <small>Aucun extrait disponible.</small>}
-            <input aria-label={`Note de vérification : ${label}`} placeholder="Note de vérification (facultative)" value={field.reviewNote} disabled={!!selected.agentId} onChange={(e) => changeField(key, 'reviewNote', e.target.value)} />
+            <input aria-label={`Note de vérification : ${label}`} placeholder="Note de vérification (facultative)" value={field.reviewNote} disabled={!!selected.agentId || !!busy} onChange={(e) => changeField(key, 'reviewNote', e.target.value)} />
           </div>;
         })}</div>
         <button className="btn-primary" disabled={!!busy || !dirty || !!selected.agentId} onClick={saveReview}><FiCheckCircle /> Enregistrer la vérification</button>

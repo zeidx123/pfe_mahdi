@@ -95,7 +95,7 @@ const TrackingPage = () => {
     <div className="tracking-page">
       <div className="page-header-row">
         <div>
-          <h1>Suivi en Temps Réel</h1>
+          <h1>Suivi GPS</h1>
           <p>Supervisez la flotte de camions sur le terrain en direct.</p>
         </div>
         <div className={`connection-status ${isConnected ? 'connected' : 'disconnected'}`}>

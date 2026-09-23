@@ -1,0 +1,370 @@
+{
+  "datasetVersion": "pfe-ui-development-documents-v1",
+  "scope": "Development smoke checks against three authored fictional PFE documents; not an independently reviewed accuracy benchmark.",
+  "documents": [
+    {
+      "sourceFile": "evaluation/rag/development-documents/PFE-DEMO-01-photos-et-verification.md",
+      "reusedExistingUpload": false,
+      "document": {
+        "id": "6ab3f5c972e8c50402ed66fb",
+        "originalName": "PFE-DEMO-01-photos-et-verification.md",
+        "fileType": "MD",
+        "fileSize": 1448,
+        "status": "INDEXED",
+        "chunkCount": 2,
+        "errorMessage": null,
+        "approved": true,
+        "approvedBy": "6ab3e94918b9203aa5624b11",
+        "approvedAt": "2026-09-23T16:52:48.004",
+        "textReady": true,
+        "semanticIndexReady": true,
+        "embeddingModel": "gemini-embedding-2",
+        "embeddingVersion": "text-v1",
+        "embeddingDimensions": 768,
+        "uploadedBy": "demo.supervisor@gesticollecte.local",
+        "createdAt": "2026-09-23T16:52:41.922",
+        "indexedAt": "2026-09-23T16:52:43.15"
+      }
+    },
+    {
+      "sourceFile": "evaluation/rag/development-documents/PFE-DEMO-02-point-inaccessible-et-revue.md",
+      "reusedExistingUpload": false,
+      "document": {
+        "id": "6ab3f5c972e8c50402ed66fc",
+        "originalName": "PFE-DEMO-02-point-inaccessible-et-revue.md",
+        "fileType": "MD",
+        "fileSize": 1485,
+        "status": "INDEXED",
+        "chunkCount": 2,
+        "errorMessage": null,
+        "approved": true,
+        "approvedBy": "6ab3e94918b9203aa5624b11",
+        "approvedAt": "2026-09-23T16:52:48.009",
+        "textReady": true,
+        "semanticIndexReady": true,
+        "embeddingModel": "gemini-embedding-2",
+        "embeddingVersion": "text-v1",
+        "embeddingDimensions": 768,
+        "uploadedBy": "demo.supervisor@gesticollecte.local",
+        "createdAt": "2026-09-23T16:52:41.942",
+        "indexedAt": "2026-09-23T16:52:44.484"
+      }
+    },
+    {
+      "sourceFile": "evaluation/rag/development-documents/PFE-DEMO-03-tournee-jasmin-et-retour.md",
+      "reusedExistingUpload": false,
+      "document": {
+        "id": "6ab3f5c972e8c50402ed66fd",
+        "originalName": "PFE-DEMO-03-tournee-jasmin-et-retour.md",
+        "fileType": "MD",
+        "fileSize": 1505,
+        "status": "INDEXED",
+        "chunkCount": 2,
+        "errorMessage": null,
+        "approved": true,
+        "approvedBy": "6ab3e94918b9203aa5624b11",
+        "approvedAt": "2026-09-23T16:52:48.012",
+        "textReady": true,
+        "semanticIndexReady": true,
+        "embeddingModel": "gemini-embedding-2",
+        "embeddingVersion": "text-v1",
+        "embeddingDimensions": 768,
+        "uploadedBy": "demo.supervisor@gesticollecte.local",
+        "createdAt": "2026-09-23T16:52:41.948",
+        "indexedAt": "2026-09-23T16:52:45.801"
+      }
+    }
+  ],
+  "expectationsFile": "evaluation/rag/development-documents/expected-cases.json",
+  "automatedRegressionChecks": {
+    "targetedTests": 26,
+    "failures": 0,
+    "errors": 0,
+    "scope": "RAG answers/citations/followups, explicit provider failures, source approval, compatible embeddings and document recovery; mocked providers."
+  },
+  "runStartedAt": "2026-09-23T16:05:36.927540+00:00",
+  "implementationState": "After fallback relevance gate fix; unchanged provider/model settings.",
+  "cases": [
+    {
+      "id": "after-photo",
+      "question": "Dans la démonstration GestiCollecte, quelle photo est obligatoire pour confirmer une collecte normale ? La photo AVANT est-elle obligatoire ?",
+      "httpStatus": 200,
+      "latencySeconds": 1.795,
+      "review": {
+        "independent": false,
+        "accuracyMetricEligible": false
+      },
+      "response": {
+        "conversationId": "b26d6911-84f1-4c73-9780-527842b6364f",
+        "question": "Dans la démonstration GestiCollecte, quelle photo est obligatoire pour confirmer une collecte normale ? La photo AVANT est-elle obligatoire ?",
+        "answer": "Extraits pertinents — l’assistant ne peut pas générer de réponse pour le moment.\n\nPFE-DEMO-01-photos-et-verification.md — Texte — segment 1\n> # PFE-DEMO-01 — Photos et vérification d'un point\n> \n> **SIMULATION FICTIVE PFE — document de développement, sans valeur de règlement municipal.**\n> Source : PFE-DEMO-01. Version : 1.0, 23 septembre 2026.\n> Cette fiche décrit uniquement le parcours de démonstration GestiCollecte.\n> \n> ## Photo nécessaire\n> \n> Pour confirmer une collecte normale dans cette démonstration, une photo APRÈS la collecte est obligatoire. La photo AVANT est facultative. Une paire AVANT/APRÈS peut servir à l'expérimentation, mais elle n'est pas requise à chaque point.\n> La référence pédagogique de cet exercice photo est **JASMIN-PHOTO-23**.\n> \n> ## Lecture de l'analyse\n> \n> L'analyse décrit ce qui est visible dans les images : CLEANED, NOT_CLEANED, OBSTRUCTED, CANNOT_DETERMINE ou ANALYSIS_UNAVAILABLE. Une photo ne prouve pas l'identité de la personne qui a effectué le travail.\n> Une analyse incertaine ou indisponible ne transforme pas le résultat en CLEANED. Le chauffeur peut continuer le parcours et laisser le point à examiner.\n\nPFE-DEMO-02-point-inaccessible-et-revue.md — Texte — segment 1\n> # PFE-DEMO-02 — Point inaccessible et revue humaine\n> \n> **SIMULATION FICTIVE PFE — document de développement, sans valeur de règlement municipal.**\n> Source : PFE-DEMO-02. Version : 1.0, 23 septembre 2026.\n> Cette fiche décrit uniquement un exercice de signalement dans GestiCollecte.\n> \n> ## Point inaccessible\n> \n> Si un point est inaccessible ou obstrué dans le scénario de démonstration, enregistrer un problème sur la visite avec une raison et les preuves disponibles. Ne pas déclarer la collecte normale terminée sans la photo APRÈS requise. Une photographie dangereuse ou impossible n'est pas exigée pour enregistrer ce problème. Le chauffeur peut poursuivre les autres points après le signalement.\n> \n> ## Suivi du signalement\n> \n> Dans cet exercice, le suivi avec le superviseur se fait par le signalement dans l'application, associé au point et à la tournée, puis par la revue du superviseur. Aucun numéro de téléphone ni délai de réponse n'est défini dans ces documents fictifs.",
+        "status": "SOURCE_EXCERPTS",
+        "retrievalMode": "HYBRID",
+        "sources": [
+          {
+            "documentId": "6ab3f5c972e8c50402ed66fb",
+            "documentName": "PFE-DEMO-01-photos-et-verification.md",
+            "pageNumber": 0,
+            "sectionTitle": "Texte — segment 1",
+            "chunkId": "6ab3f5c972e8c50402ed66fe",
+            "score": 0.03278688524590164,
+            "snippet": "# PFE-DEMO-01 — Photos et vérification d'un point\n\n**SIMULATION FICTIVE PFE — document de développement, sans valeur de règlement municipal.**\nSource : PFE-DEMO-01. Version : 1.0, 23 septembre 2026.\nCette fiche décrit uniquement le parcours de démonstration GestiCollecte.\n\n## Photo nécessaire\n\nPour confirmer une collecte normale dans cette démonstration, une photo APRÈS la collecte est obligatoire. La photo AVANT est facultative. Une paire AVANT/APRÈS peut servir à l'expérimentation, mais elle n'est pas requise à chaque point.\nLa référence pédagogique de cet exercice photo est **JASMIN-PHOTO-23**.\n\n## Lecture de l'analyse\n\nL'analyse décrit ce qui est visible dans les images : CLEANED, NOT_CLEANED, OBSTRUCTED, CANNOT_DETERMINE ou ANALYSIS_UNAVAILABLE. Une photo ne prouve pas l'identité de la personne qui a effectué le travail.\nUne analyse incertaine ou indisponible ne transforme pas le résultat en CLEANED. Le chauffeur peut continuer le parcours et laisser le point à examiner.",
+            "sourceUrl": "/api/ai/documents/6ab3f5c972e8c50402ed66fb/source"
+          },
+          {
+            "documentId": "6ab3f5c972e8c50402ed66fc",
+            "documentName": "PFE-DEMO-02-point-inaccessible-et-revue.md",
+            "pageNumber": 0,
+            "sectionTitle": "Texte — segment 1",
+            "chunkId": "6ab3f5cb72e8c50402ed6700",
+            "score": 0.03225806451612903,
+            "snippet": "# PFE-DEMO-02 — Point inaccessible et revue humaine\n\n**SIMULATION FICTIVE PFE — document de développement, sans valeur de règlement municipal.**\nSource : PFE-DEMO-02. Version : 1.0, 23 septembre 2026.\nCette fiche décrit uniquement un exercice de signalement dans GestiCollecte.\n\n## Point inaccessible\n\nSi un point est inaccessible ou obstrué dans le scénario de démonstration, enregistrer un problème sur la visite avec une raison et les preuves disponibles. Ne pas déclarer la collecte normale terminée sans la photo APRÈS requise. Une photographie dangereuse ou impossible n'est pas exigée pour enregistrer ce problème. Le chauffeur peut poursuivre les autres points après le signalement.\n\n## Suivi du signalement\n\nDans cet exercice, le suivi avec le superviseur se fait par le signalement dans l'application, associé au point et à la tournée, puis par la revue du superviseur. Aucun numéro de téléphone ni délai de réponse n'est défini dans ces documents fictifs.",
+            "sourceUrl": "/api/ai/documents/6ab3f5c972e8c50402ed66fc/source"
+          }
+        ],
+        "relevantContextFound": true,
+        "maxSimilarityScore": 0.03278688524590164
+      },
+      "sourceChecks": [
+        {
+          "chunkId": "6ab3f5c972e8c50402ed66fe",
+          "documentApproved": true,
+          "literalSnippetInAuthoredFile": true
+        },
+        {
+          "chunkId": "6ab3f5cb72e8c50402ed6700",
+          "documentApproved": true,
+          "literalSnippetInAuthoredFile": true
+        }
+      ]
+    },
+    {
+      "id": "inaccessible-followup",
+      "question": "Et si ce point est inaccessible ?",
+      "httpStatus": 200,
+      "latencySeconds": 1.058,
+      "review": {
+        "independent": false,
+        "accuracyMetricEligible": false
+      },
+      "response": {
+        "conversationId": "b26d6911-84f1-4c73-9780-527842b6364f",
+        "question": "Et si ce point est inaccessible ?",
+        "answer": "Extraits pertinents — l’assistant ne peut pas générer de réponse pour le moment.\n\nPFE-DEMO-02-point-inaccessible-et-revue.md — Texte — segment 1\n> # PFE-DEMO-02 — Point inaccessible et revue humaine\n> \n> **SIMULATION FICTIVE PFE — document de développement, sans valeur de règlement municipal.**\n> Source : PFE-DEMO-02. Version : 1.0, 23 septembre 2026.\n> Cette fiche décrit uniquement un exercice de signalement dans GestiCollecte.\n> \n> ## Point inaccessible\n> \n> Si un point est inaccessible ou obstrué dans le scénario de démonstration, enregistrer un problème sur la visite avec une raison et les preuves disponibles. Ne pas déclarer la collecte normale terminée sans la photo APRÈS requise. Une photographie dangereuse ou impossible n'est pas exigée pour enregistrer ce problème. Le chauffeur peut poursuivre les autres points après le signalement.\n> \n> ## Suivi du signalement\n> \n> Dans cet exercice, le suivi avec le superviseur se fait par le signalement dans l'application, associé au point et à la tournée, puis par la revue du superviseur. Aucun numéro de téléphone ni délai de réponse n'est défini dans ces documents fictifs.\n\nPFE-DEMO-01-photos-et-verification.md — Texte — segment 1\n> e analyse incertaine ou indisponible ne transforme pas le résultat en CLEANED. Le chauffeur peut continuer le parcours et laisser le point à examiner. La prédiction originale et la correction humaine sont conservées séparément. Le superviseur examine les preuves et la correction.\n> \n> ## Envoi interrompu\n> \n> Si l'envoi de la photo échoue, conserver le brouillon disponible et utiliser la commande de réessai. Une photo dont l'envoi n'est pas confirmé ne remplace pas la preuve APRÈS demandée pour une collecte normale. Le cas d'un point inaccessible est décrit dans PFE-DEMO-02.",
+        "status": "SOURCE_EXCERPTS",
+        "retrievalMode": "HYBRID",
+        "sources": [
+          {
+            "documentId": "6ab3f5c972e8c50402ed66fc",
+            "documentName": "PFE-DEMO-02-point-inaccessible-et-revue.md",
+            "pageNumber": 0,
+            "sectionTitle": "Texte — segment 1",
+            "chunkId": "6ab3f5cb72e8c50402ed6700",
+            "score": 0.03225806451612903,
+            "snippet": "# PFE-DEMO-02 — Point inaccessible et revue humaine\n\n**SIMULATION FICTIVE PFE — document de développement, sans valeur de règlement municipal.**\nSource : PFE-DEMO-02. Version : 1.0, 23 septembre 2026.\nCette fiche décrit uniquement un exercice de signalement dans GestiCollecte.\n\n## Point inaccessible\n\nSi un point est inaccessible ou obstrué dans le scénario de démonstration, enregistrer un problème sur la visite avec une raison et les preuves disponibles. Ne pas déclarer la collecte normale terminée sans la photo APRÈS requise. Une photographie dangereuse ou impossible n'est pas exigée pour enregistrer ce problème. Le chauffeur peut poursuivre les autres points après le signalement.\n\n## Suivi du signalement\n\nDans cet exercice, le suivi avec le superviseur se fait par le signalement dans l'application, associé au point et à la tournée, puis par la revue du superviseur. Aucun numéro de téléphone ni délai de réponse n'est défini dans ces documents fictifs.",
+            "sourceUrl": "/api/ai/documents/6ab3f5c972e8c50402ed66fc/source"
+          },
+          {
+            "documentId": "6ab3f5c972e8c50402ed66fb",
+            "documentName": "PFE-DEMO-01-photos-et-verification.md",
+            "pageNumber": 0,
+            "sectionTitle": "Texte — segment 1",
+            "chunkId": "6ab3f5c972e8c50402ed66ff",
+            "score": 0.031746031746031744,
+            "snippet": "e analyse incertaine ou indisponible ne transforme pas le résultat en CLEANED. Le chauffeur peut continuer le parcours et laisser le point à examiner. La prédiction originale et la correction humaine sont conservées séparément. Le superviseur examine les preuves et la correction.\n\n## Envoi interrompu\n\nSi l'envoi de la photo échoue, conserver le brouillon disponible et utiliser la commande de réessai. Une photo dont l'envoi n'est pas confirmé ne remplace pas la preuve APRÈS demandée pour une collecte normale. Le cas d'un point inaccessible est décrit dans PFE-DEMO-02.",
+            "sourceUrl": "/api/ai/documents/6ab3f5c972e8c50402ed66fb/source"
+          }
+        ],
+        "relevantContextFound": true,
+        "maxSimilarityScore": 0.03225806451612903
+      },
+      "sourceChecks": [
+        {
+          "chunkId": "6ab3f5cb72e8c50402ed6700",
+          "documentApproved": true,
+          "literalSnippetInAuthoredFile": true
+        },
+        {
+          "chunkId": "6ab3f5c972e8c50402ed66ff",
+          "documentApproved": true,
+          "literalSnippetInAuthoredFile": true
+        }
+      ]
+    },
+    {
+      "id": "exercise-reference",
+      "question": "Quelle est la référence pédagogique de l'exercice photo dans PFE-DEMO-01 ?",
+      "httpStatus": 200,
+      "latencySeconds": 0.958,
+      "review": {
+        "independent": false,
+        "accuracyMetricEligible": false
+      },
+      "response": {
+        "conversationId": "6b65b7b5-832d-43ee-9b66-9b51ea4ab979",
+        "question": "Quelle est la référence pédagogique de l'exercice photo dans PFE-DEMO-01 ?",
+        "answer": "Extraits pertinents — l’assistant ne peut pas générer de réponse pour le moment.\n\nPFE-DEMO-01-photos-et-verification.md — Texte — segment 1\n> # PFE-DEMO-01 — Photos et vérification d'un point\n> \n> **SIMULATION FICTIVE PFE — document de développement, sans valeur de règlement municipal.**\n> Source : PFE-DEMO-01. Version : 1.0, 23 septembre 2026.\n> Cette fiche décrit uniquement le parcours de démonstration GestiCollecte.\n> \n> ## Photo nécessaire\n> \n> Pour confirmer une collecte normale dans cette démonstration, une photo APRÈS la collecte est obligatoire. La photo AVANT est facultative. Une paire AVANT/APRÈS peut servir à l'expérimentation, mais elle n'est pas requise à chaque point.\n> La référence pédagogique de cet exercice photo est **JASMIN-PHOTO-23**.\n> \n> ## Lecture de l'analyse\n> \n> L'analyse décrit ce qui est visible dans les images : CLEANED, NOT_CLEANED, OBSTRUCTED, CANNOT_DETERMINE ou ANALYSIS_UNAVAILABLE. Une photo ne prouve pas l'identité de la personne qui a effectué le travail.\n> Une analyse incertaine ou indisponible ne transforme pas le résultat en CLEANED. Le chauffeur peut continuer le parcours et laisser le point à examiner.\n\nPFE-DEMO-02-point-inaccessible-et-revue.md — Texte — segment 1\n> # PFE-DEMO-02 — Point inaccessible et revue humaine\n> \n> **SIMULATION FICTIVE PFE — document de développement, sans valeur de règlement municipal.**\n> Source : PFE-DEMO-02. Version : 1.0, 23 septembre 2026.\n> Cette fiche décrit uniquement un exercice de signalement dans GestiCollecte.\n> \n> ## Point inaccessible\n> \n> Si un point est inaccessible ou obstrué dans le scénario de démonstration, enregistrer un problème sur la visite avec une raison et les preuves disponibles. Ne pas déclarer la collecte normale terminée sans la photo APRÈS requise. Une photographie dangereuse ou impossible n'est pas exigée pour enregistrer ce problème. Le chauffeur peut poursuivre les autres points après le signalement.\n> \n> ## Suivi du signalement\n> \n> Dans cet exercice, le suivi avec le superviseur se fait par le signalement dans l'application, associé au point et à la tournée, puis par la revue du superviseur. Aucun numéro de téléphone ni délai de réponse n'est défini dans ces documents fictifs.\n\nPFE-DEMO-02-point-inaccessible-et-revue.md — Texte — segment 1\n> ié au point et à la tournée, puis par la revue du superviseur. Aucun numéro de téléphone ni délai de réponse n'est défini dans ces documents fictifs.\n> La référence pédagogique du suivi est **PFE-REVUE-23**. Cette référence désigne l'exercice ; ce n'est pas un identifiant généré par l'application.\n> \n> ## Correction de l'analyse\n> \n> Le chauffeur peut corriger son appréciation et ajouter une note. Le superviseur conserve sa propre étiquette de revue. Ni une panne du fournisseur IA ni une image ambiguë ne suffisent à conclure que le point est propre. L'avancement de la visite et l'appréciation IA sont deux informations distinctes.\n\nPFE-DEMO-03-tournee-jasmin-et-retour.md — Texte — segment 1\n> # PFE-DEMO-03 — Tournée pédagogique Jasmin et retour au dépôt\n> \n> **SIMULATION FICTIVE PFE — document de développement, sans valeur de règlement municipal.**\n> Source : PFE-DEMO-03. Version : 1.0, 23 septembre 2026.\n> Le nom **CIRCUIT-JASMIN** désigne un exercice de lecture documentaire. Il ne désigne pas nécessairement une tournée déjà créée dans l'application.\n> \n> ## Départ et navigation\n> \n> Le dépôt configuré pour la démonstration est situé à la latitude **36.722857** et à la longitude **10.283535**. Le chauffeur démarre ou reprend la tournée qui lui est affectée. L'application conserve l'ordre prévu des points ; la commande Naviguer ouvre Google Maps pour la prochaine destination. Google Maps peut proposer un autre trajet routier sans changer l'ordre des arrêts prévu par l'application.\n> \n> ## Retour et clôture\n> \n> Après le dernier point, la destination suivante est le dépôt.",
+        "status": "SOURCE_EXCERPTS",
+        "retrievalMode": "HYBRID",
+        "sources": [
+          {
+            "documentId": "6ab3f5c972e8c50402ed66fb",
+            "documentName": "PFE-DEMO-01-photos-et-verification.md",
+            "pageNumber": 0,
+            "sectionTitle": "Texte — segment 1",
+            "chunkId": "6ab3f5c972e8c50402ed66fe",
+            "score": 0.03278688524590164,
+            "snippet": "# PFE-DEMO-01 — Photos et vérification d'un point\n\n**SIMULATION FICTIVE PFE — document de développement, sans valeur de règlement municipal.**\nSource : PFE-DEMO-01. Version : 1.0, 23 septembre 2026.\nCette fiche décrit uniquement le parcours de démonstration GestiCollecte.\n\n## Photo nécessaire\n\nPour confirmer une collecte normale dans cette démonstration, une photo APRÈS la collecte est obligatoire. La photo AVANT est facultative. Une paire AVANT/APRÈS peut servir à l'expérimentation, mais elle n'est pas requise à chaque point.\nLa référence pédagogique de cet exercice photo est **JASMIN-PHOTO-23**.\n\n## Lecture de l'analyse\n\nL'analyse décrit ce qui est visible dans les images : CLEANED, NOT_CLEANED, OBSTRUCTED, CANNOT_DETERMINE ou ANALYSIS_UNAVAILABLE. Une photo ne prouve pas l'identité de la personne qui a effectué le travail.\nUne analyse incertaine ou indisponible ne transforme pas le résultat en CLEANED. Le chauffeur peut continuer le parcours et laisser le point à examiner.",
+            "sourceUrl": "/api/ai/documents/6ab3f5c972e8c50402ed66fb/source"
+          },
+          {
+            "documentId": "6ab3f5c972e8c50402ed66fc",
+            "documentName": "PFE-DEMO-02-point-inaccessible-et-revue.md",
+            "pageNumber": 0,
+            "sectionTitle": "Texte — segment 1",
+            "chunkId": "6ab3f5cb72e8c50402ed6700",
+            "score": 0.031754032258064516,
+            "snippet": "# PFE-DEMO-02 — Point inaccessible et revue humaine\n\n**SIMULATION FICTIVE PFE — document de développement, sans valeur de règlement municipal.**\nSource : PFE-DEMO-02. Version : 1.0, 23 septembre 2026.\nCette fiche décrit uniquement un exercice de signalement dans GestiCollecte.\n\n## Point inaccessible\n\nSi un point est inaccessible ou obstrué dans le scénario de démonstration, enregistrer un problème sur la visite avec une raison et les preuves disponibles. Ne pas déclarer la collecte normale terminée sans la photo APRÈS requise. Une photographie dangereuse ou impossible n'est pas exigée pour enregistrer ce problème. Le chauffeur peut poursuivre les autres points après le signalement.\n\n## Suivi du signalement\n\nDans cet exercice, le suivi avec le superviseur se fait par le signalement dans l'application, associé au point et à la tournée, puis par la revue du superviseur. Aucun numéro de téléphone ni délai de réponse n'est défini dans ces documents fictifs.",
+            "sourceUrl": "/api/ai/documents/6ab3f5c972e8c50402ed66fc/source"
+          },
+          {
+            "documentId": "6ab3f5c972e8c50402ed66fc",
+            "documentName": "PFE-DEMO-02-point-inaccessible-et-revue.md",
+            "pageNumber": 0,
+            "sectionTitle": "Texte — segment 1",
+            "chunkId": "6ab3f5cb72e8c50402ed6701",
+            "score": 0.031754032258064516,
+            "snippet": "ié au point et à la tournée, puis par la revue du superviseur. Aucun numéro de téléphone ni délai de réponse n'est défini dans ces documents fictifs.\nLa référence pédagogique du suivi est **PFE-REVUE-23**. Cette référence désigne l'exercice ; ce n'est pas un identifiant généré par l'application.\n\n## Correction de l'analyse\n\nLe chauffeur peut corriger son appréciation et ajouter une note. Le superviseur conserve sa propre étiquette de revue. Ni une panne du fournisseur IA ni une image ambiguë ne suffisent à conclure que le point est propre. L'avancement de la visite et l'appréciation IA sont deux informations distinctes.",
+            "sourceUrl": "/api/ai/documents/6ab3f5c972e8c50402ed66fc/source"
+          },
+          {
+            "documentId": "6ab3f5c972e8c50402ed66fd",
+            "documentName": "PFE-DEMO-03-tournee-jasmin-et-retour.md",
+            "pageNumber": 0,
+            "sectionTitle": "Texte — segment 1",
+            "chunkId": "6ab3f5cc72e8c50402ed6702",
+            "score": 0.031746031746031744,
+            "snippet": "# PFE-DEMO-03 — Tournée pédagogique Jasmin et retour au dépôt\n\n**SIMULATION FICTIVE PFE — document de développement, sans valeur de règlement municipal.**\nSource : PFE-DEMO-03. Version : 1.0, 23 septembre 2026.\nLe nom **CIRCUIT-JASMIN** désigne un exercice de lecture documentaire. Il ne désigne pas nécessairement une tournée déjà créée dans l'application.\n\n## Départ et navigation\n\nLe dépôt configuré pour la démonstration est situé à la latitude **36.722857** et à la longitude **10.283535**. Le chauffeur démarre ou reprend la tournée qui lui est affectée. L'application conserve l'ordre prévu des points ; la commande Naviguer ouvre Google Maps pour la prochaine destination. Google Maps peut proposer un autre trajet routier sans changer l'ordre des arrêts prévu par l'application.\n\n## Retour et clôture\n\nAprès le dernier point, la destination suivante est le dépôt.",
+            "sourceUrl": "/api/ai/documents/6ab3f5c972e8c50402ed66fd/source"
+          }
+        ],
+        "relevantContextFound": true,
+        "maxSimilarityScore": 0.03278688524590164
+      },
+      "sourceChecks": [
+        {
+          "chunkId": "6ab3f5c972e8c50402ed66fe",
+          "documentApproved": true,
+          "literalSnippetInAuthoredFile": true
+        },
+        {
+          "chunkId": "6ab3f5cb72e8c50402ed6700",
+          "documentApproved": true,
+          "literalSnippetInAuthoredFile": true
+        },
+        {
+          "chunkId": "6ab3f5cb72e8c50402ed6701",
+          "documentApproved": true,
+          "literalSnippetInAuthoredFile": true
+        },
+        {
+          "chunkId": "6ab3f5cc72e8c50402ed6702",
+          "documentApproved": true,
+          "literalSnippetInAuthoredFile": true
+        }
+      ]
+    },
+    {
+      "id": "return-depot",
+      "question": "Dans CIRCUIT-JASMIN, après le dernier point, quelle est la destination suivante et que faut-il confirmer pour terminer la tournée ?",
+      "httpStatus": 200,
+      "latencySeconds": 1.387,
+      "review": {
+        "independent": false,
+        "accuracyMetricEligible": false
+      },
+      "response": {
+        "conversationId": "e5a6fb1f-d929-4b2b-8bc2-fc59162c73a3",
+        "question": "Dans CIRCUIT-JASMIN, après le dernier point, quelle est la destination suivante et que faut-il confirmer pour terminer la tournée ?",
+        "answer": "Extraits pertinents — l’assistant ne peut pas générer de réponse pour le moment.\n\nPFE-DEMO-03-tournee-jasmin-et-retour.md — Texte — segment 1\n> # PFE-DEMO-03 — Tournée pédagogique Jasmin et retour au dépôt\n> \n> **SIMULATION FICTIVE PFE — document de développement, sans valeur de règlement municipal.**\n> Source : PFE-DEMO-03. Version : 1.0, 23 septembre 2026.\n> Le nom **CIRCUIT-JASMIN** désigne un exercice de lecture documentaire. Il ne désigne pas nécessairement une tournée déjà créée dans l'application.\n> \n> ## Départ et navigation\n> \n> Le dépôt configuré pour la démonstration est situé à la latitude **36.722857** et à la longitude **10.283535**. Le chauffeur démarre ou reprend la tournée qui lui est affectée. L'application conserve l'ordre prévu des points ; la commande Naviguer ouvre Google Maps pour la prochaine destination. Google Maps peut proposer un autre trajet routier sans changer l'ordre des arrêts prévu par l'application.\n> \n> ## Retour et clôture\n> \n> Après le dernier point, la destination suivante est le dépôt.\n\nPFE-DEMO-03-tournee-jasmin-et-retour.md — Texte — segment 1\n> routier sans changer l'ordre des arrêts prévu par l'application.\n> \n> ## Retour et clôture\n> \n> Après le dernier point, la destination suivante est le dépôt. Pour terminer la tournée, chaque arrêt doit avoir une collecte confirmée ou un problème enregistré, puis le chauffeur doit confirmer son retour au dépôt. La photo finale de la tournée est facultative ; elle ne remplace pas les photos APRÈS des collectes normales.\n> \n> ## Temps de service\n> \n> Le paramètre initial d'estimation est de **cinq minutes de service par point**. Le temps de trajet routier, le temps de service et la durée totale estimée sont affichés séparément. Les durées réellement enregistrées sont comparées à l'estimation ; une mesure manquante n'est pas inventée.",
+        "status": "SOURCE_EXCERPTS",
+        "retrievalMode": "HYBRID",
+        "sources": [
+          {
+            "documentId": "6ab3f5c972e8c50402ed66fd",
+            "documentName": "PFE-DEMO-03-tournee-jasmin-et-retour.md",
+            "pageNumber": 0,
+            "sectionTitle": "Texte — segment 1",
+            "chunkId": "6ab3f5cc72e8c50402ed6702",
+            "score": 0.03278688524590164,
+            "snippet": "# PFE-DEMO-03 — Tournée pédagogique Jasmin et retour au dépôt\n\n**SIMULATION FICTIVE PFE — document de développement, sans valeur de règlement municipal.**\nSource : PFE-DEMO-03. Version : 1.0, 23 septembre 2026.\nLe nom **CIRCUIT-JASMIN** désigne un exercice de lecture documentaire. Il ne désigne pas nécessairement une tournée déjà créée dans l'application.\n\n## Départ et navigation\n\nLe dépôt configuré pour la démonstration est situé à la latitude **36.722857** et à la longitude **10.283535**. Le chauffeur démarre ou reprend la tournée qui lui est affectée. L'application conserve l'ordre prévu des points ; la commande Naviguer ouvre Google Maps pour la prochaine destination. Google Maps peut proposer un autre trajet routier sans changer l'ordre des arrêts prévu par l'application.\n\n## Retour et clôture\n\nAprès le dernier point, la destination suivante est le dépôt.",
+            "sourceUrl": "/api/ai/documents/6ab3f5c972e8c50402ed66fd/source"
+          },
+          {
+            "documentId": "6ab3f5c972e8c50402ed66fd",
+            "documentName": "PFE-DEMO-03-tournee-jasmin-et-retour.md",
+            "pageNumber": 0,
+            "sectionTitle": "Texte — segment 1",
+            "chunkId": "6ab3f5cc72e8c50402ed6703",
+            "score": 0.03200204813108039,
+            "snippet": "routier sans changer l'ordre des arrêts prévu par l'application.\n\n## Retour et clôture\n\nAprès le dernier point, la destination suivante est le dépôt. Pour terminer la tournée, chaque arrêt doit avoir une collecte confirmée ou un problème enregistré, puis le chauffeur doit confirmer son retour au dépôt. La photo finale de la tournée est facultative ; elle ne remplace pas les photos APRÈS des collectes normales.\n\n## Temps de service\n\nLe paramètre initial d'estimation est de **cinq minutes de service par point**. Le temps de trajet routier, le temps de service et la durée totale estimée sont affichés séparément. Les durées réellement enregistrées sont comparées à l'estimation ; une mesure manquante n'est pas inventée.",
+            "sourceUrl": "/api/ai/documents/6ab3f5c972e8c50402ed66fd/source"
+          }
+        ],
+        "relevantContextFound": true,
+        "maxSimilarityScore": 0.03278688524590164
+      },
+      "sourceChecks": [
+        {
+          "chunkId": "6ab3f5cc72e8c50402ed6702",
+          "documentApproved": true,
+          "literalSnippetInAuthoredFile": true
+        },
+        {
+          "chunkId": "6ab3f5cc72e8c50402ed6703",
+          "documentApproved": true,
+          "literalSnippetInAuthoredFile": true
+        }
+      ]
+    },
+    {
+      "id": "unsupported-salary",
+      "question": "Quel est le salaire annuel du chauffeur et le montant de sa prime de nuit ?",
+      "httpStatus": 200,
+      "latencySeconds": 1.21,
+      "review": {
+        "independent": false,
+        "accuracyMetricEligible": false
+      },
+      "response": {
+        "conversationId": "3bd6f560-c4b9-48fa-afb3-1315e00eb9fd",
+        "question": "Quel est le salaire annuel du chauffeur et le montant de sa prime de nuit ?",
+        "answer": "Je n'ai pas trouvé d'information suffisante dans les documents disponibles pour répondre à cette question.",
+        "status": "INSUFFICIENT_INFORMATION",
+        "retrievalMode": "HYBRID",
+        "sources": [],
+        "relevantContextFound": false,
+        "maxSimilarityScore": 0.0
+      },
+      "sourceChecks": []
+    }
+  ],
+  "sourceAccessChecks": [
+    {
+      "documentId": "6ab3f5c972e8c50402ed66fb",
+      "driverSourceHttpStatus": 200,
+      "matchesUploadedFile": true
+    },
+    {
+      "documentId": "6ab3f5c972e8c50402ed66fc",
+      "driverSourceHttpStatus": 200,
+      "matchesUploadedFile": true
+    },
+    {
+      "documentId": "6ab3f5c972e8c50402ed66fd",
+      "driverSourceHttpStatus": 200,
+      "matchesUploadedFile": true
+    }
+  ],
+  "runCompletedAt": "2026-09-23T16:05:58.560585+00:00"
+}

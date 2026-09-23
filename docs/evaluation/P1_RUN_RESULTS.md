@@ -1,58 +1,66 @@
-# P1 development results — 17 September 2026
+# P1 development results
 
-The remaining RAG, candidate and vision evaluation tooling is implemented. These results establish software behavior and provider availability on small, explicitly fictional development inputs. **They are not a reviewed PFE accuracy benchmark.** No real applicant was hired, no external email was sent, and no real municipality procedure or field-cleanliness label was invented.
+Consolidated **24 September 2026**. These are selected software and provider observations on small, explicitly labelled development inputs. They are **not a completed independently reviewed PFE accuracy benchmark**. Current build results and remaining gates are in [delivery checks](../DELIVERY_CHECKS.md).
 
-## Implemented in this continuation
+## Routing
 
-- RAG: supervisor-only approved-corpus export and comparison of BM25, semantic and hybrid retrieval; one compatible query embedding per comparison; fixed corpus/configuration; optional grounded generation; captured sources, settings and latency; independent answer/citation/claim review and split-specific metrics.
-- Candidate evaluation: separate field-value and MISSING/INVALID/UNCERTAIN/VERIFIED labels; development/final split separation; provider/extraction strata; explicit synthetic provenance; output validation before requests and saved per-case progress.
-- Vision: supervisor-only batch evaluation with AFTER-only and optional paired modes, without changing operational tours; model/prompt checks; image hashes; independent scene labels and explicit unreviewed/provider-failure handling.
-- Delivery: rebuilt Android debug APK, bounded live-provider probe, separate-port HTTP regression runner, routing chart generator and a labelled development timing export.
+The algorithms compare manual order, NN and NN + directed 2-opt on the same frozen matrix. Held–Karp supplies an exact benchmark up to ten stops. The saved live ORS scenario starts and ends at **36.722857, 10.283535**:
 
-## Observed provider and experiment results
+| Method | Estimated driving seconds | Road metres |
+| --- | ---: | ---: |
+| Manual | 312.52 | 1,661.92 |
+| NN | 251.17 | 1,266.36 |
+| NN + 2-opt | 251.17 | 1,266.36 |
+| Exact | 251.17 | 1,266.36 |
 
-| Area | Observation | Interpretation |
-|---|---|---|
-| Gemini transport | Configured Flash text probe returned HTTP 200 with valid JSON; embedding returned 768 finite values. | The key and configured models can work. Availability remains intermittent. |
-| RAG | Three authored questions × three retrieval modes completed with compatible real embeddings. Eight generation attempts returned unavailable and produced literal excerpts; the lexical salary question returned no context/insufficient information. | Retrieval, follow-up handling, explicit failures and capture work. No successful grounded generated answer or independent grounding score is claimed. |
-| Vision | The abstract AFTER-only image returned CANNOT_DETERMINE. Its paired run returned ANALYSIS_UNAVAILABLE. | A real integrated model response and a real failure path were observed. These abstract images cannot support cleanliness accuracy or a comparison of the two modes. |
-| Candidate matching | Two fictional DOCX cases completed; both provider calls were unavailable. Applying their authored field corrections produced expected scores 70 and 10, with required criteria MET and UNMET. | Rubric consistency is demonstrated on fixtures. The initial live fallback extraction exposed explicit-label parsing defects, recorded in the original run and subsequently addressed with regression tests. |
-| Routing | Two saved synthetic directed matrices replayed through manual, NN, NN + 2-opt and exact algorithms. | Development algorithm checks only; ORS is not configured, so no measured road improvement is claimed. |
-| Duration | The completed browser tour recorded 1,636 estimated versus 1,506 elapsed seconds; service comparison is withheld because one stop lacks arrival/service measurements. | Timing arithmetic/completeness works. Browser-testing delays and simulated roads are not field-performance data. |
+This is a **19.63% estimated driving-time improvement** over that chosen manual order. Service adds 900 seconds, for 1,151.17 total estimated seconds. The route contains 28 geometry vertices. ORS matrix/directions returned successfully, and an independent permutation check evaluated all six possible orders.
 
-A bounded check of the previously listed alternative gemini-2.5-flash returned HTTP 404. No model configuration was changed and no automatic fallback was added.
+This particular matrix is symmetric. The separate synthetic directed fixtures check asymmetric behavior; the six-stop synthetic case gives 150 → 119 → 114 seconds for manual/NN/NN + 2-opt, against exact 102. Neither one road case nor a synthetic improvement establishes municipality-wide performance. ORS snaps coordinates to roads; matrix costs and directions totals are not claimed to be identical.
 
-After fixing the CV parser, the two authored DOCX fixtures were replayed against the final backend package with an **explicitly simulated provider outage and zero real model calls**. All 12 expected field values and all 12 field-state labels matched. Applying the authored review values again produced scores 70/10 and required-criteria states MET/UNMET. This is a parser/scoring contract regression, not independently reviewed model accuracy; extracted proposals still require supervisor validation.
+Retained inputs and results:
 
-## Reproducible artifacts
+- [Routing method and runner](../../evaluation/routing/README.md)
+- [Saved ORS matrix/geometry](../../evaluation/routing/live-development/ors-depot-three-stops.json) and [road replay CSV](../../evaluation/routing/live-development-results.csv)
+- [Directed synthetic fixtures](../../evaluation/routing/fixtures/) and [synthetic results](../../evaluation/routing/results.csv)
 
-- [Live provider probe](../evidence/live-provider-check.json) and [alternative availability check](../evidence/stable-alternative-provider-check.json).
-- [RAG captured results](../../evaluation/rag/runs/live-development-results.json), [metrics](../../evaluation/rag/runs/live-development-metrics.json) and [empty independent-review template](../../evaluation/rag/runs/live-development-review-template.json). Reviewed retrieval/grounding metrics remain null when independent labels are absent.
-- [Candidate development results](../../evaluation/candidates/live-development-results.json). Results are labelled SYNTHETIC_CONTRACT_CHECKS and preserve actual provider-unavailable extraction outcomes separately from fixture field corrections.
-- [Post-fix CV outage replay](../../evaluation/candidates/fallback-contract-results.json) and [its manifest](../../evaluation/candidates/fallback-contract-manifest.json). These retain the separate simulated execution context and requirements profile version 3, with the original two-year scoring target restored.
-- [Vision raw results](../../evaluation/vision/runs/abstract-transport-001.jsonl) and [metrics](../../evaluation/vision/runs/abstract-transport-001.metrics.json). No independently reviewed classification is available.
-- [Routing CSV](../../evaluation/routing/results.csv) and the chart below. The six-stop fixture gives travel costs 150 → 119 → 114 seconds for manual/NN/NN+2-opt, versus exact 102; the heuristic gap remains visible.
-- [Browser timing export](../../evaluation/timing/development/browser-tour.json) and [results](../../evaluation/timing/development/results.json).
-- [Staged HTTP regression](../evidence/p1-staged-workflow.json) and [evaluation API access checks](../evidence/p1-evaluation-access.json). Latest suite counts are recorded in [implementation progress](../IMPLEMENTATION_PROGRESS.md).
+## RAG
 
-![Synthetic routing development comparison](../evidence/routing-development.png)
+Approved-source retrieval, compatible real embeddings and authenticated source downloads worked on three fictional procedural documents. In the retained five-question browser run, four questions returned literal `SOURCE_EXCERPTS`; a salary question unsupported by the corpus returned `INSUFFICIENT_INFORMATION`. The follow-up retained its conversation. No question in that run returned `ANSWERED`; the observed generation outage remained explicit.
 
-## Remaining acceptance gates
+An earlier three-question, three-mode capture compared BM25, semantic and hybrid retrieval. Independent relevance/citation/claim labels remain absent, so reviewed accuracy metrics are not established. A successful provider probe alone would not demonstrate grounded procedural answers.
 
-1. Expand the first live ORS check below into reviewed real-road scenarios with the configured depot. Keep the same matrices for all algorithm comparisons.
-2. Obtain a successful grounded RAG generation and successful CV provider extraction; re-run paired vision once the provider is available. Do not silently substitute invented outputs.
-3. Install the current APK on a physical Android phone. Verify camera/GPS permissions, navigation while tracking, network retry, restart/resume, depot return and supervisor review. No Android device was connected during this continuation.
-4. Supply independently reviewed document questions, CV references and staged point photographs. Complete review files against captured outputs and run the existing metrics. Counts remain flexible targets.
-5. Record physical execution timings and repeat the combined supervisor/driver demonstration before declaring P0/P1 complete.
+- [Methods](../../evaluation/rag/README.md), [fictional source documents](../../evaluation/rag/development-documents/) and [browser observations](../../evaluation/rag/runs/ui-live-development-2026-09-23-summary.md)
+- [Three-mode capture](../../evaluation/rag/runs/live-development-results.json), [metrics](../../evaluation/rag/runs/live-development-metrics.json) and [review template](../../evaluation/rag/runs/live-development-review-template.json)
 
-P2 summaries and P3 presentation polish remain deferred. See the area READMEs and [DEMO_SETUP.md](../DEMO_SETUP.md) for commands; provider keys stay in the ignored backend .env file.
+Historical results retain the models/prompts used when captured. Gemini remains the current RAG/embedding provider; CV/photos now use the separately selected collection provider.
 
-## Subsequent live ORS check
+## Candidate matching
 
-After the user configured the ORS key, the official matrix endpoint returned HTTP 200. The browser-demo backend was restarted on port 18080 using the live provider and the existing database. The earlier simulated tours and their evidence remain unchanged. A separate planned tour, `ORS-LIVE-T1`, uses three demonstration points and the configured depot (36.722857, 10.283535).
+Two fictional DOCX cases have authored expectations: category C with one year of experience scores 70/100 after review, while category B with half a year scores 10/100 and leaves the licence requirement unmet. Both original live extraction calls were unavailable. Applying authored corrections demonstrated deterministic rubric behavior, not successful model extraction.
 
-The real matrix and directions requests succeeded. Manual order cost 312.52 seconds and 1,661.92 metres; NN and NN + 2-opt each cost 251.17 seconds and 1,266.36 metres, matching the exact result for this small instance. That is a **19.63% reduction in estimated driving time** for the chosen manual baseline. Service time is 900 seconds; total estimated time is 1,151.17 seconds (rounded up to 20 minutes in the app). The route contains 28 road-geometry vertices and returns to the depot.
+A separate explicit simulated-outage replay matched 12 expected field values and 12 field-state labels and reproduced 70/10 scores. These are synthetic contract checks, with no independent human accuracy review or real applicant hiring. The initial profile treats two years as a scoring target, while C/CE licence is required.
 
-An independent permutation check validates all six possible orders against the saved matrix. This particular matrix is symmetric; asymmetric algorithm behavior remains covered by the directed development fixtures. ORS snaps input coordinates to roads, and directions totals were not compared with matrix totals. These demonstration points are not reviewed municipal collection locations, so one successful road scenario does not complete the routing benchmark or physical execution gate.
+- [Rubric, provenance and evaluation method](CANDIDATE_MATCHING.md)
+- [Fictional CV fixtures and manifest](../../evaluation/candidates/fixtures/cv-development/)
+- [Original development result](../../evaluation/candidates/live-development-results.json)
+- [Simulated-outage replay](../../evaluation/candidates/fallback-contract-results.json) and [manifest](../../evaluation/candidates/fallback-contract-manifest.json)
 
-Evidence: [connectivity](../evidence/live-ors-connectivity.json), [persisted route checks](../evidence/live-ors-workflow.json), [Flutter browser check](../evidence/live-ors-browser.md), [saved matrix/geometry](../../evaluation/routing/live-development/ors-depot-three-stops.json), and [separate road replay results](../../evaluation/routing/live-development-results.csv). The earlier provider table records the original run before the ORS key was configured.
+Private CVs and their diagnostic import reports are not part of the tracked benchmark. Use ignored `local-data/cvs/` for local documents. Current Groq extraction still needs a separately reviewed successful live CV run before claiming model performance.
+
+## Vision and operational review
+
+The current Groq integration returned a real `NOT_CLEANED` assessment for one public street-litter AFTER image. The response appeared in Chrome, survived reload/resume and remained separate from supervisor review. Two uploads produced one manual analysis; re-requesting unchanged evidence returned the saved result without another model request. The tour finished with its truck available.
+
+See [the compact workflow record](../evidence/groq-live-simulation-2026-09-24.md) and [JSON](../evidence/groq-live-simulation-2026-09-24.json). Its 6,499 ms timing includes browser/application/network overhead. The public photographs depict separate scenes and cannot form a valid before/after pair or prove a real collection.
+
+Earlier abstract transport fixtures produced one `CANNOT_DETERMINE` and one `ANALYSIS_UNAVAILABLE`. Their [raw outcomes](../../evaluation/vision/runs/abstract-transport-001.jsonl) and [metrics](../../evaluation/vision/runs/abstract-transport-001.metrics.json) stay explicitly unreviewed. The [vision method](../../evaluation/vision/README.md) supports scene-level splitting, frozen model/prompt settings and independent labels. No confusion matrix or macro F1 on reviewed cleanliness scenes is claimed yet.
+
+## Execution timing
+
+The Groq browser simulation recorded 856.88 seconds estimated at start, 423 seconds elapsed and 344 seconds of observed service. These values are not physical travel or cleaning measurements. An earlier [browser timing fixture](../../evaluation/timing/development/browser-tour.json) intentionally has incomplete service measurements; its [result](../../evaluation/timing/development/results.json) withholds an unsupported full-service comparison.
+
+The [timing evaluator](../../evaluation/timing/README.md) reports absolute/relative error and measurement completeness. Actual field comparisons remain pending; waiting and breaks can be included in elapsed intervals.
+
+## Final experiment work
+
+The methods and runners are delivered so experiments can be repeated. Before declaring P1 complete, collect independent labels, verify successful grounded RAG and CV responses, compare AFTER-only and same-scene paired evidence, expand reviewed road scenarios, and record physical duration observations. Aim for the roadmap's dataset sizes when feasible, without treating counts as a substitute for quality. Keep development and final sets distinct and report provider failures separately from correctness.

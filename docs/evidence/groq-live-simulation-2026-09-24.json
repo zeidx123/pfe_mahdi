@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "recordDate": "2026-09-24",
+  "recordKind": "STAGED_LIVE_PROVIDER_WORKFLOW",
+  "scope": "Live staged software workflow with public development photos, not a real collection or reviewed accuracy benchmark.",
+  "startedAtUtc": "2026-09-23T23:25:09.103908+00:00",
+  "finishedAtUtc": "2026-09-23T23:37:38.993990+00:00",
+  "providerConfiguration": {
+    "provider": "GROQ",
+    "model": "qwen/qwen3.8-27b",
+    "promptVersion": "point-cleanliness-v1"
+  },
+  "sourceImage": {
+    "path": "evaluation/vision/internet-development/street-litter.jpg",
+    "sourceMetadata": "evaluation/vision/internet-development/sources.json",
+    "inputMode": "AFTER_ONLY",
+    "independentHumanReview": false,
+    "realCollectionEvidence": false
+  },
+  "analysis": {
+    "httpStatus": 200,
+    "status": "NOT_CLEANED",
+    "description": "Le point de collecte est visiblement sale. De nombreux déchets, y compris des sacs en papier, des gobelets en plastique, des boîtes et des canettes, sont éparpillés sur le trottoir et la chaussée autour de la poubelle.",
+    "confidence": null,
+    "browserRoundTripMs": 6499
+  },
+  "requestUsage": {
+    "afterPhotosUploaded": 2,
+    "automaticAnalysisEnabled": false,
+    "liveVisionRequests": 1,
+    "newSavedAnalyses": 1,
+    "sameEvidenceReusedSameAnalysis": true,
+    "reuseRoundTripMs": 76,
+    "interpretation": "Observed calls for this simulation only; not a general allowance or savings estimate."
+  },
+  "workflow": {
+    "reloadRestoredEvidenceProgressAndAssessment": true,
+    "firstStop": {
+      "status": "ISSUE_REPORTED",
+      "originalPrediction": "NOT_CLEANED",
+      "supervisorLabel": "NOT_CLEANED"
+    },
+    "secondStop": {
+      "status": "COMPLETED_REPORTED",
+      "afterEvidenceStored": true,
+      "analysisRequested": false
+    },
+    "supervisorReviewEnteredBy": "AUTOMATION_FOR_WORKFLOW_CHECK",
+    "originalPredictionPreserved": true,
+    "tourStatus": "TERMINEE",
+    "returnedToDepot": true,
+    "truckStatus": "DISPONIBLE"
+  },
+  "routeEstimate": {
+    "provider": "OpenRouteService",
+    "profile": "driving-car",
+    "algorithm": "MANUAL",
+    "depot": {
+      "latitude": 36.722857,
+      "longitude": 10.283535,
+      "label": "Dépôt"
+    },
+    "stopCount": 2,
+    "distanceMeters": 1504.56,
+    "travelSeconds": 256.88,
+    "serviceSeconds": 600.0,
+    "totalSeconds": 856.88
+  },
+  "browserTiming": {
+    "actualDurationSeconds": 423,
+    "estimatedAtStartSeconds": 856.88,
+    "observedServiceSeconds": 344,
+    "measurementCaveat": "These are elapsed browser simulation timings, not real collection/travel measurements."
+  },
+  "verificationAtCapture": {
+    "backendTests": {
+      "tests": 228,
+      "failures": 0,
+      "errors": 0
+    },
+    "offlineProbeTests": {
+      "tests": 20,
+      "failures": 0
+    }
+  },
+  "limitations": [
+    "One staged AFTER-only case verifies provider integration, not overall classification accuracy.",
+    "Photographs are public development examples from independent scenes, not a before/after pair or proof of real work.",
+    "Tour timestamps measure browser simulation actions, not a real trip.",
+    "Physical Android background GPS behavior was not verified in this browser run."
+  ],
+  "deliveryNote": "Condensed from the original captured report. Runtime database identifiers, duplicate entity snapshots, screenshots and geometry dumps were archived outside the repository; observed values were not rerun or relabelled."
+}

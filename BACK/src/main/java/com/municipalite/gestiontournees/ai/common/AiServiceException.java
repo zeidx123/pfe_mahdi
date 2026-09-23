@@ -9,12 +9,23 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  */
 @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
 public class AiServiceException extends RuntimeException {
+    private final String category;
+    private final Integer providerHttpStatus;
 
     public AiServiceException(String message) {
-        super(message);
+        this(message, "PROVIDER_UNAVAILABLE", null, null);
     }
 
     public AiServiceException(String message, Throwable cause) {
-        super(message, cause);
+        this(message, "PROVIDER_UNAVAILABLE", null, cause);
     }
+
+    public AiServiceException(String message, String category, Integer providerHttpStatus, Throwable cause) {
+        super(message, cause);
+        this.category = category;
+        this.providerHttpStatus = providerHttpStatus;
+    }
+
+    public String getCategory() { return category; }
+    public Integer getProviderHttpStatus() { return providerHttpStatus; }
 }

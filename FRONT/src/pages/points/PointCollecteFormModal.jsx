@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import MapResizeObserver from '../../components/MapResizeObserver';
+import { DEFAULT_MAP_CENTER, hasValidCoordinates } from '../../utils/mapCoordinates';
 
 const TYPE_DECHET_OPTIONS = [
-  { value: 'GENERAL', label: '🗑️ Général', color: '#64748b' },
-  { value: 'PLASTIQUE', label: '♻️ Plastique', color: '#3b82f6' },
-  { value: 'VERRE', label: '🫙 Verre', color: '#10b981' },
-  { value: 'PAPIER', label: '📄 Papier', color: '#f59e0b' },
-  { value: 'ORGANIQUE', label: '🌱 Organique', color: '#84cc16' },
+  { value: 'GENERAL', label: 'Général' },
+  { value: 'PLASTIQUE', label: 'Plastique' },
+  { value: 'VERRE', label: 'Verre' },
+  { value: 'PAPIER', label: 'Papier' },
+  { value: 'ORGANIQUE', label: 'Organique' },
 ];
 
 // Gestionnaire de clic sur la carte dans le modal
@@ -33,7 +35,8 @@ const MapCenterUpdater = ({ center }) => {
   return null;
 };
 
-const PointCollecteFormModal = ({ isOpen, onClose, onSubmit, point = null, isLoading = false, pendingCoords = null }) => {
+const PointCollecteFormModal = ({ isOpen, onClose, onSubmit, point = null, isLoading = false, pendingCoords = null, defaultCenter = DEFAULT_MAP_CENTER }) => {
+  const firstInputRef = useRef(null);
   const [formData, setFormData] = useState({
     reference: '',
     adresse: '',
@@ -44,12 +47,15 @@ const PointCollecteFormModal = ({ isOpen, onClose, onSubmit, point = null, isLoa
     actif: true
   });
 
-  const [mapCenter, setMapCenter] = useState([36.8065, 10.1815]); // Tunis par défaut
+  const [mapCenter, setMapCenter] = useState(DEFAULT_MAP_CENTER);
 
   useEffect(() => {
+    if (!isOpen) return;
+    const fallbackCenter = hasValidCoordinates(defaultCenter?.[0], defaultCenter?.[1]) ? defaultCenter : DEFAULT_MAP_CENTER;
+    setMapCenter(fallbackCenter);
     if (point) {
-      const lat = point.latitude || '';
-      const lng = point.longitude || '';
+      const lat = point.latitude ?? '';
+      const lng = point.longitude ?? '';
       setFormData({
         reference: point.reference || '',
         adresse: point.adresse || '',
@@ -59,12 +65,12 @@ const PointCollecteFormModal = ({ isOpen, onClose, onSubmit, point = null, isLoa
         typeDechet: point.typeDechet || 'GENERAL',
         actif: point.actif !== undefined ? point.actif : true
       });
-      if (lat && lng) {
+      if (hasValidCoordinates(lat, lng)) {
         setMapCenter([parseFloat(lat), parseFloat(lng)]);
       }
-    } else if (pendingCoords) {
-      const lat = pendingCoords.lat;
-      const lng = pendingCoords.lng;
+    } else if (pendingCoords && hasValidCoordinates(pendingCoords.lat, pendingCoords.lng)) {
+      const lat = Number(pendingCoords.lat);
+      const lng = Number(pendingCoords.lng);
       setFormData(prev => ({
         ...prev,
         latitude: lat.toFixed(6),
@@ -74,33 +80,30 @@ const PointCollecteFormModal = ({ isOpen, onClose, onSubmit, point = null, isLoa
       setMapCenter([lat, lng]);
     } else {
       setFormData({ reference: '', adresse: '', zone: '', latitude: '', longitude: '', typeDechet: 'GENERAL', actif: true });
-      // Tenter de récupérer la position de l'utilisateur pour centrer la carte
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition((pos) => {
-          setMapCenter([pos.coords.latitude, pos.coords.longitude]);
-        });
-      }
     }
-  }, [point, isOpen, pendingCoords]);
+  }, [point, isOpen, pendingCoords, defaultCenter]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousFocus = document.activeElement;
+    firstInputRef.current?.focus();
+    return () => previousFocus?.focus();
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
-    
-    // Si la latitude ou longitude est changée à la main, recentrer la carte
-    if (name === 'latitude' && value) {
-      const lngVal = parseFloat(formData.longitude);
-      if (!isNaN(lngVal)) setMapCenter([parseFloat(value), lngVal]);
-    }
-    if (name === 'longitude' && value) {
-      const latVal = parseFloat(formData.latitude);
-      if (!isNaN(latVal)) setMapCenter([latVal, parseFloat(value)]);
+    const nextData = { ...formData, [name]: type === 'checkbox' ? checked : value };
+    setFormData(nextData);
+
+    if ((name === 'latitude' || name === 'longitude') && hasValidCoordinates(nextData.latitude, nextData.longitude)) {
+      setMapCenter([Number(nextData.latitude), Number(nextData.longitude)]);
     }
   };
 
   const handleMapClick = (lat, lng) => {
+    if (!hasValidCoordinates(lat, lng)) return;
     setFormData(prev => ({
       ...prev,
       latitude: lat.toFixed(6),
@@ -111,8 +114,8 @@ const PointCollecteFormModal = ({ isOpen, onClose, onSubmit, point = null, isLoa
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.reference || !formData.adresse || !formData.latitude || !formData.longitude) {
-      toast.error('Veuillez remplir tous les champs obligatoires (référence, adresse, coordonnées)');
+    if (!formData.reference || !formData.adresse || !hasValidCoordinates(formData.latitude, formData.longitude)) {
+      toast.error('Renseignez une référence, une adresse et des coordonnées valides.');
       return;
     }
     onSubmit({
@@ -122,64 +125,93 @@ const PointCollecteFormModal = ({ isOpen, onClose, onSubmit, point = null, isLoa
     });
   };
 
-  const hasCoords = formData.latitude && formData.longitude;
+  const handleDialogKeyDown = (event) => {
+    if (event.key === 'Escape' && !isLoading) onClose();
+    if (event.key !== 'Tab') return;
+    const controls = [...event.currentTarget.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])')];
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first?.focus();
+    }
+  };
+
+  const hasCoords = hasValidCoordinates(formData.latitude, formData.longitude);
   const markerPosition = hasCoords ? [parseFloat(formData.latitude), parseFloat(formData.longitude)] : null;
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content large-modal">
+      <div className="modal-content entity-form-modal large-modal point-form-modal" role="dialog" aria-modal="true" aria-labelledby="point-form-title" aria-describedby="point-form-description" onKeyDown={handleDialogKeyDown}>
         <div className="modal-header">
-          <h2>{point ? 'Modifier le point de collecte' : 'Nouveau point de collecte'}</h2>
-          <button className="close-btn" onClick={onClose}><FiX /></button>
+          <div>
+            <h2 id="point-form-title">{point ? 'Modifier le point de collecte' : 'Ajouter un point de collecte'}</h2>
+            <p id="point-form-description" className="modal-subtitle">Identifiez le point et placez-le sur la carte. Les champs marqués * sont obligatoires.</p>
+          </div>
+          <button type="button" className="close-btn" onClick={onClose} disabled={isLoading} aria-label="Fermer le formulaire"><FiX aria-hidden="true" /></button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="modal-body modal-split-layout">
             
-            {/* Colonne gauche : Formulaire */}
-            <div className="form-column form-grid">
+            <div className="form-column">
+              <section className="form-section" aria-labelledby="point-identity-title">
+                <h3 id="point-identity-title" className="form-section-title">Informations du point</h3>
+                <div className="form-grid">
               <div className="form-group">
-                <label>Référence * <small>(ex: B-001)</small></label>
-                <input type="text" name="reference" value={formData.reference} onChange={handleChange} required placeholder="B-001" />
+                <label htmlFor="point-reference">Référence *</label>
+                <input ref={firstInputRef} id="point-reference" type="text" name="reference" value={formData.reference} onChange={handleChange} required placeholder="Ex. PC-001" />
               </div>
               <div className="form-group">
-                <label>Zone / Quartier</label>
-                <input type="text" name="zone" value={formData.zone} onChange={handleChange} placeholder="Centre-Ville" />
+                <label htmlFor="point-zone">Zone ou quartier</label>
+                <input id="point-zone" type="text" name="zone" value={formData.zone} onChange={handleChange} placeholder="Ex. Centre-ville" />
               </div>
               <div className="form-group full-width">
-                <label>Adresse complète *</label>
-                <input type="text" name="adresse" value={formData.adresse} onChange={handleChange} required placeholder="Rue, numéro, ville" />
+                <label htmlFor="point-adresse">Adresse complète *</label>
+                <input id="point-adresse" type="text" name="adresse" value={formData.adresse} onChange={handleChange} required placeholder="Rue, numéro, ville" />
               </div>
-              
+                </div>
+              </section>
+              <section className="form-section" aria-labelledby="point-coordinates-title">
+                <h3 id="point-coordinates-title" className="form-section-title">Coordonnées géographiques</h3>
+                <p id="point-coordinates-help" className="field-help">Cliquez sur la carte ou saisissez les coordonnées en degrés décimaux.</p>
+                <div className="form-grid">
               <div className="form-group">
-                <label>Latitude *</label>
-                <input type="number" step="any" name="latitude" value={formData.latitude} onChange={handleChange} required placeholder="33.589886" />
+                <label htmlFor="point-latitude">Latitude *</label>
+                <input id="point-latitude" type="number" step="any" min="-90" max="90" name="latitude" value={formData.latitude} onChange={handleChange} required placeholder="36.722857" aria-describedby="point-coordinates-help" />
               </div>
               <div className="form-group">
-                <label>Longitude *</label>
-                <input type="number" step="any" name="longitude" value={formData.longitude} onChange={handleChange} required placeholder="-7.603869" />
+                <label htmlFor="point-longitude">Longitude *</label>
+                <input id="point-longitude" type="number" step="any" min="-180" max="180" name="longitude" value={formData.longitude} onChange={handleChange} required placeholder="10.283535" aria-describedby="point-coordinates-help" />
               </div>
-
-              <div className="form-group full-width">
-                <label>Type de déchet</label>
+                </div>
+              </section>
+              <fieldset className="form-section">
+                <legend className="form-section-title">Type de déchet</legend>
                 <div className="type-grid">
                   {TYPE_DECHET_OPTIONS.map(opt => (
                     <label key={opt.value} className={`type-option ${formData.typeDechet === opt.value ? 'selected' : ''}`}>
-                      <input type="radio" name="typeDechet" value={opt.value} checked={formData.typeDechet === opt.value} onChange={handleChange} style={{display:'none'}} />
+                      <input type="radio" name="typeDechet" value={opt.value} checked={formData.typeDechet === opt.value} onChange={handleChange} />
                       {opt.label}
                     </label>
                   ))}
                 </div>
-              </div>
+              </fieldset>
               
-              <div className="form-group full-width" style={{display:'flex',alignItems:'center',gap:'10px'}}>
-                <input type="checkbox" id="actifPoint" name="actif" checked={formData.actif} onChange={handleChange} style={{width:'auto'}} />
-                <label htmlFor="actifPoint" style={{marginBottom:0}}>Point actif (visible sur les tournées)</label>
+              <div className="checkbox-field">
+                <input type="checkbox" id="point-actif" name="actif" checked={formData.actif} onChange={handleChange} aria-describedby="point-actif-help" />
+                <div>
+                  <label htmlFor="point-actif">Point actif</label>
+                  <p id="point-actif-help" className="field-help">Disponible lors de la planification des tournées.</p>
+                </div>
               </div>
             </div>
 
-            {/* Colonne droite : Carte interactive */}
-            <div className="map-column">
-              <label style={{display:'block', marginBottom: '8px', fontWeight: 600}}>Position sur la carte (cliquez pour placer le point) :</label>
+            <section className="map-column" aria-labelledby="point-map-title">
+              <h3 id="point-map-title" className="form-section-title">Position sur la carte</h3>
+              <p className="field-help">Un clic place le repère et met à jour les coordonnées.</p>
               <div className="modal-map-wrapper">
                 <MapContainer
                   center={mapCenter}
@@ -191,39 +223,24 @@ const PointCollecteFormModal = ({ isOpen, onClose, onSubmit, point = null, isLoa
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
                   <MapCenterUpdater center={mapCenter} />
+                  <MapResizeObserver />
                   <ModalMapClickHandler onMapClick={handleMapClick} />
                   {markerPosition && (
                     <Marker position={markerPosition} />
                   )}
                 </MapContainer>
               </div>
-            </div>
+            </section>
 
           </div>
           <div className="modal-footer">
             <button type="button" className="btn-secondary" onClick={onClose} disabled={isLoading}>Annuler</button>
             <button type="submit" className="btn-primary" disabled={isLoading}>
-              {isLoading ? 'Enregistrement...' : 'Enregistrer'}
+              {isLoading ? 'Enregistrement…' : point ? 'Enregistrer les modifications' : 'Créer le point'}
             </button>
           </div>
         </form>
       </div>
-
-      <style>{`
-        .large-modal { max-width: 900px; width: 90%; }
-        .modal-split-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 20px; }
-        .modal-map-wrapper { height: 320px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border-color, #e2e8f0); position: relative; }
-        .hint { color: var(--text-muted); font-size: 13px; margin-top: -8px; }
-        .type-grid { display: flex; gap: 8px; flex-wrap: wrap; }
-        .type-option { padding: 6px 12px; border: 2px solid var(--border-color, #e2e8f0); border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
-        .type-option:hover { border-color: var(--primary, #166534); }
-        .type-option.selected { border-color: var(--primary, #166534); background: #f0fdf4; color: var(--primary, #166534); font-weight: 600; }
-        
-        @media (max-width: 768px) {
-          .modal-split-layout { grid-template-columns: 1fr; }
-          .large-modal { max-width: 500px; }
-        }
-      `}</style>
     </div>
   );
 };

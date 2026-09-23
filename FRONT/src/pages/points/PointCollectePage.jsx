@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -6,6 +6,8 @@ import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiMapPin } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { pointCollecteService } from '../../services/pointCollecteService';
 import PointCollecteFormModal from './PointCollecteFormModal';
+import MapResizeObserver from '../../components/MapResizeObserver';
+import { DEFAULT_MAP_CENTER, hasValidCoordinates } from '../../utils/mapCoordinates';
 
 // Fix Leaflet default icon issue with Vite
 delete L.Icon.Default.prototype._getIconUrl;
@@ -51,16 +53,19 @@ const createCustomIcon = (typeDechet, niveauRemplissage = 0) => {
   });
 };
 
-const MapClickHandler = ({ onMapClick }) => {
-  useMapEvents({ click: (e) => onMapClick(e.latlng) });
+const MapClickHandler = ({ onMapClick, onMoveEnd }) => {
+  useMapEvents({
+    click: (e) => onMapClick(e.latlng),
+    moveend: (e) => onMoveEnd(e.target.getCenter()),
+  });
   return null;
 };
 
 const MapCenterUpdater = ({ center }) => {
   const map = useMap();
   useEffect(() => {
-    if (center) {
-      map.flyTo(center, 14);
+    if (center && hasValidCoordinates(center[0], center[1])) {
+      map.setView(center, 14, { animate: false });
     }
   }, [center, map]);
   return null;
@@ -74,30 +79,26 @@ const PointCollectePage = () => {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [pendingCoords, setPendingCoords] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [mapCenter, setMapCenter] = useState([33.5731, -7.5898]); // Casablanca par défaut
+  const [mapCenter, setMapCenter] = useState(DEFAULT_MAP_CENTER);
+  const [formMapCenter, setFormMapCenter] = useState(DEFAULT_MAP_CENTER);
+  const currentMapCenter = useRef(DEFAULT_MAP_CENTER);
 
-  useEffect(() => { 
-    fetchPoints(); 
-    
-    // Demander la position actuelle
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setMapCenter([position.coords.latitude, position.coords.longitude]);
-        },
-        (error) => {
-          console.log("Erreur géolocalisation:", error);
-        }
-      );
-    }
+  useEffect(() => {
+    fetchPoints(true);
   }, []);
 
-  const fetchPoints = async () => {
+  const fetchPoints = async (centerOnPoints = false) => {
     try {
       setLoading(true);
       const data = await pointCollecteService.getAll();
       setPoints(data);
-    } catch (error) {
+      if (centerOnPoints) {
+        const firstPoint = data.find((point) => point.actif && hasValidCoordinates(point.latitude, point.longitude));
+        const center = firstPoint ? [Number(firstPoint.latitude), Number(firstPoint.longitude)] : DEFAULT_MAP_CENTER;
+        currentMapCenter.current = center;
+        setMapCenter(center);
+      }
+    } catch {
       toast.error('Erreur lors du chargement des points de collecte');
     } finally {
       setLoading(false);
@@ -105,12 +106,15 @@ const PointCollectePage = () => {
   };
 
   const handleMapClick = (latlng) => {
+    if (!hasValidCoordinates(latlng.lat, latlng.lng)) return;
+    setFormMapCenter(currentMapCenter.current);
     setPendingCoords(latlng);
     setSelectedPoint(null);
     setIsModalOpen(true);
   };
 
   const handleOpenModal = (point = null) => {
+    setFormMapCenter(currentMapCenter.current);
     setSelectedPoint(point);
     setPendingCoords(null);
     setIsModalOpen(true);
@@ -154,8 +158,8 @@ const PointCollectePage = () => {
   };
 
   const filteredPoints = points.filter(p =>
-    p.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.adresse.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.reference || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.adresse || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (p.zone && p.zone.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
@@ -165,11 +169,11 @@ const PointCollectePage = () => {
     <div className="points-page">
       <div className="page-header-row">
         <div>
-          <h1>Points de Collecte</h1>
+          <h1>Points de collecte</h1>
           <p>Gérez les points de collecte et visualisez-les sur la carte. <strong>Cliquez sur la carte</strong> pour ajouter un nouveau point.</p>
         </div>
         <button className="btn-primary" onClick={() => handleOpenModal()}>
-          <FiPlus style={{ marginRight: '8px' }} /> Nouveau Point
+          <FiPlus /> Ajouter un point
         </button>
       </div>
 
@@ -227,23 +231,26 @@ const PointCollectePage = () => {
 
         {/* RIGHT: Map */}
         <div className="map-panel">
-          <div className="map-tip">💡 Cliquez sur la carte pour ajouter un point</div>
+          <div className="map-tip">Cliquez sur la carte pour ajouter un point</div>
           <MapContainer
             center={mapCenter}
             zoom={13}
             style={{ width: '100%', height: '100%' }}
           >
             <MapCenterUpdater center={mapCenter} />
+            <MapResizeObserver />
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <MapClickHandler onMapClick={handleMapClick} />
+            <MapClickHandler onMapClick={handleMapClick} onMoveEnd={(center) => {
+              if (hasValidCoordinates(center.lat, center.lng)) currentMapCenter.current = [center.lat, center.lng];
+            }} />
             {activePoints.map(point => (
-              point.latitude && point.longitude ? (
+              hasValidCoordinates(point.latitude, point.longitude) ? (
                 <Marker
                   key={point.id}
-                  position={[point.latitude, point.longitude]}
+                  position={[Number(point.latitude), Number(point.longitude)]}
                   icon={createCustomIcon(point.typeDechet, point.niveauRemplissage)}
                 >
                   <Popup>
@@ -280,6 +287,7 @@ const PointCollectePage = () => {
         point={selectedPoint}
         isLoading={isSubmitting}
         pendingCoords={pendingCoords}
+        defaultCenter={formMapCenter}
       />
 
       <style>{`

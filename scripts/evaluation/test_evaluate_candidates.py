@@ -14,6 +14,7 @@ import zipfile
 import xml.etree.ElementTree as ET
 
 HERE = Path(__file__).resolve().parent
+FIXTURES = HERE.parents[1] / "evaluation/candidates/fixtures"
 SPEC = importlib.util.spec_from_file_location("cv_evaluator", HERE / "evaluate_candidates.py")
 cv = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(cv)
@@ -44,7 +45,7 @@ class FixtureApi:
 
 class CandidateEvaluatorTest(unittest.TestCase):
     def setUp(self):
-        self.fixture = json.loads((HERE / "fixtures/candidate-development.json").read_text())
+        self.fixture = json.loads((FIXTURES / "candidate-development.json").read_text())
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
@@ -230,7 +231,7 @@ class CandidateEvaluatorTest(unittest.TestCase):
         self.assertEqual([(method, path) for method, path, _ in self.api.calls], [("GET", "/ai/cv/requirements")])
 
     def test_runnable_docx_examples_validate_as_unreviewed_development_only(self):
-        folder = HERE / "fixtures/cv-development"
+        folder = FIXTURES / "cv-development"
         manifest = json.loads((folder / "manifest.json").read_text())
         prepared = cv.validate_manifest(manifest, folder)
         self.assertEqual(len(prepared), 2)

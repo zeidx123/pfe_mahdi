@@ -17,6 +17,7 @@ dependencies:
   shared_preferences: ^2.2.3
   image_picker: ^1.1.2
   path_provider: ^2.1.4
+  open_filex: ^4.7.0
   url_launcher: ^6.3.0
   web: ^1.1.1
 
@@ -36,6 +37,7 @@ dependencies:
 
   # Permissions — v13 compatible avec geolocator 14
   permission_handler: ^11.3.1
+  flutter_markdown: ^0.7.4
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,7 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { getPageMeta } from '../utils/pageMeta';
 import { useAuth } from '../hooks/useAuth';
 import MainLayout from '../layouts/MainLayout';
 import LoginPage from '../pages/LoginPage';
@@ -30,7 +33,13 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const AppRoutes = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    document.title = `${getPageMeta(pathname).title} · GestiCollecte`;
+  }, [pathname]);
   return (
+    <>
+    <Toaster position="top-right" toastOptions={{ duration: 4500, className: 'app-toast' }} />
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       
@@ -50,6 +59,7 @@ const AppRoutes = () => {
       
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
+    </>
   );
 };
 

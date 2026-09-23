@@ -22,6 +22,7 @@ import javax.imageio.ImageIO;
 import java.nio.file.*;
 import java.time.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service @RequiredArgsConstructor
@@ -37,6 +38,9 @@ public class TourneeService {
     @org.springframework.beans.factory.annotation.Value("${ai.storage.photos-dir:uploads/photos}")
     private String photoDirectory = "uploads/photos";
     private static final Set<String> HUMAN_LABELS = Set.of("CLEANED", "NOT_CLEANED", "OBSTRUCTED", "CANNOT_DETERMINE");
+    // One backend process serves the PFE: prevent duplicate provider calls for the same visit.
+    private final Set<VisitAnalysisKey> analysesInProgress = ConcurrentHashMap.newKeySet();
+    private record VisitAnalysisKey(String tourId, String pointId) {}
 
     public List<TourneeResponse> getAll() {
         User user = access.currentUser();
@@ -177,14 +181,37 @@ public class TourneeService {
     public TourneeResponse analyzeVisit(String id, String pointId) {
         Tournee t = load(id); TourneeVisit v = visit(t, pointId);
         if (v.getAfterPhoto() == null) throw conflict("Une photo APRÈS est nécessaire à l'analyse");
-        String after = v.getAfterPhoto(), before = v.getBeforePhoto();
-        ImageAnalysis result = imageAnalysisService.analyzeStoredEvidence("/uploads/photos/" + after,
-                before == null ? null : "/uploads/photos/" + before, pointId, id, t.getChauffeurId());
-        // Re-read after the provider call so a concurrent stop completion isn't overwritten.
-        t = load(id); v = visit(t, pointId);
-        if (!Objects.equals(after, v.getAfterPhoto()) || !Objects.equals(before, v.getBeforePhoto()))
-            throw conflict("Les photos ont changé pendant l'analyse. Analysez les nouvelles preuves.");
-        v.setAnalysisId(result.getId()); v.setAnalysisStatus(result.getStatus()); return save(t);
+        VisitAnalysisKey key = new VisitAnalysisKey(id, pointId);
+        if (!analysesInProgress.add(key))
+            throw conflict("Une analyse est déjà en cours pour ce point. Actualisez avant de réessayer.");
+        try {
+            // Refresh after taking the guard: an earlier request may have just saved its result.
+            t = load(id); v = visit(t, pointId);
+            if (v.getAfterPhoto() == null) throw conflict("Une photo APRÈS est nécessaire à l'analyse");
+            String after = v.getAfterPhoto(), before = v.getBeforePhoto();
+            String afterUrl = "/uploads/photos/" + after;
+            String beforeUrl = before == null ? null : "/uploads/photos/" + before;
+            Optional<ImageAnalysis> stored = imageAnalysisService.reusableVisitAnalysis(v.getAnalysisId(),
+                    afterUrl, beforeUrl, pointId, id, t.getChauffeurId());
+            if (stored.isPresent()) {
+                t = load(id); v = visit(t, pointId);
+                if (!Objects.equals(after, v.getAfterPhoto()) || !Objects.equals(before, v.getBeforePhoto()))
+                    throw conflict("Les photos ont changé pendant l'analyse. Analysez les nouvelles preuves.");
+                if (!Objects.equals(v.getAnalysisStatus(), stored.get().getStatus())) {
+                    v.setAnalysisStatus(stored.get().getStatus()); return save(t);
+                }
+                return mapToResponse(t);
+            }
+            ImageAnalysis result = imageAnalysisService.analyzeStoredEvidence(afterUrl,
+                    beforeUrl, pointId, id, t.getChauffeurId());
+            // Re-read after the provider call so a concurrent stop completion isn't overwritten.
+            t = load(id); v = visit(t, pointId);
+            if (!Objects.equals(after, v.getAfterPhoto()) || !Objects.equals(before, v.getBeforePhoto()))
+                throw conflict("Les photos ont changé pendant l'analyse. Analysez les nouvelles preuves.");
+            v.setAnalysisId(result.getId()); v.setAnalysisStatus(result.getStatus()); return save(t);
+        } finally {
+            analysesInProgress.remove(key);
+        }
     }
     public TourneeResponse reviewVisit(String id, String pointId, VisitReviewRequest request) {
         access.requireSupervisor(); Tournee t = load(id); TourneeVisit v = visit(t, pointId);
