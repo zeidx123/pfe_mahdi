@@ -94,8 +94,9 @@ notepad .env
 In `.env`:
 
 1. paste the Gemini and ORS keys after `GEMINI_API_KEY=` and `ORS_API_KEY=`; for the assistant, photos and CV extraction, also follow [Groq configuration](#free-hosted-photo-and-cv-analysis-with-groq);
-2. set `APP_BOOTSTRAP_ENABLED=true` for the first startup;
-3. replace the example supervisor email and password; the password needs at least 10 characters.
+2. for the fastest start, set `APP_SEED_ENABLED=true` instead of steps 3–4 below and skip to [Test users](#test-users) for ready-made accounts;
+3. otherwise, set `APP_BOOTSTRAP_ENABLED=true` for the first startup;
+4. replace the example supervisor email and password; the password needs at least 10 characters.
 
 Use plain `KEY=value` lines without quotes. Then start Spring Boot:
 
@@ -103,7 +104,7 @@ Use plain `KEY=value` lines without quotes. Then start Spring Boot:
 .\mvnw.cmd spring-boot:run
 ```
 
-The API is available at `http://localhost:8080/api`. After the first supervisor is created, stop the backend with `Ctrl+C`, set `APP_BOOTSTRAP_ENABLED=false` in `.env`, and start it again. Existing accounts are never reset by bootstrap.
+The API is available at `http://localhost:8080/api`. After the first supervisor (or the test accounts) is created, stop the backend with `Ctrl+C`, set `APP_BOOTSTRAP_ENABLED=false` and/or `APP_SEED_ENABLED=false` in `.env`, and start it again. Neither flag ever resets or reactivates an existing account.
 
 ### 4. Start the supervisor web application
 
@@ -118,17 +119,20 @@ npm run dev -- --host 0.0.0.0
 
 Open the URL printed by Vite, normally `http://localhost:5173`, and sign in with the supervisor created above.
 
-### 5. Start the driver application in Edge
+### 5. Start the driver application in a browser
 
-From the repository root:
+Easiest, when the backend runs on `localhost:8080` (its web default, no flag needed):
+
+```powershell
+Set-Location MOBILE
+flutter pub get
+flutter run -d chrome
+```
+
+Or, from the repository root, to use the fixed port 8088 or a different backend address:
 
 ```powershell
 .\scripts\run-mobile.bat
-```
-
-The script installs Flutter packages and starts the driver application in Edge on port 8088. To use another backend address:
-
-```powershell
 .\scripts\run-mobile.bat http://192.168.1.20:8080/api
 ```
 
@@ -190,13 +194,13 @@ sed -i "s|REPLACE_WITH_A_RANDOM_BASE64_SECRET|$(openssl rand -base64 48)|" .env
 ${EDITOR:-nano} .env
 ```
 
-Add the Gemini and ORS keys and, for the assistant, photos and CV extraction, follow [Groq configuration](#free-hosted-photo-and-cv-analysis-with-groq). Set `APP_BOOTSTRAP_ENABLED=true` and choose the initial supervisor email and a password of at least 10 characters. Start the backend:
+Add the Gemini and ORS keys and, for the assistant, photos and CV extraction, follow [Groq configuration](#free-hosted-photo-and-cv-analysis-with-groq). For the fastest start, set `APP_SEED_ENABLED=true` and skip to [Test users](#test-users) for ready-made accounts. Otherwise set `APP_BOOTSTRAP_ENABLED=true` and choose the initial supervisor email and a password of at least 10 characters. Start the backend:
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-After the first supervisor is created, stop the backend, set `APP_BOOTSTRAP_ENABLED=false`, and restart it. The API is `http://localhost:8080/api`.
+After the first supervisor (or the test accounts) is created, stop the backend, set `APP_BOOTSTRAP_ENABLED=false` and/or `APP_SEED_ENABLED=false`, and restart it. The API is `http://localhost:8080/api`. Neither flag ever resets or reactivates an existing account.
 
 ### 4. Start the supervisor web application
 
@@ -210,18 +214,21 @@ VITE_API_URL=http://localhost:8080/api npm run dev -- --host 0.0.0.0
 
 Open the Vite URL, normally `http://localhost:5173`.
 
-### 5. Start the driver application in Chrome
+### 5. Start the driver application in a browser
 
-From the repository root:
+Easiest, when the backend runs on `localhost:8080` (its web default, no flag needed):
+
+```bash
+cd MOBILE
+flutter pub get
+flutter run -d chrome
+```
+
+Or, from the repository root, to use the fixed port 8088 or a different backend address:
 
 ```bash
 chmod +x scripts/run-mobile.sh
 ./scripts/run-mobile.sh
-```
-
-Pass another API address as the first argument when necessary:
-
-```bash
 ./scripts/run-mobile.sh http://192.168.1.20:8080/api
 ```
 
@@ -249,6 +256,18 @@ flutter build apk --debug --dart-define=API_BASE_URL=http://YOUR_COMPUTER_LAN_IP
 | `localhost:8088` | Flutter driver application when using the helper scripts |
 
 Supervisors create drivers, trucks, points and tours in React. Drivers sign in through Flutter to start/resume tours, navigate, record visits and photos, and use the grounded assistant. Google Maps links do not need a Google Maps API key; ORS is used by the backend to calculate the planned road matrix and route geometry.
+
+## Test users
+
+Set `APP_SEED_ENABLED=true` in `BACK/.env` and start the backend once to create these fixed accounts. They are skipped if an account with the same email already exists, so it is safe to leave the flag on across restarts, but set it back to `false` once you no longer need to recreate them. Never enable this flag in a production environment.
+
+| Role | Email / identifier | Password | Notes |
+| --- | --- | --- | --- |
+| Superviseur (React) | `superviseur.test@gesticollecte.local` | `Superviseur123!` | Sign in at `localhost:5173` |
+| Chauffeur (Flutter) | `chauffeur1.test@gesticollecte.local` or matricule `222LMT900` | `09012345` | Password equals the driver's CIN, matching the normal driver-creation flow |
+| Chauffeur (Flutter) | `chauffeur2.test@gesticollecte.local` or matricule `222LMT901` | `09054321` | Password equals the driver's CIN |
+
+Drivers can sign in with either their email or matricule. Additional drivers created afterward through the supervisor app also default their password to their CIN.
 
 ## Verification
 
@@ -293,6 +312,7 @@ The script uses disposable ports and storage and does not call live AI or road p
 ## Configuration notes
 
 - `BACK/.env` is ignored by Git. Never commit API keys, JWT secrets or mail credentials.
+- `APP_SEED_ENABLED=true` creates the fixed [test users](#test-users) alongside `APP_BOOTSTRAP_ENABLED`; both are independent, additive, and disabled by default.
 - Start the backend from the `BACK` directory so `.env` and relative upload folders resolve there.
 - `COLLECTION_AI_PROVIDER` selects photo analysis and CV extraction: `GROQ` by default, or `OPENROUTER` when explicitly configured. Groq uses `GROQ_MODEL_VISION` and `GROQ_MODEL_TEXT`; the alternative uses `OPENROUTER_MODEL_VISION` and `OPENROUTER_MODEL_TEXT`. `RAG_AI_PROVIDER` independently selects assistant generation: `GROQ` uses `GROQ_MODEL_TEXT`, while `GEMINI` uses `GEMINI_MODEL_TEXT`. The example `.env` selects Groq; omitting the setting preserves Gemini for existing installations. Document/query embeddings use `GEMINI_EMBEDDING_MODEL`. Restart the backend to apply changes. Changing either generation provider does not require reindexing RAG documents.
 - Gemini allowances apply to semantic retrieval/indexing and to chatbot generation when `RAG_AI_PROVIDER=GEMINI`. Check your project/model/tier limits in [Google AI Studio](https://aistudio.google.com/rate-limit); daily request quotas reset at midnight Pacific time. Groq generation, CV extraction and photos share the Groq model allowance; OpenRouter has its own photo/CV allowance, described below. HTTP 429 means quota/rate rejection, not a valid AI assessment.
