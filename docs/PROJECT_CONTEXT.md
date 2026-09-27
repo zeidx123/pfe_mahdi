@@ -19,7 +19,7 @@ Candidates do not have application accounts. Hiring and evidence corrections rem
 - `FRONT`: React 19/Vite 8, React Router, Axios, Leaflet/Recharts and existing CSS. `src/main.jsx` mounts the supervisor application.
 - `MOBILE`: Flutter/Dart, Dio, SharedPreferences, Geolocator, image_picker, flutter_map and external navigation links. The API address is configurable at build time or on the login screen.
 - MongoDB stores users/resources, tours with embedded visits, document chunks/conversations, analyses, candidates and immutable requirements versions. Files stay on backend disk and are served through authenticated endpoints.
-- Gemini supplies RAG generation and compatible embeddings. Both models are configurable; changing embedding model, dimensions or version requires reindexing.
+- `RagGenerationClient` selects assistant generation independently with `RAG_AI_PROVIDER=GROQ|GEMINI`. The example configuration selects Groq/Qwen; Gemini supplies compatible embeddings. Changing only the generation provider needs no reindexing; changing embedding model, dimensions or version does.
 - `CollectionAiClient` selects Groq by default for Qwen photo analysis and CV extraction. OpenRouter is an explicit alternative; neither selection automatically falls back to another provider. Keys stay in `BACK/.env`.
 - OpenRouteService supplies road matrices and geometry. The demonstration depot is **36.722857, 10.283535**, with `driving-car`, up to 20 stops and 300 seconds of service per stop by default.
 
@@ -56,6 +56,8 @@ Travel time, service time and total estimates are separate. The estimate is froz
 Approved documents feed page/section-aware extraction, BM25, compatible semantic retrieval and hybrid reciprocal-rank fusion. Approval, usable text and semantic readiness are separate. Failed embeddings do not disable lexical access to approved text. Synthetic hash embeddings are removed; incompatible old vectors need reindexing.
 
 Responses are `ANSWERED`, `SOURCE_EXCERPTS`, `INSUFFICIENT_INFORMATION` or `PROVIDER_UNAVAILABLE`. Literal excerpts can be returned when generation fails and retrieval works. Unsupported procedures are never substituted. Source identifiers/supporting passages and access are validated; empirical grounding still requires independent review. Follow-up history supports retrieval without replacing document evidence.
+
+The server distinguishes `GROUNDED`, `CONVERSATION` and `DRAFT` replies. Narrowly recognized greetings/help/thanks receive generated conversational replies without document retrieval. Drafting uses user-declared facts, keeps missing-detail clarification state and never submits the message. Procedural writing requests still require approved sources. A healthy generator can answer from BM25 passages when semantic retrieval is unavailable. Flutter presents the answer first, with sources collapsed and drafts labelled for review.
 
 Interrupted document processing returns to a retryable state based on stored text; startup does not replay provider jobs automatically.
 

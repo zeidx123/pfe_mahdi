@@ -225,6 +225,74 @@ class LiveProviderProbeTest(unittest.TestCase):
             self.assertNotIn("router-test-key", json.dumps(call.args))
         self.assertTrue(all(report["checks"][name]["status"] == "PASS" for name in ("text", "embedding", "cvText", "vision")))
 
+    def test_rag_groq_selection_keeps_embedding_and_collection_providers_independent(self):
+        bodies = [response('{"status":"READY"}'), {"embedding": {"values": [.1] * 768}},
+                  response('{"drivingExperienceYears":2,"licenceCategories":["C"]}'), response()]
+        settings = {**self.settings, "RAG_AI_PROVIDER": " groq ", "GROQ_API_KEY": "groq-test-key",
+                    "GEMINI_API_KEY": "gemini-test-key", "GROQ_MODEL_TEXT": "qwen/qwen3.8-27b",
+                    "GROQ_MODEL_VISION": "other/vision-model", "GEMINI_MODEL_TEXT": "other-gemini-model"}
+        with patch.object(probe, "post", side_effect=[({"status": "RESPONDED"}, body) for body in bodies]) as post:
+            report = probe.probe(settings, vision=True)
+        self.assertEqual(post.call_count, 4)
+        self.assertEqual(report["providers"], {"text": "GROQ", "embedding": "GEMINI",
+                                              "cvText": "OPENROUTER", "vision": "OPENROUTER"})
+        self.assertEqual(report["models"]["text"], "qwen/qwen3.8-27b")
+        for index, provider in enumerate((probe.GROQ, probe.GEMINI, probe.OPENROUTER, probe.OPENROUTER)):
+            self.assertTrue(post.call_args_list[index].args[0].startswith(provider))
+        text_call = post.call_args_list[0]
+        self.assertEqual(text_call.args[1]["Authorization"], "Bearer groq-test-key")
+        self.assertEqual(text_call.args[2]["model"], settings["GROQ_MODEL_TEXT"])
+        self.assertEqual(text_call.args[2]["response_format"]["json_schema"]["name"], "rag_text_probe")
+        self.assertEqual(post.call_args_list[1].args[1], {"x-goog-api-key": "gemini-test-key"})
+        for name in ("text", "embedding", "cvText", "vision"):
+            self.assertEqual(report["checks"][name]["status"], "PASS")
+        for key in ("groq-test-key", "gemini-test-key", "test-only-key"):
+            self.assertNotIn(key, json.dumps(report))
+
+    def test_rag_text_uses_only_selected_provider_credentials(self):
+        for provider, credentials in (("GROQ", {"GEMINI_API_KEY": "gemini-test-key"}),
+                                      ("GEMINI", {"GROQ_API_KEY": "groq-test-key"})):
+            with self.subTest(provider=provider), patch.object(probe, "post") as post:
+                result = probe.probe_rag_text({**credentials, "RAG_AI_PROVIDER": provider,
+                                              "OPENROUTER_API_KEY": "router-test-key"})
+                self.assertEqual(result["provider"], provider)
+                self.assertEqual(result["status"], "NOT_CONFIGURED")
+                post.assert_not_called()
+
+    def test_missing_gemini_key_does_not_disable_selected_groq_rag(self):
+        bodies = [response('{"status":"READY"}'), response('{"drivingExperienceYears":2,"licenceCategories":["C"]}')]
+        with patch.object(probe, "post", side_effect=[({"status": "RESPONDED"}, body) for body in bodies]) as post:
+            report = probe.probe({"RAG_AI_PROVIDER": "GROQ", "GROQ_API_KEY": "groq-test-key"})
+        self.assertEqual(post.call_count, 2)
+        self.assertEqual(report["checks"]["text"]["status"], "PASS")
+        self.assertEqual(report["checks"]["embedding"]["status"], "NOT_CONFIGURED")
+        self.assertTrue(all(call.args[0].startswith(probe.GROQ) for call in post.call_args_list))
+
+    def test_invalid_rag_provider_or_model_stops_without_fallback(self):
+        for selection, expected in (({"RAG_AI_PROVIDER": "AUTO"}, "INVALID_PROVIDER_CONFIGURATION"),
+                                    ({"RAG_AI_PROVIDER": "OPENROUTER"}, "INVALID_PROVIDER_CONFIGURATION"),
+                                    ({"RAG_AI_PROVIDER": "GROQ", "GROQ_MODEL_TEXT": "qwen/unreviewed"}, "INVALID_MODEL_CONFIGURATION")):
+            with self.subTest(selection=selection), patch.object(probe, "post") as post:
+                result = probe.probe_rag_text({"GROQ_API_KEY": "groq-test-key", "GEMINI_API_KEY": "gemini-test-key",
+                                              "OPENROUTER_API_KEY": "router-test-key", **selection})
+                self.assertEqual(result["status"], expected)
+                post.assert_not_called()
+
+    def test_rag_groq_failure_or_invalid_answer_never_retries_or_switches_provider(self):
+        cases = (({"status": "PROVIDER_UNAVAILABLE", "httpStatus": 429}, None, "PROVIDER_UNAVAILABLE"),
+                 ({"status": "PROVIDER_UNAVAILABLE", "httpStatus": 503}, None, "PROVIDER_UNAVAILABLE"),
+                 ({"status": "RESPONDED"}, response('{"status":"NOT_READY"}'), "INVALID_RESPONSE"),
+                 ({"status": "RESPONDED"}, response('{"status":"READY"}', finish_reason="length"), "INVALID_RESPONSE"),
+                 ({"status": "RESPONDED"}, response("not JSON"), "INVALID_RESPONSE"))
+        for transport, body, expected in cases:
+            with self.subTest(transport=transport, body=body), patch.object(probe, "post", return_value=(transport, body)) as post:
+                result = probe.probe_rag_text({"RAG_AI_PROVIDER": "GROQ", "GROQ_API_KEY": "groq-test-key",
+                                              "GEMINI_API_KEY": "gemini-test-key"})
+                self.assertEqual(result["status"], expected)
+                self.assertEqual(result["provider"], "GROQ")
+                self.assertTrue(post.call_args.args[0].startswith(probe.GROQ))
+                post.assert_called_once()
+
 
 class DirectVisionDiagnosticTest(unittest.TestCase):
     def test_groq_selection_and_configuration_are_isolated(self):

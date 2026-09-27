@@ -41,7 +41,7 @@ Install these tools before starting:
 | Edge or Chrome | Current stable | Flutter web run |
 | Python | 3.10+ | Optional evaluation and local web-serving tools |
 
-Provider keys are optional for basic startup. Chatbot RAG generation and document embeddings use Gemini. Photo analysis and CV extraction use hosted Qwen through Groq's free plan by default; road routing uses OpenRouteService. Obtain keys from [Google AI Studio](https://aistudio.google.com/app/apikey), [GroqCloud](https://console.groq.com/keys) and [OpenRouteService](https://openrouteservice.org/dev/#/signup). OpenRouter remains an explicitly selectable alternative. Keep all provider keys only in `BACK/.env`.
+Provider keys are optional for basic startup. Chatbot generation selects Groq or Gemini independently; the example configuration uses Groq. Document/query embeddings remain on Gemini. Photo analysis and CV extraction use hosted Qwen through Groq's free plan by default; road routing uses OpenRouteService. Obtain keys from [Google AI Studio](https://aistudio.google.com/app/apikey), [GroqCloud](https://console.groq.com/keys) and [OpenRouteService](https://openrouteservice.org/dev/#/signup). OpenRouter remains an explicitly selectable alternative. Keep all provider keys only in `BACK/.env`.
 
 Official installers: [Git](https://git-scm.com/downloads), [Temurin JDK 17](https://adoptium.net/temurin/releases/?version=17), [Node.js](https://nodejs.org/en/download), [Docker Desktop](https://www.docker.com/products/docker-desktop/), [Flutter](https://docs.flutter.dev/get-started/install), and [Android Studio](https://developer.android.com/studio).
 
@@ -93,7 +93,7 @@ notepad .env
 
 In `.env`:
 
-1. paste the Gemini and ORS keys after `GEMINI_API_KEY=` and `ORS_API_KEY=`; for photos and CV extraction, also follow [Groq configuration](#free-hosted-photo-and-cv-analysis-with-groq);
+1. paste the Gemini and ORS keys after `GEMINI_API_KEY=` and `ORS_API_KEY=`; for the assistant, photos and CV extraction, also follow [Groq configuration](#free-hosted-photo-and-cv-analysis-with-groq);
 2. set `APP_BOOTSTRAP_ENABLED=true` for the first startup;
 3. replace the example supervisor email and password; the password needs at least 10 characters.
 
@@ -190,7 +190,7 @@ sed -i "s|REPLACE_WITH_A_RANDOM_BASE64_SECRET|$(openssl rand -base64 48)|" .env
 ${EDITOR:-nano} .env
 ```
 
-Add the Gemini and ORS keys and, for photos and CV extraction, follow [Groq configuration](#free-hosted-photo-and-cv-analysis-with-groq). Set `APP_BOOTSTRAP_ENABLED=true` and choose the initial supervisor email and a password of at least 10 characters. Start the backend:
+Add the Gemini and ORS keys and, for the assistant, photos and CV extraction, follow [Groq configuration](#free-hosted-photo-and-cv-analysis-with-groq). Set `APP_BOOTSTRAP_ENABLED=true` and choose the initial supervisor email and a password of at least 10 characters. Start the backend:
 
 ```bash
 ./mvnw spring-boot:run
@@ -294,8 +294,8 @@ The script uses disposable ports and storage and does not call live AI or road p
 
 - `BACK/.env` is ignored by Git. Never commit API keys, JWT secrets or mail credentials.
 - Start the backend from the `BACK` directory so `.env` and relative upload folders resolve there.
-- `COLLECTION_AI_PROVIDER` selects photo analysis and CV extraction: `GROQ` by default, or `OPENROUTER` when explicitly configured. Groq uses `GROQ_MODEL_VISION` and `GROQ_MODEL_TEXT`; the alternative uses `OPENROUTER_MODEL_VISION` and `OPENROUTER_MODEL_TEXT`. Only the chatbot uses `GEMINI_MODEL_TEXT`; its document embeddings use `GEMINI_EMBEDDING_MODEL`. Restart the backend to apply changes. Changing the collection provider does not require reindexing RAG documents.
-- Gemini allowances apply to the chatbot and its semantic retrieval/indexing. Check your project/model/tier limits in [Google AI Studio](https://aistudio.google.com/rate-limit); daily request quotas reset at midnight Pacific time. Groq and OpenRouter have separate photo/CV allowances, described below. HTTP 429 means quota/rate rejection, not a valid AI assessment.
+- `COLLECTION_AI_PROVIDER` selects photo analysis and CV extraction: `GROQ` by default, or `OPENROUTER` when explicitly configured. Groq uses `GROQ_MODEL_VISION` and `GROQ_MODEL_TEXT`; the alternative uses `OPENROUTER_MODEL_VISION` and `OPENROUTER_MODEL_TEXT`. `RAG_AI_PROVIDER` independently selects assistant generation: `GROQ` uses `GROQ_MODEL_TEXT`, while `GEMINI` uses `GEMINI_MODEL_TEXT`. The example `.env` selects Groq; omitting the setting preserves Gemini for existing installations. Document/query embeddings use `GEMINI_EMBEDDING_MODEL`. Restart the backend to apply changes. Changing either generation provider does not require reindexing RAG documents.
+- Gemini allowances apply to semantic retrieval/indexing and to chatbot generation when `RAG_AI_PROVIDER=GEMINI`. Check your project/model/tier limits in [Google AI Studio](https://aistudio.google.com/rate-limit); daily request quotas reset at midnight Pacific time. Groq generation, CV extraction and photos share the Groq model allowance; OpenRouter has its own photo/CV allowance, described below. HTTP 429 means quota/rate rejection, not a valid AI assessment.
 - The React API URL comes from `VITE_API_URL` at build/start time.
 - The Flutter API URL comes from `--dart-define=API_BASE_URL=...`; a value saved through **Configurer le serveur** takes priority.
 - Android emulator networking uses `10.0.2.2`; a physical phone uses the server's LAN address; browser clients use `localhost` when running on the same computer.
@@ -307,15 +307,16 @@ Create a [GroqCloud API key](https://console.groq.com/keys) and keep the account
 
 ```dotenv
 COLLECTION_AI_PROVIDER=GROQ
+RAG_AI_PROVIDER=GROQ
 GROQ_API_KEY=VOTRE_CLE_GROQ_ICI
 GROQ_MODEL_TEXT=qwen/qwen3.8-27b
 GROQ_MODEL_VISION=qwen/qwen3.8-27b
 GROQ_TIMEOUT_SECONDS=60
 ```
 
-The shared timeout setting is optional and bounded to 1–120 seconds. Groq model IDs do not use the OpenRouter `:free` suffix; the Groq account plan governs the allowance. Qwen handles photo analysis and CV extraction; keep your Gemini settings for the chatbot and its embeddings. Candidate suitability scoring remains the deterministic backend rubric, with a human hiring decision. Keys belong in the ignored backend file, never in React, Flutter, browser storage or committed files.
+The shared timeout setting is optional and bounded to 1–120 seconds. Groq model IDs do not use the OpenRouter `:free` suffix; the Groq account plan governs the allowance. Qwen handles the assistant, photo analysis and CV extraction with these settings. Keep Gemini configured for document/query embeddings. To choose Gemini generation instead, set `RAG_AI_PROVIDER=GEMINI`; changing this setting never switches the embedding model or collection provider. Candidate suitability scoring remains the deterministic backend rubric, with a human hiring decision. Keys belong in the ignored backend file, never in React, Flutter, browser storage or committed files.
 
-These short extraction/classification requests disable extended reasoning and cap output at 1,024 tokens for photos and 4,096 for CVs. This avoids the selected model's default extended-thinking workload, but does not remove provider capacity limits. A timed-out or truncated response remains unavailable and can be retried manually.
+These requests disable extended reasoning and cap output at 1,024 tokens for photos and 4,096 for CVs and assistant responses. This avoids the selected model's default extended-thinking workload, but does not remove provider capacity limits. A timed-out or truncated response remains unavailable and can be retried manually.
 
 The current [Groq free-plan rate table](https://console.groq.com/docs/rate-limits) lists these ceilings for `qwen/qwen3.8-27b`:
 
@@ -323,7 +324,7 @@ The current [Groq free-plan rate table](https://console.groq.com/docs/rate-limit
 | ---: | ---: | ---: | ---: |
 | 30 | 1,000 | 8,000 | 200,000 |
 
-All four limits apply together; these are published ceilings, not a guaranteed number of photos per day. [Each image counts as 2,048 input tokens](https://console.groq.com/docs/vision), plus the prompt and generated response. CV extraction and retries also consume the model's allowance. An AFTER-only analysis uses one request and one image; a BEFORE/AFTER pair uses one request and two images. Check your account's current limits and honor `Retry-After` when a request is rate-limited. No provider switch occurs automatically.
+All four limits apply together; these are published ceilings, not a guaranteed number of photos per day. [Each image counts as 2,048 input tokens](https://console.groq.com/docs/vision), plus the prompt and generated response. Assistant generation, CV extraction and retries also consume the model's allowance. An AFTER-only analysis uses one request and one image; a BEFORE/AFTER pair uses one request and two images. Check your account's current limits and honor `Retry-After` when a request is rate-limited. No provider switch occurs automatically.
 
 ### Save AI requests while testing
 

@@ -12,21 +12,22 @@ Lorsque les services locaux sont démarrés selon le README :
 
 Les comptes de démonstration créés sur cette base locale ne sont pas des comptes universels d'installation. Utilisez les identifiants fournis avec votre instance. Aucune clé Gemini, Groq, OpenRouter ou ORS ne doit être saisie dans les applications web ou mobile ; elles restent dans le fichier ignoré `BACK/.env`.
 
-## Configurer les photos et CV avec Groq gratuit
+## Configurer l’assistant, les photos et CV avec Groq gratuit
 
-Créez une [clé GroqCloud](https://console.groq.com/keys) et conservez le compte sur le plan gratuit. Aucun modèle local ni activation de la facturation n'est nécessaire pour cette configuration. Groq est le fournisseur sélectionné par défaut pour les photos et les CV. Dans le fichier existant `BACK/.env`, remplacez le placeholder par votre clé :
+Créez une [clé GroqCloud](https://console.groq.com/keys) et conservez le compte sur le plan gratuit. Aucun modèle local ni activation de la facturation n'est nécessaire pour cette configuration. Groq est le fournisseur sélectionné par défaut pour les photos et les CV. La génération de l’assistant se configure séparément avec `RAG_AI_PROVIDER`. Dans le fichier existant `BACK/.env`, remplacez le placeholder par votre clé :
 
 ```dotenv
 COLLECTION_AI_PROVIDER=GROQ
+RAG_AI_PROVIDER=GROQ
 GROQ_API_KEY=VOTRE_CLE_GROQ_ICI
 GROQ_MODEL_TEXT=qwen/qwen3.8-27b
 GROQ_MODEL_VISION=qwen/qwen3.8-27b
 GROQ_TIMEOUT_SECONDS=60
 ```
 
-Le délai partagé est facultatif, borné entre 1 et 120 secondes. Les identifiants Groq ne portent pas le suffixe OpenRouter `:free` : le plan du compte Groq définit son quota. Qwen analyse les photos et extrait les CV. Gemini reste réservé au chatbot RAG et à ses embeddings. Le score des candidatures reste calculé par le barème du backend ; la décision d'embauche reste humaine. Ne copiez pas cette clé dans React, Flutter ou un fichier suivi par Git.
+Le délai partagé est facultatif, borné entre 1 et 120 secondes. Les identifiants Groq ne portent pas le suffixe OpenRouter `:free` : le plan du compte Groq définit son quota. Avec ces paramètres, Qwen génère les réponses de l’assistant, analyse les photos et extrait les CV. Gemini reste utilisé pour les embeddings des documents et des questions. `RAG_AI_PROVIDER=GEMINI` permet de choisir explicitement Gemini pour les réponses ; sans ce paramètre, les anciennes installations gardent Gemini. Le changement de fournisseur de génération ne demande pas de réindexer les documents. Le score des candidatures reste calculé par le barème du backend ; la décision d'embauche reste humaine. Ne copiez pas cette clé dans React, Flutter ou un fichier suivi par Git.
 
-Les requêtes désactivent le raisonnement prolongé et limitent la sortie à 1 024 tokens pour une photo ou 4 096 pour un CV. Ces réglages conviennent aux réponses structurées courtes ; ils ne garantissent pas la disponibilité du fournisseur. Une réponse tronquée ou hors délai reste indisponible.
+Les requêtes désactivent le raisonnement prolongé et limitent la sortie à 1 024 tokens pour une photo ou 4 096 pour un CV ou une réponse de l’assistant. Ces réglages conviennent aux réponses structurées courtes ; ils ne garantissent pas la disponibilité du fournisseur. Une réponse tronquée ou hors délai reste indisponible.
 
 Après modification, arrêtez puis relancez le backend depuis `BACK` avec `.\mvnw.cmd spring-boot:run` sous Windows PowerShell ou `./mvnw spring-boot:run` sous Linux. Le [README](../README.md) décrit l'installation complète, Windows puis Linux.
 
@@ -36,7 +37,7 @@ Les [limites gratuites Groq](https://console.groq.com/docs/rate-limits) publiée
 | ---: | ---: | ---: | ---: |
 | 30 | 1 000 | 8 000 | 200 000 |
 
-Les quatre plafonds s'appliquent simultanément ; ils ne garantissent pas un nombre de photos par jour. [Chaque image représente 2 048 tokens d'entrée](https://console.groq.com/docs/vision), auxquels s'ajoutent le texte de la demande et la réponse. Une analyse APRÈS seule utilise une requête et une image ; une paire AVANT/APRÈS utilise une requête et deux images. Les CV et les réessais partagent ce quota. Compresser une image réduit sa taille d'envoi, pas son coût fixe en tokens ni le nombre de requêtes. Consultez les limites de votre compte et respectez `Retry-After` lorsqu'il est présent.
+Les quatre plafonds s'appliquent simultanément ; ils ne garantissent pas un nombre de photos par jour. [Chaque image représente 2 048 tokens d'entrée](https://console.groq.com/docs/vision), auxquels s'ajoutent le texte de la demande et la réponse. Une analyse APRÈS seule utilise une requête et une image ; une paire AVANT/APRÈS utilise une requête et deux images. Les réponses de l’assistant, les CV et les réessais partagent ce quota. Compresser une image réduit sa taille d'envoi, pas son coût fixe en tokens ni le nombre de requêtes. Consultez les limites de votre compte et respectez `Retry-After` lorsqu'il est présent.
 
 ### Alternative OpenRouter explicite
 
@@ -58,11 +59,15 @@ Vérifiez les réponses réelles de Qwen avec votre clé sur votre installation.
 
 ## Chatbot RAG
 
+Choisissez `RAG_AI_PROVIDER=GROQ` dans `BACK/.env` pour utiliser la clé Groq déjà configurée, puis redémarrez le backend. Le fournisseur ne bascule pas automatiquement en cas de panne. Si la génération est indisponible, des passages utiles peuvent encore être présentés ; aucune réponse procédurale ne doit être inventée pour masquer cette panne.
+
 Trois fiches structurées se trouvent dans `evaluation/rag/development-documents/`. Elles décrivent les photos, les points inaccessibles et le retour au dépôt. Le fichier `expected-cases.json` contient des attentes séparées ; ne l'importez pas dans la base documentaire.
 
 Importez les trois fichiers Markdown depuis **Base documentaire**, attendez la disponibilité du texte, puis approuvez-les. Vérifiez d’abord la liste pour éviter de les importer à nouveau dans une base de démonstration existante. L'index sémantique doit correspondre au modèle d'embedding configuré. Un texte approuvé reste utilisable par la recherche lexicale si l'indexation échoue.
 
-Dans Flutter, ouvrez **Assistant** et essayez :
+Dans Flutter, ouvrez **Assistant**. Commencez par « Bonjour, tu peux m’aider ? » : l’assistant doit répondre naturellement et présenter son rôle, sans chercher une procédure pour une simple salutation. Essayez ensuite « Rédige une réclamation : le passage du point P2 est bloqué par un véhicule. » Le résultat doit être un **brouillon à relire**, basé uniquement sur les faits fournis, sans inventer un horaire, une identité ou une action effectuée. Rien n’est envoyé automatiquement.
+
+Pour vérifier les réponses documentées, essayez :
 
 1. « Quelle photo est obligatoire pour confirmer une collecte normale ? » — la source prévoit APRÈS obligatoire et AVANT facultative.
 2. Dans la même conversation : « Et si ce point est inaccessible ? » — retrouver la fiche de signalement, sans inventer de coordonnées de contact.
@@ -71,7 +76,7 @@ Dans Flutter, ouvrez **Assistant** et essayez :
 
 Vérifiez l'état affiché et les passages cités. `SOURCE_EXCERPTS` signifie que des extraits littéraux sont disponibles mais que la réponse IA n'a pas pu être produite. Ce n'est pas une réponse générée réussie. Une panne sans extrait utile doit rester explicite. Vérifiez également l'historique après rechargement.
 
-Dans chaque carte source, **Extrait cité** développe ou replie le passage. **Télécharger la source** récupère le document original dans le navigateur ; **Ouvrir le document** utilise une application compatible sur Android. L'accès passe par l'API authentifiée. **Préciser ma question** remet la question dans le champ de saisie ; **Réessayer la réponse** réessaie la dernière réponse indisponible dans la même discussion. Le bouton d'historique permet de rechercher puis rouvrir une discussion enregistrée.
+La réponse générée apparaît avant ses références. **Voir les sources** développe la liste compacte des passages ; en cas de génération indisponible, **Consulter les extraits** ouvre les passages retrouvés. Les salutations ne demandent pas de citations et les brouillons restent signalés séparément des réponses documentées. Dans chaque carte source, **Extrait cité** développe ou replie le passage. **Télécharger la source** récupère le document original dans le navigateur ; **Ouvrir le document** utilise une application compatible sur Android. L'accès passe par l'API authentifiée. **Préciser ma question** remet la question dans le champ de saisie ; **Réessayer la réponse** réessaie la dernière réponse indisponible dans la même discussion. Le bouton d'historique permet de rechercher puis rouvrir une discussion enregistrée.
 
 Pour reproduire le rendu HTML vérifié avec Flutter 3.24.5, lancez depuis `MOBILE` :
 
@@ -82,6 +87,8 @@ flutter build web --no-web-resources-cdn --web-renderer html --pwa-strategy=none
 Servez ensuite `build/web` avec `py -3 -m http.server 8088 --directory build/web` sous Windows, ou `python3 -m http.server 8088 --directory build/web` sous Linux. Le navigateur ne remplace pas la vérification du GPS et de la caméra sur téléphone. Ce rendu HTML est une option du SDK Flutter épinglé ; des SDK plus récents peuvent ne plus le proposer.
 
 Résultats détaillés : [essai RAG de développement](../evaluation/rag/runs/ui-live-development-2026-09-23-summary.md).
+
+Le [contrôle de conversation du 24 septembre](evidence/assistant-conversation-2026-09-24.md) vérifie les réponses générées avec Groq, les salutations, les citations et la rédaction à partir de faits fournis. Les anciens messages indisponibles restent dans l'historique ; démarrez une nouvelle discussion ou renvoyez votre question après un changement de fournisseur.
 
 ## CV et matching
 

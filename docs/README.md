@@ -10,6 +10,7 @@ Current delivery documentation, updated **24 September 2026**. Start with the ro
 | [Delivery checks](DELIVERY_CHECKS.md) | Dated verification results, limitations and remaining acceptance gates |
 | [P1 development results](evaluation/P1_RUN_RESULTS.md) | Selected experiment evidence and its interpretation |
 | [Groq workflow evidence](evidence/groq-live-simulation-2026-09-24.md) | One real photo analysis in the browser workflow, with compact JSON evidence |
+| [Assistant conversation evidence](evidence/assistant-conversation-2026-09-24.md) | Generated greetings, grounded answers, drafting and source-access checks |
 
 The **web application serves supervisors**: resources, tours, reviews, approved documents and recruitment. The **Flutter application serves drivers**: assigned tours, navigation, evidence, complaints and the procedural assistant.
 

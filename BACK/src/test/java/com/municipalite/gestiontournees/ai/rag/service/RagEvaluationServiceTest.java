@@ -25,9 +25,9 @@ class RagEvaluationServiceTest {
     AiDocumentRepository documents = mock(AiDocumentRepository.class);
     RagConversationRepository histories = mock(RagConversationRepository.class);
     EmbeddingService embeddings = mock(EmbeddingService.class);
-    GeminiClient gemini = mock(GeminiClient.class);
+    RagGenerationClient generation = mock(RagGenerationClient.class);
     MongoVectorStoreService store = new MongoVectorStoreService(chunks, documents, properties);
-    RagService rag = new RagService(embeddings, store, gemini, histories, properties, new ObjectMapper());
+    RagService rag = new RagService(embeddings, store, generation, histories, properties, new ObjectMapper());
     RagEvaluationService evaluation = new RagEvaluationService(new AccessService(mock(TourneeRepository.class)),
             store, embeddings, rag, properties, new ObjectMapper());
 
@@ -39,7 +39,7 @@ class RagEvaluationServiceTest {
         when(chunks.findAll()).thenReturn(List.of(chunk("visible", "approved", "photo après obligatoire", true),
                 chunk("hidden", "private", "secret photo", true)));
         when(embeddings.generateEmbedding(anyString())).thenReturn(List.of(1f, 0f));
-        when(gemini.generateJson(anyString())).thenReturn("{\"status\":\"ANSWERED\",\"answer\":\"Photo après obligatoire.\","
+        when(generation.generateJson(anyString(), anyMap())).thenReturn("{\"status\":\"ANSWERED\",\"answer\":\"Photo après obligatoire.\","
                 + "\"citations\":[{\"chunkId\":\"visible\",\"quote\":\"photo après obligatoire\"}]}");
     }
     @AfterEach void clear() { SecurityContextHolder.clearContext(); }
@@ -57,7 +57,7 @@ class RagEvaluationServiceTest {
         });
         verify(chunks, times(1)).findAll(); verify(documents, times(1)).findAll();
         verify(embeddings, times(1)).generateEmbedding("photo après ?");
-        verify(gemini, times(3)).generateJson(anyString());
+        verify(generation, times(3)).generateJson(anyString(), anyMap());
         verifyNoInteractions(histories);
     }
 
@@ -65,7 +65,7 @@ class RagEvaluationServiceTest {
         authenticate(Role.CHAUFFEUR);
         assertThatThrownBy(evaluation::corpus).isInstanceOf(AccessDeniedException.class);
         assertThatThrownBy(() -> evaluation.evaluate(request(true))).isInstanceOf(AccessDeniedException.class);
-        verifyNoInteractions(chunks, documents, embeddings, gemini);
+        verifyNoInteractions(chunks, documents, embeddings, generation);
     }
 
     @Test void lexicalOnlyDoesNotCallEmbeddingAndGenerationIsOptIn() {
@@ -74,14 +74,14 @@ class RagEvaluationServiceTest {
         assertThat(result.generationStatus()).isEqualTo("NOT_REQUESTED");
         assertThat(result.status()).isNull();
         assertThat(result.retrievedSources()).hasSize(1);
-        verifyNoInteractions(embeddings, gemini, histories);
+        verifyNoInteractions(embeddings, generation, histories);
     }
 
     @Test void anonymousAccessCannotExportTheCorpus() {
         SecurityContextHolder.clearContext();
         assertThatThrownBy(evaluation::corpus)
                 .isInstanceOf(org.springframework.security.authentication.AuthenticationCredentialsNotFoundException.class);
-        verifyNoInteractions(chunks, documents, embeddings, gemini);
+        verifyNoInteractions(chunks, documents, embeddings, generation);
     }
 
     @Test void embeddingOutageDoesNotBecomeSuccessfulSemanticOrHybridComparison() {
@@ -93,8 +93,8 @@ class RagEvaluationServiceTest {
         assertThat(results.get(1).status()).isEqualTo("PROVIDER_UNAVAILABLE");
         assertThat(results.get(2).effectiveMode()).isEqualTo("LEXICAL");
         assertThat(results.get(2).retrievalStatus()).isEqualTo("PROVIDER_UNAVAILABLE");
-        assertThat(results.get(2).status()).isEqualTo("SOURCE_EXCERPTS");
-        verify(gemini, times(1)).generateJson(anyString());
+        assertThat(results.get(2).status()).isEqualTo("ANSWERED");
+        verify(generation, times(2)).generateJson(anyString(), anyMap());
     }
 
     @Test void incompleteAndIncompatibleIndexesAreVisibleAndFingerprintGuardsCorpusDrift() {
@@ -103,7 +103,7 @@ class RagEvaluationServiceTest {
         when(chunks.findAll()).thenReturn(List.of(chunk("visible", "approved", "photo après obligatoire", true), incompatible));
         var request = request(false); request.setExpectedCorpusFingerprint(fingerprint);
         assertThatThrownBy(() -> evaluation.evaluate(request)).isInstanceOf(ResponseStatusException.class).hasMessageContaining("409");
-        verifyNoInteractions(embeddings, gemini);
+        verifyNoInteractions(embeddings, generation);
         request.setExpectedCorpusFingerprint(null);
         var response = evaluation.evaluate(request);
         assertThat(response.corpus().compatibleChunkCount()).isEqualTo(1);
@@ -113,7 +113,7 @@ class RagEvaluationServiceTest {
     }
 
     @Test void followUpUsesFixedHistoryButUnrelatedInvalidCitationsDoNotBecomeExcerpts() {
-        when(gemini.generateJson(anyString())).thenReturn("{\"status\":\"ANSWERED\",\"answer\":\"invented\",\"citations\":[{\"chunkId\":\"private\",\"quote\":\"secret\"}]}");
+        when(generation.generateJson(anyString(), anyMap())).thenReturn("{\"status\":\"ANSWERED\",\"answer\":\"invented\",\"citations\":[{\"chunkId\":\"private\",\"quote\":\"secret\"}]}");
         var request = request(true); request.setQuestion("Et si ce point est inaccessible ?");
         request.setHistory(List.of(new RagEvaluationRequest.HistoryTurn("USER", "photo après ?")));
         var result = evaluation.evaluate(request);

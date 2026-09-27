@@ -41,9 +41,9 @@ class _AssistantPageState extends State<AssistantPage> {
       'Que faut-il faire après le dernier point de la tournée ?'
     ),
     (
-      Icons.health_and_safety_outlined,
-      'Sécurité sur le terrain',
-      'Quelles sont les consignes de sécurité en tournée ?'
+      Icons.edit_note_outlined,
+      'Rédiger un message',
+      'Aide-moi à rédiger un message au superviseur pour signaler un point inaccessible.'
     ),
   ];
 
@@ -165,7 +165,8 @@ class _AssistantPageState extends State<AssistantPage> {
           'sender': 'ASSISTANT',
           'content': data['answer'] ?? '',
           'sources': data['sources'] ?? [],
-          'status': data['status']
+          'status': data['status'],
+          'responseKind': data['responseKind'] ?? 'GROUNDED',
         });
       });
       _loadHistory();
@@ -175,7 +176,7 @@ class _AssistantPageState extends State<AssistantPage> {
             'sender': 'ASSISTANT',
             'status': 'PROVIDER_UNAVAILABLE',
             'content':
-                '${ApiService.errorMessage(error)} Aucun conseil de procédure n’a été généré.',
+                'Je n’ai pas pu obtenir une réponse pour le moment. ${ApiService.errorMessage(error)}',
             'sources': []
           }));
     } finally {
@@ -335,11 +336,11 @@ class _AssistantPageState extends State<AssistantPage> {
             child: const Icon(Icons.auto_stories_outlined,
                 size: 28, color: GestiTheme.primaryDark)),
         const SizedBox(height: 24),
-        Text('Une question sur votre collecte ?',
+        Text('Bonjour, comment puis-je vous aider ?',
             style: Theme.of(context).textTheme.headlineMedium),
         const SizedBox(height: 12),
         const Text(
-            'Retrouvez une consigne ou clarifiez une étape de votre tournée, à partir des documents approuvés.',
+            'Posez une question, clarifiez une consigne ou préparez un message pour votre superviseur.',
             style:
                 TextStyle(fontSize: 15, color: GestiTheme.muted, height: 1.6)),
         const SizedBox(height: 28),
@@ -383,13 +384,25 @@ class _AssistantPageState extends State<AssistantPage> {
           SizedBox(width: 9),
           Expanded(
               child: Text(
-                  'Chaque réponse documentée vous permet de consulter ses sources. Si une information manque, l’assistant vous le signale.',
+                  'Les consignes viennent des documents approuvés. Les sources restent à portée de main, et les brouillons sont signalés.',
                   style: TextStyle(
                       fontSize: 12, color: GestiTheme.muted, height: 1.5))),
         ]),
       ]));
 
-  Widget _status(String status) {
+  Widget _status(String status, String responseKind) {
+    if (status == 'ANSWERED' && responseKind == 'CONVERSATION') {
+      return const SizedBox.shrink();
+    }
+    if (status == 'ANSWERED' && responseKind == 'DRAFT') {
+      return const Row(children: [
+        Icon(Icons.edit_note_outlined, size: 17, color: GestiTheme.muted),
+        SizedBox(width: 7),
+        Expanded(
+            child: Text('Brouillon à adapter · à relire avant envoi',
+                style: TextStyle(fontSize: 12, color: GestiTheme.muted))),
+      ]);
+    }
     final (label, icon, color) = switch (status) {
       'ANSWERED' => (
           'Réponse documentée',
@@ -397,7 +410,7 @@ class _AssistantPageState extends State<AssistantPage> {
           GestiTheme.primaryDark
         ),
       'SOURCE_EXCERPTS' => (
-          'Extraits disponibles · réponse IA indisponible',
+          'Réponse IA momentanément indisponible',
           Icons.library_books_outlined,
           GestiTheme.amber
         ),
@@ -406,7 +419,11 @@ class _AssistantPageState extends State<AssistantPage> {
           Icons.cloud_off_outlined,
           GestiTheme.amber
         ),
-      _ => ('Information non trouvée', Icons.info_outline, GestiTheme.muted),
+      _ => (
+          'Information non disponible dans les sources',
+          Icons.info_outline,
+          GestiTheme.muted
+        ),
     };
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Icon(icon, size: 17, color: color),
@@ -416,6 +433,42 @@ class _AssistantPageState extends State<AssistantPage> {
               style: TextStyle(
                   fontSize: 12, fontWeight: FontWeight.w600, color: color)))
     ]);
+  }
+
+  Widget _sources(List<Map<String, dynamic>> sources, bool excerpts) {
+    final documentNames = sources
+        .map((source) => '${source['documentName'] ?? 'Document'}')
+        .toSet();
+    final count = sources.length;
+    return Padding(
+        padding: const EdgeInsets.only(top: 16),
+        child: DecoratedBox(
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: GestiTheme.border)),
+            child: ExpansionTile(
+                tilePadding: const EdgeInsets.symmetric(horizontal: 14),
+                childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+                shape: const Border(),
+                collapsedShape: const Border(),
+                leading: const Icon(Icons.source_outlined,
+                    size: 20, color: GestiTheme.primaryDark),
+                title: Text(
+                    '${excerpts ? 'Consulter les extraits' : 'Voir les sources'} · $count passage${count > 1 ? 's' : ''}',
+                    style: const TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.w600)),
+                subtitle: Text(
+                    '${documentNames.length} document${documentNames.length > 1 ? 's' : ''}',
+                    style:
+                        const TextStyle(fontSize: 12, color: GestiTheme.muted)),
+                children: [
+                  for (var i = 0; i < sources.length; i++)
+                    RagSourceCard(
+                        key: ValueKey(
+                            '${sources[i]['documentId']}:${sources[i]['chunkId'] ?? sources[i]['snippet']}'),
+                        source: sources[i]),
+                ])));
   }
 
   Widget _message(int index) {
@@ -445,7 +498,9 @@ class _AssistantPageState extends State<AssistantPage> {
         .map((item) => Map<String, dynamic>.from(item))
         .toList();
     final status = '${message['status'] ?? 'INSUFFICIENT_INFORMATION'}';
+    final responseKind = '${message['responseKind'] ?? 'GROUNDED'}';
     final excerpts = status == 'SOURCE_EXCERPTS' && sources.isNotEmpty;
+    final noticeBeforeAnswer = status != 'ANSWERED' || responseKind == 'DRAFT';
     final question = _questionBefore(index);
     final retry = index == _messages.length - 1 &&
         (status == 'PROVIDER_UNAVAILABLE' || status == 'SOURCE_EXCERPTS');
@@ -472,13 +527,39 @@ class _AssistantPageState extends State<AssistantPage> {
                     style: TextStyle(fontWeight: FontWeight.w700))
               ]),
           const SizedBox(height: 14),
-          _status(status),
-          const SizedBox(height: 12),
-          if (excerpts)
+          if (noticeBeforeAnswer) ...[
+            _status(status, responseKind),
+            const SizedBox(height: 10),
+          ],
+          if (excerpts) ...[
             const Text(
-                'La réponse IA n’a pas pu être générée. Vous pouvez lire les passages retrouvés et ouvrir les documents ci-dessous.',
-                style: TextStyle(height: 1.6))
-          else
+                'Je n’ai pas pu générer la réponse. Voici un aperçu des passages retrouvés ; vous pouvez les ouvrir ou réessayer.',
+                style: TextStyle(height: 1.6)),
+            const SizedBox(height: 14),
+            Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                decoration: const BoxDecoration(
+                    border: Border(
+                        left: BorderSide(color: GestiTheme.border, width: 3))),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Aperçu de la source',
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: GestiTheme.muted)),
+                      const SizedBox(height: 5),
+                      Text('${sources.first['snippet'] ?? ''}',
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 13,
+                              height: 1.5,
+                              color: GestiTheme.muted)),
+                    ])),
+          ] else
             MarkdownBody(
                 data: content,
                 selectable: true,
@@ -498,22 +579,11 @@ class _AssistantPageState extends State<AssistantPage> {
                     .showSnackBar(const SnackBar(
                         content: Text(
                             'Consultez les documents cités sous la réponse.')))),
-          if (sources.isNotEmpty) ...[
-            const SizedBox(height: 20),
-            Text(
-                '${sources.length} passage${sources.length > 1 ? 's' : ''} cité${sources.length > 1 ? 's' : ''}',
-                style: const TextStyle(
-                    fontSize: 12,
-                    color: GestiTheme.muted,
-                    fontWeight: FontWeight.w600)),
-            const SizedBox(height: 10),
-            for (var i = 0; i < sources.length; i++)
-              RagSourceCard(
-                  key: ValueKey(
-                      '${sources[i]['documentId']}:${sources[i]['chunkId'] ?? sources[i]['snippet']}'),
-                  source: sources[i],
-                  initiallyExpanded: excerpts && i == 0),
+          if (status == 'ANSWERED' && responseKind == 'GROUNDED') ...[
+            const SizedBox(height: 12),
+            _status(status, responseKind),
           ],
+          if (sources.isNotEmpty) _sources(sources, excerpts),
           const SizedBox(height: 8),
           Wrap(spacing: 4, children: [
             TextButton.icon(
@@ -560,7 +630,7 @@ class _AssistantPageState extends State<AssistantPage> {
                                       maxLength: 2000,
                                       textInputAction: TextInputAction.send,
                                       decoration: const InputDecoration(
-                                          hintText: 'Posez votre question…',
+                                          hintText: 'Écrivez votre message…',
                                           labelText: 'Votre question',
                                           counterText: '',
                                           fillColor: GestiTheme.bg),
@@ -584,8 +654,7 @@ class _AssistantPageState extends State<AssistantPage> {
                                           Icons.arrow_upward_rounded))),
                             ]),
                         const SizedBox(height: 9),
-                        const Text(
-                            'Les réponses s’appuient sur vos documents approuvés.',
+                        const Text('Consignes sourcées · brouillons à relire',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 fontSize: 11, color: GestiTheme.muted)),
@@ -599,7 +668,7 @@ class _AssistantPageState extends State<AssistantPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Assistant'),
-                Text('Collecte & procédures',
+                Text('Votre aide au quotidien',
                     style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
@@ -649,7 +718,7 @@ class _AssistantPageState extends State<AssistantPage> {
                                       SizedBox(width: 12),
                                       Expanded(
                                           child: Text(
-                                              'Recherche des passages et préparation de la réponse…',
+                                              'Je prépare votre réponse…',
                                               style: TextStyle(
                                                   color: GestiTheme.muted,
                                                   fontSize: 13))),

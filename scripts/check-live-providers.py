@@ -192,6 +192,49 @@ def collection_completion(settings, kind, content, schema_name, schema):
     return {"provider": provider, "model": None, "status": "INVALID_PROVIDER_CONFIGURATION"}, None
 
 
+def rag_provider(settings):
+    # Matches the backend default; collection provider selection is independent.
+    return (settings.get("RAG_AI_PROVIDER") or "GEMINI").strip().upper()
+
+
+def rag_model(settings):
+    provider = rag_provider(settings)
+    if provider == "GROQ":
+        return settings.get("GROQ_MODEL_TEXT") or "qwen/qwen3.8-27b"
+    if provider == "GEMINI":
+        return settings.get("GEMINI_MODEL_TEXT") or "gemini-3.8-flash"
+    return None
+
+
+def probe_rag_text(settings):
+    provider, model = rag_provider(settings), rag_model(settings)
+    metadata = {"provider": provider, "model": model}
+    prompt = 'Synthetic software check. Return JSON {"status":"READY"}.'
+    if provider == "GROQ":
+        schema = {"type": "object", "properties": {"status": {"type": "string", "enum": ["READY"]}},
+                  "required": ["status"], "additionalProperties": False}
+        result, fields = groq_completion(settings, "GROQ_MODEL_TEXT", [
+            {"type": "text", "text": prompt}], "rag_text_probe", schema)
+        if fields is not None:
+            result["status"] = "PASS" if fields.get("status") == "READY" else "INVALID_RESPONSE"
+        return result
+    if provider != "GEMINI":
+        return {**metadata, "status": "INVALID_PROVIDER_CONFIGURATION"}
+    key = settings.get("GEMINI_API_KEY", "")
+    if not configured(key):
+        return {**metadata, "status": "NOT_CONFIGURED"}
+    result, body = post(f"{GEMINI}/models/{model}:generateContent", {"x-goog-api-key": key}, {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"responseMimeType": "application/json", "temperature": 0, "maxOutputTokens": 256}})
+    result.update(metadata)
+    if body is not None:
+        try:
+            result["status"] = "PASS" if extract_json(body).get("status") == "READY" else "INVALID_RESPONSE"
+        except (ValueError, TypeError, AttributeError, IndexError):
+            result["status"] = "INVALID_RESPONSE"
+    return result
+
+
 def probe_vision(settings):
     png = base64.b64encode(abstract_png()).decode()
     schema = {"type": "object", "properties": {
@@ -232,23 +275,16 @@ def probe(settings, vision=False):
               "purpose": "Live transport/response check; synthetic inputs, no accuracy claim", "checks": {}}
     checks = report["checks"]
     key = settings.get("GEMINI_API_KEY", "")
-    text_model = settings.get("GEMINI_MODEL_TEXT") or "gemini-3.8-flash"
+    text_model = rag_model(settings)
     embedding_model = settings.get("GEMINI_EMBEDDING_MODEL") or "gemini-embedding-2"
     vision_model = collection_model(settings, "VISION")
     cv_model = collection_model(settings, "TEXT")
     report["models"] = {"text": text_model, "embedding": embedding_model, "cvText": cv_model, "vision": vision_model}
-    report["providers"] = {"text": "GEMINI", "embedding": "GEMINI",
+    report["providers"] = {"text": rag_provider(settings), "embedding": "GEMINI",
                            "cvText": collection_provider(settings), "vision": collection_provider(settings)}
+    checks["text"] = probe_rag_text(settings)
     if configured(key):
         headers = {"x-goog-api-key": key}
-        checks["text"], body = post(f"{GEMINI}/models/{text_model}:generateContent", headers, {
-            "contents": [{"parts": [{"text": 'Synthetic software check. Return JSON {"status":"READY"}.'}]}],
-            "generationConfig": {"responseMimeType": "application/json", "temperature": 0, "maxOutputTokens": 256}})
-        if body is not None:
-            try:
-                checks["text"]["status"] = "PASS" if extract_json(body).get("status") == "READY" else "INVALID_RESPONSE"
-            except (ValueError, TypeError, AttributeError, IndexError):
-                checks["text"]["status"] = "INVALID_RESPONSE"
         checks["embedding"], body = post(f"{GEMINI}/models/{embedding_model}:embedContent", headers, {
             "model": f"models/{embedding_model}", "content": {"parts": [{"text": "Fictional collection route test."}]},
             "outputDimensionality": 768})
@@ -257,7 +293,7 @@ def probe(settings, vision=False):
             valid = len(vector) == 768 and all(isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x) for x in vector)
             checks["embedding"].update(status="PASS" if valid else "INVALID_RESPONSE", dimensions=len(vector))
     else:
-        checks["gemini"] = {"status": "NOT_CONFIGURED"}
+        checks["embedding"] = {"status": "NOT_CONFIGURED"}
     checks["cvText"] = probe_cv_text(settings)
     if vision:
         checks["vision"] = probe_vision(settings)

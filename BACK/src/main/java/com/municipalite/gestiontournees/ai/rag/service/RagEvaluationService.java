@@ -92,7 +92,7 @@ public class RagEvaluationService {
                     answer = "Aucun résultat exploitable : fournisseur ou index sémantique indisponible.";
                     generationStatus = "SKIPPED_RETRIEVAL_UNAVAILABLE";
                 } else {
-                    RagService.GroundedAnswer generated = rag.answerFromContext(question, retrieved, history, "AVAILABLE".equals(retrievalStatus));
+                    RagService.GroundedAnswer generated = rag.answerFromContext(question, retrieved, history, true);
                     status = generated.status(); answer = generated.answer(); citations = generated.sources();
                     generationStatus = generated.generationStatus();
                 }
@@ -107,7 +107,8 @@ public class RagEvaluationService {
     private Settings settings() {
         var config = properties.getRag();
         return new Settings("rag-comparison-v1", config.getTopK(), config.getSimilarityThreshold(), 1.2, .75, 60,
-                "GEMINI", properties.getGemini().getModelText(), RagService.PROMPT_VERSION,
+                config.getProvider().name(), config.getProvider() == AiProperties.RagGenerationProvider.GROQ
+                    ? properties.getGroq().getModelText() : properties.getGemini().getModelText(), RagService.PROMPT_VERSION,
                 config.getEmbeddingModel(), config.getEmbeddingDimensions(), config.getEmbeddingVersion());
     }
 

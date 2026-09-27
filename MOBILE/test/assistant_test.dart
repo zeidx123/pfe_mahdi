@@ -20,6 +20,8 @@ const source = {
 class AssistantAdapter implements HttpClientAdapter {
   final List<Map<String, dynamic>> questions = [];
   List<Map<String, dynamic>> responseSources = [source];
+  List<Map<String, dynamic>>? responses;
+  List<Map<String, dynamic>> history = [];
   RequestOptions? download;
   int downloadStatus = 200;
   bool redirected = false;
@@ -37,7 +39,7 @@ class AssistantAdapter implements HttpClientAdapter {
             Headers.contentTypeHeader: ['text/plain']
           });
     }
-    Object data = [];
+    Object data = history;
     if (options.method == 'POST') {
       questions.add(Map<String, dynamic>.from(options.data));
       data = {
@@ -47,6 +49,7 @@ class AssistantAdapter implements HttpClientAdapter {
             ? 'DO_NOT_DUPLICATE_SOURCE_DUMP'
             : 'Une photo **APRÈS** est requise.',
         'sources': responseSources,
+        ...?responses?[questions.length - 1],
       };
     }
     return ResponseBody.fromString(jsonEncode(data), 200, headers: {
@@ -104,9 +107,12 @@ void main() {
     await tester.pump();
     await tester.tap(find.byTooltip('Envoyer la question'));
     await tester.pumpAndSettle();
-    expect(find.text('Extraits disponibles · réponse IA indisponible'),
-        findsOneWidget);
+    expect(find.text('Réponse IA momentanément indisponible'), findsOneWidget);
     expect(find.text('DO_NOT_DUPLICATE_SOURCE_DUMP'), findsNothing);
+    expect(find.byType(RagSourceCard), findsNothing);
+    await tester.ensureVisible(find.text('Consulter les extraits · 1 passage'));
+    await tester.tap(find.text('Consulter les extraits · 1 passage'));
+    await tester.pumpAndSettle();
     expect(find.byType(RagSourceCard), findsOneWidget);
     await tester.ensureVisible(find.text('Réessayer la réponse'));
     await tester.tap(find.text('Réessayer la réponse'));
@@ -125,7 +131,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('long excerpts reveal the reply introduction on a small screen',
+  testWidgets('long excerpts stay collapsed below a short outage explanation',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -155,13 +161,142 @@ void main() {
     final viewport = tester.getRect(find.byType(SingleChildScrollView).first);
     final heading = tester.getRect(find.text('GestiCollecte'));
     final introduction = tester.getRect(find.text(
-        'La réponse IA n’a pas pu être générée. Vous pouvez lire les passages retrouvés et ouvrir les documents ci-dessous.'));
-    expect(find.byType(RagSourceCard), findsNWidgets(4));
+        'Je n’ai pas pu générer la réponse. Voici un aperçu des passages retrouvés ; vous pouvez les ouvrir ou réessayer.'));
+    expect(find.byType(RagSourceCard), findsNothing);
+    final preview =
+        tester.widget<Text>(find.textContaining('Passage 1.').first);
+    expect(preview.maxLines, 3);
     expect(heading.top, greaterThanOrEqualTo(viewport.top),
         reason: 'The beginning of a tall reply must remain below the app bar.');
     expect(heading.bottom, lessThan(viewport.top + 100));
     expect(introduction.bottom, lessThanOrEqualTo(viewport.bottom),
         reason: 'The explanation of excerpt-only results should be visible.');
+    await tester
+        .ensureVisible(find.text('Consulter les extraits · 4 passages'));
+    await tester.tap(find.text('Consulter les extraits · 4 passages'));
+    await tester.pumpAndSettle();
+    expect(find.byType(RagSourceCard), findsNWidgets(4));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('conversation replies and drafts do not claim source grounding',
+      (tester) async {
+    final adapter = AssistantAdapter()
+      ..responses = [
+        {
+          'status': 'ANSWERED',
+          'responseKind': 'CONVERSATION',
+          'answer': 'Bonjour ! Je peux vous aider pour votre tournée.',
+          'sources': [],
+        },
+        {
+          'status': 'ANSWERED',
+          'responseKind': 'DRAFT',
+          'answer':
+              'Bonjour, le point est inaccessible. Pouvez-vous examiner la situation ?',
+          'sources': [],
+        },
+      ];
+    ApiService.instance.options.baseUrl = 'http://localhost:8080/api';
+    ApiService.instance.httpClientAdapter = adapter;
+    await tester.pumpWidget(
+        MaterialApp(theme: GestiTheme.light, home: const AssistantPage()));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, 'hello');
+    await tester.pump();
+    await tester.tap(find.byTooltip('Envoyer la question'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bonjour ! Je peux vous aider pour votre tournée.'),
+        findsOneWidget);
+    expect(find.text('Réponse documentée'), findsNothing);
+    expect(
+        find.text('Information non disponible dans les sources'), findsNothing);
+    expect(find.byType(RagSourceCard), findsNothing);
+
+    await tester.enterText(find.byType(TextField).first,
+        'Rédige un message : le point est inaccessible.');
+    await tester.pump();
+    await tester.tap(find.byTooltip('Envoyer la question'));
+    await tester.pumpAndSettle();
+    expect(find.text('Brouillon à adapter · à relire avant envoi'),
+        findsOneWidget);
+    expect(find.text('Réponse documentée'), findsNothing);
+    expect(adapter.questions.last['conversationId'], 'conv-1');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('grounded answer is readable before opening its sources',
+      (tester) async {
+    final adapter = AssistantAdapter()
+      ..responses = [
+        {
+          'status': 'ANSWERED',
+          'answer':
+              'La photo APRÈS est requise ; la photo AVANT est facultative.',
+        },
+      ];
+    ApiService.instance.options.baseUrl = 'http://localhost:8080/api';
+    ApiService.instance.httpClientAdapter = adapter;
+    await tester.pumpWidget(
+        MaterialApp(theme: GestiTheme.light, home: const AssistantPage()));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+        find.byType(TextField).first, 'Quelle photo fournir ?');
+    await tester.pump();
+    await tester.tap(find.byTooltip('Envoyer la question'));
+    await tester.pumpAndSettle();
+    final answer = find
+        .text('La photo APRÈS est requise ; la photo AVANT est facultative.');
+    final sources = find.text('Voir les sources · 1 passage');
+    expect(answer, findsOneWidget);
+    expect(
+        tester.getTopLeft(answer).dy, lessThan(tester.getTopLeft(sources).dy));
+    expect(find.byType(RagSourceCard), findsNothing);
+    await tester.ensureVisible(sources);
+    await tester.tap(sources);
+    await tester.pumpAndSettle();
+    expect(find.byType(RagSourceCard), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('history retains the distinction between conversation and draft',
+      (tester) async {
+    final adapter = AssistantAdapter()
+      ..history = [
+        {
+          'id': 'saved-conversation',
+          'title': 'Discussion avec un brouillon',
+          'messages': [
+            {'sender': 'USER', 'content': 'Salut'},
+            {
+              'sender': 'ASSISTANT',
+              'status': 'ANSWERED',
+              'responseKind': 'CONVERSATION',
+              'content': 'Bonjour ! Comment puis-je vous aider ?',
+            },
+            {'sender': 'USER', 'content': 'Aide-moi à rédiger un message'},
+            {
+              'sender': 'ASSISTANT',
+              'status': 'ANSWERED',
+              'responseKind': 'DRAFT',
+              'content': 'Bonjour, pouvez-vous me préciser ce point ?',
+            },
+          ],
+        },
+      ];
+    ApiService.instance.options.baseUrl = 'http://localhost:8080/api';
+    ApiService.instance.httpClientAdapter = adapter;
+    await tester.pumpWidget(
+        MaterialApp(theme: GestiTheme.light, home: const AssistantPage()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Historique des discussions'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Discussion avec un brouillon'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bonjour ! Comment puis-je vous aider ?'), findsOneWidget);
+    expect(find.text('Brouillon à adapter · à relire avant envoi'),
+        findsOneWidget);
+    expect(find.text('Réponse documentée'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

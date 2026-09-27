@@ -21,6 +21,9 @@ public class RagMessage {
     private String sender; // "USER" ou "ASSISTANT"
     private String content;
     private String status;
+    private String responseKind;
+    private boolean awaitingDraftDetails;
+    private String draftUserFacts;
     private List<SourceDto> sources;
     private Double highestScore;
     private LocalDateTime timestamp;

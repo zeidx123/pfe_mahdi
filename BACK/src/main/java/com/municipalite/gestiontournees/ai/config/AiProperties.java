@@ -19,6 +19,7 @@ public class AiProperties {
     private Rag rag = new Rag();
 
     public enum CollectionProvider { GROQ, OPENROUTER }
+    public enum RagGenerationProvider { GEMINI, GROQ }
 
     public String getCollectionTextModel() {
         return collectionProvider == CollectionProvider.GROQ ? groq.getModelText() : openRouter.getModelText();
@@ -63,6 +64,7 @@ public class AiProperties {
 
     @Data
     public static class Rag {
+        private RagGenerationProvider provider = RagGenerationProvider.GEMINI;
         private int topK = 5;
         private double similarityThreshold = 0.70;
         private int chunkSize = 1000;
