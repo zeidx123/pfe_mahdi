@@ -34,7 +34,10 @@ public class CandidateScoringService {
         boolean collectionMet = collection != null && "true".equals(collection.getValue());
         criteria.add(criterion("experienceCollecteConfirmee", "Expérience de collecte", collection, profile.isCollectionRequired(),
                 collectionMet, collectionMet ? profile.getCollectionWeight() : 0, profile.getCollectionWeight(), "Expérience de collecte confirmée."));
-        boolean provisional = criteria.stream().anyMatch(c -> (c.getMaxPoints() > 0 || c.isRequired()) && !"VERIFIED".equals(c.getEvidenceStatus()));
+        // MISSING is a settled fact (nothing in the CV, correctly worth 0 points), not a pending AI guess.
+        // Only UNCERTAIN (unreviewed proposal) and INVALID (flagged-bad extraction) leave the result provisional.
+        boolean provisional = criteria.stream().anyMatch(c -> (c.getMaxPoints() > 0 || c.isRequired())
+                && Set.of("UNCERTAIN", "INVALID").contains(c.getEvidenceStatus()));
         String required = criteria.stream().anyMatch(c -> "UNMET".equals(c.getRequiredStatus())) ? "UNMET"
                 : criteria.stream().anyMatch(c -> "NEEDS_REVIEW".equals(c.getRequiredStatus())) ? "NEEDS_REVIEW" : "MET";
         int score = (int) Math.round(criteria.stream().mapToDouble(CriterionScore::getPoints).sum());
@@ -44,12 +47,107 @@ public class CandidateScoringService {
         candidate.setScoreProvisional(provisional);
         candidate.setRequirementsVersion(profile.getVersion());
         candidate.setRequirementsSnapshot(profile);
-        candidate.setRecommandation(provisional ? "A_EXAMINER" : "UNMET".equals(required) ? "PEU_COMPATIBLE" : score >= 70 ? "RECOMMANDE" : "A_EXAMINER");
-        candidate.setDetailScore("Points confirmés : " + score + "/100. Critères requis : " + required + ". Décision finale humaine.");
+
+        Integer age = extractAge(candidate);
+        candidate.setAge(age);
+        boolean ageEligible = age != null && age >= 20 && age < 35;
+
+        String recommandation;
+        if (provisional) {
+            recommandation = "A_EXAMINER";
+        } else if ("UNMET".equals(required)) {
+            recommandation = "PEU_COMPATIBLE";
+        } else if (score >= 70) {
+            if (ageEligible) {
+                recommandation = "RECOMMANDE";
+            } else if (age != null) {
+                recommandation = "PEU_COMPATIBLE";
+            } else {
+                recommandation = "A_EXAMINER";
+            }
+        } else {
+            recommandation = "A_EXAMINER";
+        }
+        candidate.setRecommandation(recommandation);
+
+        String ageDetail = age != null
+                ? " Âge : " + age + " ans (" + (ageEligible ? "conforme 20-35 ans" : "hors critère [20 - 35 ans[") + ")."
+                : " Âge : non renseigné (requis 20-35 ans pour recommandation).";
+        candidate.setDetailScore("Points confirmés : " + score + "/100. Critères requis : " + required + "." + ageDetail + " Décision finale humaine.");
+
         if (candidate.getEvaluations() == null) candidate.setEvaluations(new ArrayList<>());
         candidate.getEvaluations().add(CandidateEvaluation.builder().requirements(profile)
                 .evaluatedFields(new LinkedHashMap<>(fields)).criteria(criteria).score(score)
                 .requiredCriteriaStatus(required).provisional(provisional).evaluatedAt(LocalDateTime.now()).build());
+    }
+
+    public Integer extractAge(Candidate candidate) {
+        if (candidate == null) return null;
+        if (candidate.getAge() != null && candidate.getAge() >= 10 && candidate.getAge() <= 90) {
+            return candidate.getAge();
+        }
+
+        Map<String, FieldEvidence> fields = candidate.getFieldEvidence();
+        if (fields != null) {
+            FieldEvidence dob = fields.get("dateNaissance");
+            if (dob != null && dob.getValue() != null && !dob.getValue().isBlank()) {
+                Integer calculated = calculateAgeFromDob(dob.getValue());
+                if (calculated != null) return calculated;
+            }
+            FieldEvidence ageEvidence = fields.get("age");
+            if (ageEvidence != null && ageEvidence.getValue() != null && !ageEvidence.getValue().isBlank()) {
+                Integer parsed = parseAge(ageEvidence.getValue());
+                if (parsed != null) return parsed;
+            }
+        }
+
+        if (candidate.getDateNaissance() != null && !candidate.getDateNaissance().isBlank()) {
+            Integer calculated = calculateAgeFromDob(candidate.getDateNaissance());
+            if (calculated != null) return calculated;
+        }
+
+        return null;
+    }
+
+    public Integer calculateAgeFromDob(String dobStr) {
+        if (dobStr == null || dobStr.isBlank()) return null;
+        dobStr = dobStr.trim();
+        Integer direct = parseAge(dobStr);
+        if (direct != null && !dobStr.contains("/") && !dobStr.contains("-") && !dobStr.contains(".")) {
+            return direct;
+        }
+        try {
+            java.time.LocalDate birthDate = null;
+            if (dobStr.contains("/")) {
+                birthDate = java.time.LocalDate.parse(dobStr, java.time.format.DateTimeFormatter.ofPattern("d/M/yyyy"));
+            } else if (dobStr.contains("-")) {
+                if (dobStr.indexOf('-') == 4) {
+                    birthDate = java.time.LocalDate.parse(dobStr, java.time.format.DateTimeFormatter.ISO_LOCAL_DATE);
+                } else {
+                    birthDate = java.time.LocalDate.parse(dobStr, java.time.format.DateTimeFormatter.ofPattern("d-M-yyyy"));
+                }
+            } else if (dobStr.contains(".")) {
+                birthDate = java.time.LocalDate.parse(dobStr, java.time.format.DateTimeFormatter.ofPattern("d.M.yyyy"));
+            } else {
+                birthDate = java.time.LocalDate.parse(dobStr);
+            }
+            if (birthDate != null) {
+                return java.time.Period.between(birthDate, java.time.LocalDate.now()).getYears();
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+    public Integer parseAge(String val) {
+        if (val == null || val.isBlank()) return null;
+        var matcher = java.util.regex.Pattern.compile("\\b(\\d{2})\\b").matcher(val.trim());
+        if (matcher.find()) {
+            try {
+                int a = Integer.parseInt(matcher.group(1));
+                if (a >= 15 && a <= 85) return a;
+            } catch (Exception ignored) {}
+        }
+        return null;
     }
 
     private CriterionScore criterion(String key, String label, FieldEvidence evidence, boolean required, boolean met,

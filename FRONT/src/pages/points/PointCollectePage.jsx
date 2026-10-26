@@ -2,12 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiMapPin } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiMapPin, FiNavigation } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { pointCollecteService } from '../../services/pointCollecteService';
 import PointCollecteFormModal from './PointCollecteFormModal';
 import MapResizeObserver from '../../components/MapResizeObserver';
-import { DEFAULT_MAP_CENTER, hasValidCoordinates } from '../../utils/mapCoordinates';
+import { DEFAULT_MAP_CENTER, hasValidCoordinates, getUserLocation } from '../../utils/mapCoordinates';
 
 // Fix Leaflet default icon issue with Vite
 delete L.Icon.Default.prototype._getIconUrl;
@@ -15,6 +15,18 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
+
+const userLocationIcon = L.divIcon({
+  className: '',
+  html: `
+    <div style="position:relative;width:24px;height:24px;">
+      <div style="position:absolute;width:24px;height:24px;background:#3b82f6;opacity:0.35;border-radius:50%;animation:pulse 1.8s infinite;"></div>
+      <div style="position:absolute;top:4px;left:4px;width:16px;height:16px;background:#2563eb;border:2.5px solid white;border-radius:50%;box-shadow:0 0 6px rgba(0,0,0,0.35);"></div>
+    </div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+  popupAnchor: [0, -12],
 });
 
 const TYPE_COLORS = {
@@ -81,10 +93,22 @@ const PointCollectePage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mapCenter, setMapCenter] = useState(DEFAULT_MAP_CENTER);
   const [formMapCenter, setFormMapCenter] = useState(DEFAULT_MAP_CENTER);
+  const [userLocation, setUserLocation] = useState(null);
   const currentMapCenter = useRef(DEFAULT_MAP_CENTER);
 
   useEffect(() => {
     fetchPoints(true);
+    // Automatically center map on user's current position if allowed by browser
+    getUserLocation()
+      .then((loc) => {
+        setUserLocation(loc);
+        currentMapCenter.current = loc;
+        setFormMapCenter(loc);
+        setMapCenter(loc);
+      })
+      .catch(() => {
+        // Geolocation denied or unavailable; default centers will be used
+      });
   }, []);
 
   const fetchPoints = async (centerOnPoints = false) => {
@@ -94,14 +118,29 @@ const PointCollectePage = () => {
       setPoints(data);
       if (centerOnPoints) {
         const firstPoint = data.find((point) => point.actif && hasValidCoordinates(point.latitude, point.longitude));
-        const center = firstPoint ? [Number(firstPoint.latitude), Number(firstPoint.longitude)] : DEFAULT_MAP_CENTER;
-        currentMapCenter.current = center;
-        setMapCenter(center);
+        if (firstPoint && !userLocation) {
+          const center = [Number(firstPoint.latitude), Number(firstPoint.longitude)];
+          currentMapCenter.current = center;
+          setMapCenter(center);
+        }
       }
     } catch {
       toast.error('Erreur lors du chargement des points de collecte');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLocateMe = async () => {
+    try {
+      const loc = await getUserLocation();
+      setUserLocation(loc);
+      currentMapCenter.current = loc;
+      setFormMapCenter(loc);
+      setMapCenter([...loc]);
+      toast.success('Position localisée');
+    } catch {
+      toast.error('Impossible d’accéder à votre position GPS');
     }
   };
 
@@ -232,6 +271,15 @@ const PointCollectePage = () => {
         {/* RIGHT: Map */}
         <div className="map-panel">
           <div className="map-tip">Cliquez sur la carte pour ajouter un point</div>
+          <button
+            type="button"
+            className="map-locate-btn"
+            onClick={handleLocateMe}
+            title="Centrer sur ma position"
+          >
+            <FiNavigation size={14} />
+            <span>Ma position</span>
+          </button>
           <MapContainer
             center={mapCenter}
             zoom={13}
@@ -246,6 +294,18 @@ const PointCollectePage = () => {
             <MapClickHandler onMapClick={handleMapClick} onMoveEnd={(center) => {
               if (hasValidCoordinates(center.lat, center.lng)) currentMapCenter.current = [center.lat, center.lng];
             }} />
+            {userLocation && (
+              <Marker
+                position={userLocation}
+                icon={userLocationIcon}
+              >
+                <Popup>
+                  <div style={{ padding: 4 }}>
+                    <strong style={{ fontSize: 13, color: '#1d4ed8' }}>📍 Votre position actuelle</strong>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
             {activePoints.map(point => (
               hasValidCoordinates(point.latitude, point.longitude) ? (
                 <Marker
@@ -315,6 +375,8 @@ const PointCollectePage = () => {
         .point-actions { display: flex; gap: 8px; justify-content: flex-end; }
         .map-panel { border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); position: relative; }
         .map-tip { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: white; padding: 6px 14px; border-radius: 20px; box-shadow: var(--shadow-md); font-size: 13px; z-index: 1000; pointer-events: none; white-space: nowrap; }
+        .map-locate-btn { position: absolute; top: 12px; right: 12px; background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 7px 12px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--text-color); box-shadow: var(--shadow-md); cursor: pointer; z-index: 1000; transition: all 0.2s; }
+        .map-locate-btn:hover { background: #f8fafc; color: var(--primary); }
         .icon-btn { padding: 6px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); border: none; background: transparent; cursor: pointer; }
         .icon-btn:hover { background: #f1f5f9; color: var(--primary); }
         .icon-btn.delete:hover:not(:disabled) { background: #fee2e2; color: #ef4444; }

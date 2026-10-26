@@ -4,7 +4,8 @@
 .candidate-profile { margin-bottom: 20px; }
 .candidate-profile summary, .candidate-history summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
 .candidate-profile p, .candidate-modal p { margin: 12px 0; line-height: 1.55; color: #475569; }
-.candidate-profile-inputs, .candidate-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 16px 0; }
+.candidate-profile-inputs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 16px 0; }
+.candidate-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 16px 0; }
 .candidate-profile-inputs label, .candidate-note { display: flex; flex-direction: column; gap: 6px; }
 .candidate-modal { max-width: 1040px; width: min(1040px, calc(100vw - 32px)); }
 .candidate-modal .modal-body { max-height: 72vh; overflow-y: auto; }
@@ -16,6 +17,8 @@
 .candidate-field > label { font-weight: 600; }
 .candidate-field blockquote { margin: 0; border-left: 3px solid #94a3b8; padding: 6px 10px; background: #f8fafc; color: #475569; white-space: pre-wrap; overflow-wrap: anywhere; }
 .candidate-field cite { display: block; font-size: 12px; margin-top: 4px; font-style: normal; }
+.field-warning { margin: 0; font-size: 13px; color: #af5149; }
+.candidate-row-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .candidate-history { margin: 20px 0; }
 .candidate-history ul { padding-left: 24px; }
 .candidate-note { margin-top: 16px; }

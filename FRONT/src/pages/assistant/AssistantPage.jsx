@@ -10,12 +10,18 @@ export default function AssistantPage() {
   const [copiedId, setCopiedId] = useState(null);
   const messagesEndRef = useRef(null);
 
+  const isArabicScript = (text) => {
+    if (!text) return false;
+    const arabicRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/;
+    return arabicRegex.test(text);
+  };
+
   const quickPrompts = [
+    'Kifech najm nchouf el tournee mte3i ?',
+    'Chnowa naamel ken el bac mkasser ?',
+    'كيفاش نعمل باش نشوف tournée متاعي؟',
     'Que faire lorsqu\'un point de collecte est inaccessible ?',
-    'Quelle est la procédure en cas de débordement d\'un conteneur ?',
-    'Quelles sont les consignes de sécurité pendant une tournée ?',
-    'Que doit faire un chauffeur en cas d\'accident ?',
-    'Quelles sont les étapes à suivre à chaque point de collecte ?',
+    'Quelles sont les consignes de sécurité pendant une tournée ?'
   ];
 
   useEffect(() => {
@@ -226,6 +232,7 @@ export default function AssistantPage() {
             currentConv.messages.map((m, idx) => {
               const isUser = m.sender === 'USER' || m.role === 'user';
               const showDate = idx === 0 || Math.abs(new Date(m.timestamp) - new Date(currentConv.messages[idx - 1].timestamp)) > 300000;
+              const isArabic = isArabicScript(m.content);
 
               return (
                 <React.Fragment key={idx}>
@@ -249,6 +256,7 @@ export default function AssistantPage() {
                     {/* Content Box */}
                     <div style={{ maxWidth: '75%' }}>
                       <div
+                        dir={isArabic ? 'rtl' : 'ltr'}
                         style={{
                           padding: '14px 18px',
                           borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
@@ -256,10 +264,12 @@ export default function AssistantPage() {
                           color: isUser ? '#ffffff' : '#0f172a',
                           border: isUser ? 'none' : '1px solid #e2e8f0',
                           fontSize: '0.9rem',
-                          lineHeight: '1.5',
+                          lineHeight: '1.6',
                           wordBreak: 'break-word',
                           whiteSpace: 'pre-wrap',
-                          position: 'relative'
+                          position: 'relative',
+                          textAlign: isArabic ? 'right' : 'left',
+                          fontFamily: isArabic ? 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' : 'inherit'
                         }}
                       >
                         {m.content}
@@ -270,7 +280,7 @@ export default function AssistantPage() {
                             style={{
                               position: 'absolute',
                               top: '10px',
-                              right: '10px',
+                              [isArabic ? 'left' : 'right']: '10px',
                               background: 'transparent',
                               border: 'none',
                               color: '#94a3b8',

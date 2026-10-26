@@ -15,9 +15,10 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
-        // L'identifiant peut être l'email ou le matricule
+        // L'identifiant peut être l'email, le matricule ou le numéro de CIN
         return userRepository.findByEmail(identifier)
                 .or(() -> userRepository.findByMatricule(identifier))
+                .or(() -> userRepository.findByCin(identifier))
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "Utilisateur introuvable avec l'identifiant : " + identifier));
     }

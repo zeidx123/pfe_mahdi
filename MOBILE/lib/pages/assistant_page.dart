@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter_tts/flutter_tts.dart';
 import '../core/app_theme.dart';
 import '../services/api_service.dart';
 import '../widgets/rag_source_card.dart';
@@ -24,21 +26,40 @@ class _AssistantPageState extends State<AssistantPage> {
   String _historyFilter = '';
   bool _loading = false;
   bool _loadingHistory = false;
+
+  // Voice capabilities (Speech-to-Text & Text-to-Speech)
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  final FlutterTts _flutterTts = FlutterTts();
+  bool _speechAvailable = false;
+  bool _isListening = false;
+  bool _isSpeaking = false;
+  String? _currentlySpeakingText;
+  bool _autoSpeak = false;
+
+  static bool _isArabicScript(String text) {
+    return RegExp(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]').hasMatch(text);
+  }
+
   static const _suggestions = [
     (
-      Icons.photo_camera_outlined,
-      'Photos de collecte',
-      'Quelle photo est obligatoire pour confirmer une collecte normale ?'
+      Icons.route_outlined,
+      'Tournée mte3i',
+      'Kifech najm nchouf el tournee mte3i ?'
+    ),
+    (
+      Icons.delete_outline,
+      'Bac mkasser',
+      'Chnowa naamel ken el bac mkasser ?'
     ),
     (
       Icons.wrong_location_outlined,
       'Point inaccessible',
-      'Que faire si un point est inaccessible ?'
+      'Que faire si un point de collecte est inaccessible ?'
     ),
     (
-      Icons.route_outlined,
-      'Fin de tournée',
-      'Que faut-il faire après le dernier point de la tournée ?'
+      Icons.photo_camera_outlined,
+      'Photos de collecte',
+      'Quelle photo est obligatoire pour confirmer une collecte normale ?'
     ),
     (
       Icons.edit_note_outlined,
@@ -50,7 +71,139 @@ class _AssistantPageState extends State<AssistantPage> {
   @override
   void initState() {
     super.initState();
+    _initVoice();
     _loadHistory();
+  }
+
+  Future<void> _initVoice() async {
+    try {
+      _speechAvailable = await _speech.initialize(
+        onError: (e) {
+          if (mounted) setState(() => _isListening = false);
+        },
+        onStatus: (status) {
+          if (status == 'done' || status == 'notListening') {
+            if (mounted) setState(() => _isListening = false);
+          }
+        },
+      );
+    } catch (_) {
+      _speechAvailable = false;
+    }
+
+    try {
+      await _flutterTts.setSpeechRate(0.5);
+      await _flutterTts.setVolume(1.0);
+      await _flutterTts.setPitch(1.0);
+      _flutterTts.setCompletionHandler(() {
+        if (mounted) {
+          setState(() {
+            _isSpeaking = false;
+            _currentlySpeakingText = null;
+          });
+        }
+      });
+      _flutterTts.setErrorHandler((msg) {
+        if (mounted) {
+          setState(() {
+            _isSpeaking = false;
+            _currentlySpeakingText = null;
+          });
+        }
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _toggleListening() async {
+    if (_isSpeaking) {
+      await _flutterTts.stop();
+      if (mounted) {
+        setState(() {
+          _isSpeaking = false;
+          _currentlySpeakingText = null;
+        });
+      }
+    }
+
+    if (!_speechAvailable) {
+      await _initVoice();
+    }
+
+    if (_isListening) {
+      await _speech.stop();
+      if (mounted) setState(() => _isListening = false);
+      return;
+    }
+
+    if (!_speechAvailable) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Microphone ou reconnaissance vocale indisponible.'),
+        ));
+      }
+      return;
+    }
+
+    setState(() => _isListening = true);
+    HapticFeedback.lightImpact();
+
+    await _speech.listen(
+      onResult: (result) {
+        if (mounted) {
+          setState(() {
+            _controller.text = result.recognizedWords;
+            _controller.selection =
+                TextSelection.collapsed(offset: _controller.text.length);
+          });
+        }
+      },
+      listenOptions: stt.SpeechListenOptions(
+        listenMode: stt.ListenMode.dictation,
+        cancelOnError: true,
+        partialResults: true,
+        autoPunctuation: true,
+      ),
+    );
+  }
+
+  Future<void> _speak(String text) async {
+    if (_isSpeaking && _currentlySpeakingText == text) {
+      await _flutterTts.stop();
+      if (mounted) {
+        setState(() {
+          _isSpeaking = false;
+          _currentlySpeakingText = null;
+        });
+      }
+      return;
+    }
+
+    if (_isSpeaking) {
+      await _flutterTts.stop();
+    }
+
+    if (text.trim().isEmpty) return;
+
+    final isArabic = _isArabicScript(text);
+    try {
+      await _flutterTts.setLanguage(isArabic ? 'ar' : 'fr-FR');
+    } catch (_) {}
+
+    // Nettoyer les balises Markdown et liens pour une lecture fluide
+    final cleanText = text
+        .replaceAll(RegExp(r'[*_#`~\[\]]'), '')
+        .replaceAll(RegExp(r'\(http[^)]+\)'), '')
+        .replaceAll(RegExp(r'<!--.*?-->'), '')
+        .trim();
+
+    if (mounted) {
+      setState(() {
+        _isSpeaking = true;
+        _currentlySpeakingText = text;
+      });
+    }
+
+    await _flutterTts.speak(cleanText);
   }
 
   Future<void> _loadHistory() async {
@@ -159,17 +312,21 @@ class _AssistantPageState extends State<AssistantPage> {
         throw const FormatException(
             'La réponse reçue est inexploitable. Réessayez.');
       }
+      final answer = (data['answer'] as String?) ?? '';
       setState(() {
         _conversationId = data['conversationId'] as String? ?? _conversationId;
         _messages.add({
           'sender': 'ASSISTANT',
-          'content': data['answer'] ?? '',
+          'content': answer,
           'sources': data['sources'] ?? [],
           'status': data['status'],
           'responseKind': data['responseKind'] ?? 'GROUNDED',
         });
       });
       _loadHistory();
+      if (_autoSpeak && answer.isNotEmpty) {
+        _speak(answer);
+      }
     } catch (error) {
       if (!mounted) return;
       setState(() => _messages.add({
@@ -212,6 +369,8 @@ class _AssistantPageState extends State<AssistantPage> {
 
   @override
   void dispose() {
+    _speech.stop();
+    _flutterTts.stop();
     _controller.dispose();
     _focus.dispose();
     _scroll.dispose();
@@ -475,6 +634,7 @@ class _AssistantPageState extends State<AssistantPage> {
     final message = _messages[index];
     final isUser = message['sender'] == 'USER';
     final content = '${message['content'] ?? ''}';
+    final isArabic = _isArabicScript(content);
     if (isUser) {
       return Align(
           alignment: Alignment.centerRight,
@@ -490,8 +650,11 @@ class _AssistantPageState extends State<AssistantPage> {
                       topRight: Radius.circular(16),
                       bottomLeft: Radius.circular(16),
                       bottomRight: Radius.circular(4))),
-              child: SelectableText(content,
-                  style: const TextStyle(height: 1.55))));
+              child: Directionality(
+                  textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+                  child: SelectableText(content,
+                      textAlign: isArabic ? TextAlign.right : TextAlign.left,
+                      style: const TextStyle(height: 1.55)))));
     }
     final sources = ((message['sources'] as List?) ?? [])
         .whereType<Map>()
@@ -560,25 +723,27 @@ class _AssistantPageState extends State<AssistantPage> {
                               color: GestiTheme.muted)),
                     ])),
           ] else
-            MarkdownBody(
-                data: content,
-                selectable: true,
-                styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context))
-                    .copyWith(
-                        p: const TextStyle(
-                            fontSize: 15, height: 1.65, color: GestiTheme.ink),
-                        h1: Theme.of(context).textTheme.titleLarge,
-                        h2: Theme.of(context).textTheme.titleMedium,
-                        h3: Theme.of(context).textTheme.titleMedium,
-                        blockquoteDecoration: BoxDecoration(
-                            color: GestiTheme.soft,
-                            borderRadius: BorderRadius.circular(8))),
-                sizedImageBuilder: (_) =>
-                    const Text('[Illustration dans le document source]'),
-                onTapLink: (_, __, ___) => ScaffoldMessenger.of(context)
-                    .showSnackBar(const SnackBar(
-                        content: Text(
-                            'Consultez les documents cités sous la réponse.')))),
+            Directionality(
+                textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+                child: MarkdownBody(
+                    data: content,
+                    selectable: true,
+                    styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context))
+                        .copyWith(
+                            p: const TextStyle(
+                                fontSize: 15, height: 1.65, color: GestiTheme.ink),
+                            h1: Theme.of(context).textTheme.titleLarge,
+                            h2: Theme.of(context).textTheme.titleMedium,
+                            h3: Theme.of(context).textTheme.titleMedium,
+                            blockquoteDecoration: BoxDecoration(
+                                color: GestiTheme.soft,
+                                borderRadius: BorderRadius.circular(8))),
+                    sizedImageBuilder: (_) =>
+                        const Text('[Illustration dans le document source]'),
+                    onTapLink: (_, __, ___) => ScaffoldMessenger.of(context)
+                        .showSnackBar(const SnackBar(
+                            content: Text(
+                                'Consultez les documents cités sous la réponse.'))))),
           if (status == 'ANSWERED' && responseKind == 'GROUNDED') ...[
             const SizedBox(height: 12),
             _status(status, responseKind),
@@ -590,6 +755,20 @@ class _AssistantPageState extends State<AssistantPage> {
                 onPressed: () => _copy(content),
                 icon: const Icon(Icons.copy_outlined, size: 16),
                 label: const Text('Copier')),
+            TextButton.icon(
+                onPressed: () => _speak(content),
+                icon: Icon(
+                    _isSpeaking && _currentlySpeakingText == content
+                        ? Icons.stop_circle_rounded
+                        : Icons.volume_up_rounded,
+                    size: 18,
+                    color: _isSpeaking && _currentlySpeakingText == content
+                        ? Colors.red
+                        : null),
+                label: Text(
+                    _isSpeaking && _currentlySpeakingText == content
+                        ? 'Arrêter'
+                        : 'Écouter')),
             if (retry && question.isNotEmpty)
               TextButton.icon(
                   onPressed: _loading ? null : () => _sendQuestion(question),
@@ -629,17 +808,46 @@ class _AssistantPageState extends State<AssistantPage> {
                                       maxLines: 4,
                                       maxLength: 2000,
                                       textInputAction: TextInputAction.send,
-                                      decoration: const InputDecoration(
-                                          hintText: 'Écrivez votre message…',
-                                          labelText: 'Votre question',
+                                      decoration: InputDecoration(
+                                          hintText: _isListening
+                                              ? 'Écoute en cours… Parlez maintenant'
+                                              : 'Écrivez ou dictez votre message…',
+                                          labelText: _isListening
+                                              ? 'Enregistrement vocal'
+                                              : 'Votre question',
                                           counterText: '',
-                                          fillColor: GestiTheme.bg),
+                                          fillColor: _isListening
+                                              ? Colors.red.shade50
+                                              : GestiTheme.bg),
                                       onChanged: (_) => setState(() {}),
                                       onSubmitted: (_) => _sendQuestion())),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: 8),
                               SizedBox(
-                                  width: 52,
-                                  height: 56,
+                                  width: 48,
+                                  height: 52,
+                                  child: IconButton.filledTonal(
+                                      style: IconButton.styleFrom(
+                                          backgroundColor: _isListening
+                                              ? Colors.red.shade100
+                                              : GestiTheme.soft,
+                                          foregroundColor: _isListening
+                                              ? Colors.red.shade700
+                                              : GestiTheme.primaryDark,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12))),
+                                      tooltip: _isListening
+                                          ? 'Arrêter la dictée'
+                                          : 'Dicter un message vocal',
+                                      onPressed:
+                                          _loading ? null : _toggleListening,
+                                      icon: Icon(_isListening
+                                          ? Icons.mic_rounded
+                                          : Icons.mic_none_rounded))),
+                              const SizedBox(width: 8),
+                              SizedBox(
+                                  width: 48,
+                                  height: 52,
                                   child: IconButton.filled(
                                       style: IconButton.styleFrom(
                                           shape: RoundedRectangleBorder(
@@ -675,6 +883,22 @@ class _AssistantPageState extends State<AssistantPage> {
                         color: GestiTheme.muted))
               ]),
           actions: [
+            IconButton(
+                onPressed: () {
+                  setState(() => _autoSpeak = !_autoSpeak);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    duration: const Duration(seconds: 2),
+                    content: Text(_autoSpeak
+                        ? 'Lecture vocale automatique activée 🔊'
+                        : 'Lecture vocale automatique désactivée 🔇'),
+                  ));
+                },
+                tooltip: _autoSpeak
+                    ? 'Désactiver la lecture vocale auto'
+                    : 'Activer la lecture vocale auto',
+                icon: Icon(_autoSpeak
+                    ? Icons.volume_up_rounded
+                    : Icons.volume_off_rounded)),
             IconButton(
                 onPressed: _loading ? null : _startNewChat,
                 tooltip: 'Nouvelle discussion',

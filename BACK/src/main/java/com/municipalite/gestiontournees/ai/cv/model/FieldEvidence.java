@@ -3,7 +3,7 @@ package com.municipalite.gestiontournees.ai.cv.model;
 import lombok.*;
 import java.time.LocalDateTime;
 
-@Data @Builder @NoArgsConstructor @AllArgsConstructor
+@Data @Builder(toBuilder = true) @NoArgsConstructor @AllArgsConstructor
 public class FieldEvidence {
     private String value;
     private String status; // VERIFIED, MISSING, INVALID, UNCERTAIN

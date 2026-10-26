@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiNavigation } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import MapResizeObserver from '../../components/MapResizeObserver';
-import { DEFAULT_MAP_CENTER, hasValidCoordinates } from '../../utils/mapCoordinates';
+import { DEFAULT_MAP_CENTER, hasValidCoordinates, getUserLocation } from '../../utils/mapCoordinates';
 
 const TYPE_DECHET_OPTIONS = [
   { value: 'GENERAL', label: 'Général' },
@@ -80,8 +80,29 @@ const PointCollecteFormModal = ({ isOpen, onClose, onSubmit, point = null, isLoa
       setMapCenter([lat, lng]);
     } else {
       setFormData({ reference: '', adresse: '', zone: '', latitude: '', longitude: '', typeDechet: 'GENERAL', actif: true });
+      // When opening to create a new point, center the map on user location if available
+      getUserLocation()
+        .then((loc) => {
+          setMapCenter(loc);
+        })
+        .catch(() => {});
     }
   }, [point, isOpen, pendingCoords, defaultCenter]);
+
+  const handleUseMyLocation = async () => {
+    try {
+      const [lat, lng] = await getUserLocation();
+      setFormData(prev => ({
+        ...prev,
+        latitude: lat.toFixed(6),
+        longitude: lng.toFixed(6)
+      }));
+      setMapCenter([lat, lng]);
+      toast.success('Position GPS appliquée');
+    } catch {
+      toast.error('Impossible d’accéder à votre position GPS');
+    }
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -210,7 +231,30 @@ const PointCollecteFormModal = ({ isOpen, onClose, onSubmit, point = null, isLoa
             </div>
 
             <section className="map-column" aria-labelledby="point-map-title">
-              <h3 id="point-map-title" className="form-section-title">Position sur la carte</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <h3 id="point-map-title" className="form-section-title" style={{ margin: 0 }}>Position sur la carte</h3>
+                <button
+                  type="button"
+                  onClick={handleUseMyLocation}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '4px 10px',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    background: '#f1f5f9',
+                    color: 'var(--primary, #166534)',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: 6,
+                    cursor: 'pointer'
+                  }}
+                  title="Utiliser ma position GPS actuelle"
+                >
+                  <FiNavigation size={12} />
+                  <span>Ma position</span>
+                </button>
+              </div>
               <p className="field-help">Un clic place le repère et met à jour les coordonnées.</p>
               <div className="modal-map-wrapper">
                 <MapContainer

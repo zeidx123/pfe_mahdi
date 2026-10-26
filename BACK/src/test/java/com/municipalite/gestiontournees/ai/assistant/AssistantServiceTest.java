@@ -14,7 +14,8 @@ class AssistantServiceTest {
         when(gemini.generateText(anyString())).thenThrow(new AiServiceException("Unavailable"));
         when(tools.buildSystemContext()).thenReturn("Aucune donnée dans cet exercice.");
         when(histories.save(any())).thenAnswer(call -> call.getArgument(0));
-        var conversation = new AssistantService(gemini, tools, histories).chat(null, "supervisor", "Quelle procédure en cas de panne ?");
+        var dialect = new com.municipalite.gestiontournees.ai.assistant.service.TunisianDialectService();
+        var conversation = new AssistantService(gemini, tools, histories, dialect).chat(null, "supervisor", "Quelle procédure en cas de panne ?");
         assertThat(conversation.getMessages().get(1).getStatus()).isEqualTo("PROVIDER_UNAVAILABLE");
         assertThat(conversation.getMessages().get(1).getContent()).doesNotContain("triangle", "dépanneuse", "30m");
     }

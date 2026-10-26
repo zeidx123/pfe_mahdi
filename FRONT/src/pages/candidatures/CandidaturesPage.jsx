@@ -11,13 +11,19 @@ const FIELDS = [
   ['experienceCollecteConfirmee', 'Expérience de collecte', 'boolean'],
   ['nom', 'Nom'], ['prenom', 'Prénom'], ['cin', 'CIN'], ['email', 'Email'], ['telephone', 'Téléphone'],
   ['numeroPermis', 'Numéro de permis'], ['dateExpirationPermis', 'Expiration du permis', 'date'],
-  ['adresse', 'Adresse'], ['dateNaissance', 'Date de naissance', 'date'],
+  ['adresse', 'Adresse'], ['dateNaissance', 'Date de naissance', 'date'], ['age', 'Âge (ans)', 'number', '25'],
   ['experienceChauffeur', 'Expérience de conduite — détail'], ['experienceCollecte', 'Collecte — détail'],
   ['formations', 'Formations'], ['certifications', 'Certifications'],
 ];
 const FIELD_STATES = { MISSING: 'Manquant', UNCERTAIN: 'À vérifier', INVALID: 'Invalide', VERIFIED: 'Vérifié' };
 const REQUIRED = { MET: 'Satisfaits', UNMET: 'Non satisfaits', NEEDS_REVIEW: 'À vérifier', NOT_REQUIRED: 'Facultatif' };
 const DECISIONS = { EN_ATTENTE: 'En attente', EN_ENTRETIEN: 'Entretien', ACCEPTE: 'Accepté', REJETE: 'Rejeté' };
+const RECOMMANDATIONS = {
+  RECOMMANDE: { label: 'Recommandé', variant: 'badge-success' },
+  A_EXAMINER: { label: 'À examiner', variant: 'badge-warning' },
+  PEU_COMPATIBLE: { label: 'Peu compatible', variant: 'badge-danger' },
+};
+const RECOMMANDATION_RANK = { RECOMMANDE: 0, A_EXAMINER: 1, PEU_COMPATIBLE: 2 };
 const EXTRACTION_STATES = {
   EXTRACTED: 'Informations extraites · à vérifier',
   PROVIDER_UNAVAILABLE: 'Extraction IA indisponible',
@@ -72,14 +78,30 @@ function reviewFields(candidate) {
     value: candidate.fieldEvidence?.[key]?.value ?? candidate[key]?.toString() ?? '',
     status: candidate.fieldEvidence?.[key]?.status || (candidate[key] == null ? 'MISSING' : 'UNCERTAIN'),
     reviewNote: candidate.fieldEvidence?.[key]?.reviewNote || '',
+    edited: false,
   }]));
+}
+
+// Fields the AI extracted that nobody has looked at yet; the only thing a "Confirmer" click promotes.
+function pendingFields(candidate) {
+  return Object.entries(candidate.fieldEvidence || {}).filter(([, field]) => field.status === 'UNCERTAIN' && field.value);
+}
+function confirmPayload(candidate) {
+  return Object.fromEntries(Object.entries(candidate.fieldEvidence || {}).map(([key, field]) =>
+    [key, field.status === 'UNCERTAIN' && field.value ? { value: field.value, status: 'VERIFIED', reviewNote: field.reviewNote } : field]));
 }
 
 function Score({ candidate }) {
   return <span className="status-badge">
-    {candidate.scoreCompatibilite == null ? 'À réévaluer' : `${candidate.scoreCompatibilite}/100`}
+    {candidate.scoreCompatibilite == null ? 'À réévaluer' : `${candidate.scoreCompatibilite}%`}
     {candidate.scoreProvisional && candidate.scoreCompatibilite != null ? ' · provisoire' : ''}
   </span>;
+}
+
+function Recommandation({ candidate }) {
+  const info = RECOMMANDATIONS[candidate.recommandation];
+  if (!info) return <span className="status-badge badge-default">À évaluer</span>;
+  return <span className={`status-badge ${info.variant}`}>{info.label}</span>;
 }
 
 export default function CandidaturesPage() {
@@ -96,6 +118,7 @@ export default function CandidaturesPage() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('ALL');
   const notesDirty = !!selected && notes !== (selected.notesSuperviseur || '');
+  const hasPendingReview = Object.values(fields).some((field) => field.status === 'UNCERTAIN' && field.value !== '');
 
   useEffect(() => {
     let active = true;
@@ -146,8 +169,14 @@ export default function CandidaturesPage() {
     });
   };
   const saveReview = () => run('review', async () => {
-    updateCandidate(await candidateService.review(selected.id, fields));
-    toast.success('Vérification enregistrée et score recalculé.');
+    // Editing a field or leaving an AI-proposed value untouched both count as the supervisor
+    // having looked at it; anything left MISSING or flagged INVALID stays that way until fixed.
+    const payload = Object.fromEntries(Object.entries(fields).map(([key, field]) => {
+      const confirmed = field.edited || field.status === 'UNCERTAIN';
+      return [key, { value: field.value, status: confirmed ? (field.value === '' ? 'MISSING' : 'VERIFIED') : field.status, reviewNote: field.reviewNote }];
+    }));
+    updateCandidate(await candidateService.review(selected.id, payload));
+    toast.success('Informations enregistrées et score recalculé.');
   });
   const retryExtraction = () => {
     if (!selected || selected.agentId || dirty || busy) return;
@@ -175,14 +204,28 @@ export default function CandidaturesPage() {
     updateCandidate(await candidateService.decision(selected.id, statut, notes));
     toast.success('Décision enregistrée.');
   });
-  const changeField = (key, property, value) => {
+  const confirmCandidate = (candidate) => run('review', async () => {
+    updateCandidate(await candidateService.review(candidate.id, confirmPayload(candidate)));
+    toast.success('Informations confirmées et score recalculé.');
+  });
+  const confirmAll = (list) => run('review', async () => {
+    for (const candidate of list) {
+      // Sequential: the backend has no batch endpoint, and each save must land before the next starts.
+      // eslint-disable-next-line no-await-in-loop
+      const updated = await candidateService.review(candidate.id, confirmPayload(candidate));
+      setCandidates((items) => items.map((item) => item.id === updated.id ? updated : item));
+    }
+    toast.success(`${list.length} candidature(s) confirmée(s).`);
+  });
+  const changeField = (key, value) => {
     setDirty(true);
-    setFields((current) => ({ ...current, [key]: { ...current[key], [property]: value,
-      ...(property === 'value' ? { status: value === '' ? 'MISSING' : 'UNCERTAIN' } : {}),
-    } }));
+    setFields((current) => ({ ...current, [key]: { ...current[key], value, edited: true } }));
   };
   const filtered = candidates.filter((candidate) => (filter === 'ALL' || candidate.statut === filter)
-    && `${candidate.nom || ''} ${candidate.prenom || ''} ${candidate.cvFileName || ''} ${candidate.email || ''}`.toLowerCase().includes(search.toLowerCase()));
+    && `${candidate.nom || ''} ${candidate.prenom || ''} ${candidate.cvFileName || ''} ${candidate.email || ''}`.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => (RECOMMANDATION_RANK[a.recommandation] ?? 1) - (RECOMMANDATION_RANK[b.recommandation] ?? 1)
+      || (b.scoreCompatibilite ?? -1) - (a.scoreCompatibilite ?? -1));
+  const confirmable = filtered.filter((candidate) => !candidate.agentId && pendingFields(candidate).length > 0);
 
   return <div className="agent-page candidates-page">
     <div className="page-header flex-between">
@@ -216,28 +259,39 @@ export default function CandidaturesPage() {
     <div className="card">
       <div className="table-toolbar flex-between">
         <div className="search-box"><FiSearch className="search-icon" /><input aria-label="Rechercher un candidat" placeholder="Nom, email ou fichier CV…" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
-        <select aria-label="Filtrer les décisions" value={filter} onChange={(e) => setFilter(e.target.value)}><option value="ALL">Toutes les décisions</option>{Object.entries(DECISIONS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select>
+        <div className="candidate-row-actions">
+          <select aria-label="Filtrer les décisions" value={filter} onChange={(e) => setFilter(e.target.value)}><option value="ALL">Toutes les décisions</option>{Object.entries(DECISIONS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select>
+          {confirmable.length > 0 ? <button className="btn-secondary" disabled={!!busy} onClick={() => confirmAll(confirmable)}><FiCheckCircle /> Confirmer tout ({confirmable.length})</button> : null}
+        </div>
       </div>
       <div className="table-container">{loading ? <p className="loading-state">Chargement…</p> : filtered.length === 0 ? <p className="empty-state">Aucune candidature. Importez un PDF ou DOCX.</p>
-        : <table className="data-table"><thead><tr><th>Candidat</th><th>Permis / conduite</th><th>Points confirmés</th><th>Critères requis</th><th>Décision</th><th>Action</th></tr></thead><tbody>
+        : <table className="data-table"><thead><tr><th>Candidat</th><th>Permis / conduite</th><th>Points confirmés</th><th>Recommandation</th><th>Critères requis</th><th>Décision</th><th>Action</th></tr></thead><tbody>
           {filtered.map((candidate) => <tr key={candidate.id}><td><strong>{`${candidate.prenom || ''} ${candidate.nom || ''}`.trim() || candidate.cvFileName}</strong><small>{candidate.email || 'Email à renseigner'}</small><small>{EXTRACTION_STATES[candidate.extractionStatus] || 'Extraction à vérifier'}</small></td>
-            <td>{candidate.typePermis || 'À vérifier'}<small>{candidate.anneesExperience == null ? 'Durée inconnue' : `${candidate.anneesExperience} an(s)`}</small></td>
+            <td>{candidate.typePermis || 'À vérifier'}<small>{candidate.anneesExperience == null ? 'Durée inconnue' : `${candidate.anneesExperience} an(s)`}</small>{candidate.age != null ? <small>{candidate.age} ans</small> : null}</td>
             <td><Score candidate={candidate} /><small>Profil {candidate.requirementsVersion ? `v${candidate.requirementsVersion}` : 'ancien'}</small></td>
+            <td><Recommandation candidate={candidate} /></td>
             <td>{REQUIRED[candidate.requiredCriteriaStatus] || 'À vérifier'}</td><td>{DECISIONS[candidate.statut] || candidate.statut}</td>
-            <td><button className="btn-secondary" disabled={!!busy} onClick={() => showCandidate(candidate)}><FiEye /> Examiner</button></td></tr>)}
+            <td className="candidate-row-actions">
+              <button className="btn-secondary" disabled={!!busy} onClick={() => showCandidate(candidate)}><FiEye /> Examiner</button>
+              {!candidate.agentId && pendingFields(candidate).length > 0
+                ? <button className="btn-secondary" disabled={!!busy} onClick={() => confirmCandidate(candidate)}><FiCheckCircle /> Confirmer</button> : null}
+            </td></tr>)}
         </tbody></table>}</div>
     </div>
 
     {selected ? <div className="modal-overlay"><div className="modal-content candidate-modal" role="dialog" aria-modal="true" aria-labelledby="candidate-title">
-      <div className="modal-header"><div><h2 id="candidate-title">{`${selected.prenom || ''} ${selected.nom || ''}`.trim() || 'Vérification du CV'}</h2><small>{selected.cvFileName}</small></div>
+      <div className="modal-header"><div><h2 id="candidate-title">{`${selected.prenom || ''} ${selected.nom || ''}`.trim() || 'Détails du candidat'}</h2><small>{selected.cvFileName}</small></div>
         <button className="close-btn" aria-label="Fermer la candidature" disabled={!!busy} onClick={() => {
           if ((!dirty && !notesDirty) || window.confirm('Fermer sans enregistrer les modifications ?')) setSelected(null);
         }}><FiX /></button></div>
       <div className="modal-body" aria-busy={busy === 'reanalyze'}>
         <div className="candidate-summary"><div><strong>Points confirmés</strong><div><Score candidate={selected} /></div></div>
+          <div><strong>Recommandation</strong><div><Recommandation candidate={selected} /></div></div>
+          <div><strong>Âge</strong><div>{selected.age != null ? `${selected.age} ans` : 'Non renseigné'}{selected.age != null ? (selected.age >= 20 && selected.age < 35 ? ' · Conforme [20 - 35 ans[' : ' · Hors critère [20 - 35 ans[') : ''}</div></div>
           <div><strong>Critères obligatoires</strong><div>{REQUIRED[selected.requiredCriteriaStatus] || 'À vérifier'}</div></div>
           <div><strong>Profil utilisé</strong><div>{selected.requirementsVersion ? `Version ${selected.requirementsVersion}` : 'Ancien barème'}</div></div></div>
-        <p className="candidate-notice">Le score est calculé par les règles du poste à partir des champs vérifiés. Les informations manquantes restent à examiner. L'âge, le CIN et le téléphone ne donnent aucun point. La décision de recrutement reste humaine.</p>
+        {selected.detailScore ? <p className="candidate-notice"><strong>Détail scoring :</strong> {selected.detailScore}</p> : null}
+        <p className="candidate-notice">Le score est calculé à partir des informations vérifiées ci-dessous. Pour être recommandé, le candidat doit atteindre au moins 70 points et être âgé de 20 ans à moins de 35 ans (≥ 20 et &lt; 35 ans). La décision finale de recrutement reste humaine.</p>
         <ExtractionNotice candidate={selected} />
         <div className="candidate-actions"><button className="btn-secondary" disabled={!!busy} onClick={() => run('download', () => candidateService.download(selected))}><FiDownload /> Télécharger le CV</button>
           <button className="btn-secondary" disabled={!!busy || dirty} onClick={() => run('evaluate', async () => updateCandidate(await candidateService.evaluate(selected.id)))}>Réévaluer avec le profil v{profile?.version || 'courant'}</button>
@@ -250,28 +304,27 @@ export default function CandidaturesPage() {
             <td>{criterionValue(criterion.value)}<small>{FIELD_STATES[criterion.evidenceStatus]} · {REQUIRED[criterion.requiredStatus]}</small></td>
             <td>{criterion.points} / {criterion.maxPoints}</td><td>{criterion.explanation}</td></tr>)}
         </tbody></table></div>
-        <h3>Vérification des informations</h3><p>Corrigez la valeur si nécessaire, puis choisissez « Vérifié ». Les extraits restent disponibles pour comparer avec le document.</p>
+        <h3>Informations du candidat</h3><p>Les valeurs proposées par l'IA sont déjà remplies ; corrigez-les si nécessaire. L'extrait du CV reste affiché pour comparaison.</p>
         <div className="candidate-fields">{FIELDS.map(([key, label, type = 'text', placeholder]) => {
           const field = fields[key]; const evidence = selected.fieldEvidence?.[key];
           return <div className="candidate-field" key={key}>
             <label htmlFor={`candidate-${key}`}>{label}</label>
-            {type === 'boolean' ? <select id={`candidate-${key}`} value={field.value} disabled={!!selected.agentId || !!busy} onChange={(e) => changeField(key, 'value', e.target.value)}>
+            {type === 'boolean' ? <select id={`candidate-${key}`} value={field.value} disabled={!!selected.agentId || !!busy} onChange={(e) => changeField(key, e.target.value)}>
               <option value="">Inconnu</option><option value="true">Oui</option><option value="false">Non</option></select>
               : <input id={`candidate-${key}`} type={type} step={type === 'number' ? '0.1' : undefined} min={type === 'number' ? '0' : undefined}
-                placeholder={placeholder} value={field.value} disabled={!!selected.agentId || !!busy} onChange={(e) => changeField(key, 'value', e.target.value)} />}
-            <select aria-label={`Vérification : ${label}`} value={field.status} disabled={!!selected.agentId || !!busy} onChange={(e) => changeField(key, 'status', e.target.value)}>
-              {Object.entries(FIELD_STATES).map(([value, name]) => <option key={value} value={value}>{name}</option>)}
-            </select>
-            {evidence?.snippet ? <blockquote>{evidence.snippet}<cite>{evidence.location || (evidence.pageNumber ? `Page ${evidence.pageNumber}` : 'Extrait du CV')}</cite></blockquote> : <small>Aucun extrait disponible.</small>}
-            <input aria-label={`Note de vérification : ${label}`} placeholder="Note de vérification (facultative)" value={field.reviewNote} disabled={!!selected.agentId || !!busy} onChange={(e) => changeField(key, 'reviewNote', e.target.value)} />
+                placeholder={placeholder} value={field.value} disabled={!!selected.agentId || !!busy} onChange={(e) => changeField(key, e.target.value)} />}
+            {evidence?.snippet ? <blockquote>{evidence.snippet}<cite>{evidence.location || (evidence.pageNumber ? `Page ${evidence.pageNumber}` : 'Extrait du CV')}</cite></blockquote> : null}
+            {field.status === 'INVALID' && field.reviewNote ? <p className="field-warning" role="alert">⚠ {field.reviewNote}</p> : null}
           </div>;
         })}</div>
-        <button className="btn-primary" disabled={!!busy || !dirty || !!selected.agentId} onClick={saveReview}><FiCheckCircle /> Enregistrer la vérification</button>
-        {dirty ? <p role="status">Enregistrez la vérification avant de prendre une décision.</p> : null}
+        <div className="candidate-actions">
+          <button className="btn-primary" disabled={!!busy || !!selected.agentId || (!dirty && !hasPendingReview)} onClick={saveReview}><FiCheckCircle /> Enregistrer les modifications</button>
+        </div>
+        {dirty ? <p role="status">Enregistrez vos modifications avant de prendre une décision.</p> : null}
         {selected.evaluations?.length ? <details className="candidate-history"><summary>Historique des évaluations ({selected.evaluations.length})</summary>
           <ul>{selected.evaluations.map((evaluation, index) => <li key={`${evaluation.evaluatedAt}-${index}`}>Profil v{evaluation.requirements?.version} · {evaluation.score}/100 · {REQUIRED[evaluation.requiredCriteriaStatus]} · {new Date(evaluation.evaluatedAt).toLocaleString('fr-FR')}</li>)}</ul>
         </details> : null}
-        {selected.agentId ? <p className="candidate-notice">Compte chauffeur lié : <strong>{selected.agentMatricule || selected.agentId}</strong>. Ses informations se gèrent dans Agents.</p> : <p>Pour créer le chauffeur : vérifiez nom, prénom, CIN, email, téléphone, catégories, numéro et expiration du permis. Les critères obligatoires doivent être satisfaits ; deux ans de conduite restent une cible de scoring par défaut.</p>}
+        {selected.agentId ? <p className="candidate-notice">Compte chauffeur lié : <strong>{selected.agentMatricule || selected.agentId}</strong>. Ses informations se gèrent dans Agents.</p> : <p>Pour créer le chauffeur : renseignez nom, prénom, CIN, email, téléphone, catégories, numéro et expiration du permis (souvent absents du CV). Les critères obligatoires doivent être satisfaits ; deux ans de conduite restent une cible de scoring par défaut.</p>}
         <label className="candidate-note">Notes du superviseur<textarea rows="3" value={notes} onChange={(e) => setNotes(e.target.value)} /></label>
       </div>
       <div className="modal-footer candidate-actions"><button className="btn-secondary" disabled={!!busy || dirty || !!selected.agentId} onClick={() => decide('REJETE')}>Rejeter</button>

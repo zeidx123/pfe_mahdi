@@ -79,6 +79,32 @@ class CandidateReviewTest {
         assertEquals("qwen/qwen3.8-27b:free", saved.getExtractionModel());
     }
 
+    @Test void selfCheckDowngradesAFieldWhoseCitedSnippetDoesNotSupportItsValue() {
+        when(extraction.extract(any())).thenReturn(new CvExtractionService.Extraction(
+                List.of(new CvExtractionService.TextPart(1, "Page 1", "Permis : C")), "EXTRACTED"));
+        when(qwen.generateJson(any(), anyMap()))
+                .thenReturn("{\"fields\":{\"typePermis\":{\"value\":\"C\",\"snippet\":\"Permis : C\"}}}")
+                .thenReturn("{\"confirmations\":{\"typePermis\":false}}");
+        var saved = service.analyzeAndSaveCv(new MockMultipartFile("cv", "synthetic.pdf", "application/pdf", new byte[]{1}));
+        var field = saved.getFieldEvidence().get("typePermis");
+        assertEquals("INVALID", field.getStatus());
+        assertEquals("C", field.getValue());
+        assertNotNull(field.getReviewNote());
+        assertEquals("EXTRACTED", saved.getExtractionStatus());
+        verify(qwen, times(2)).generateJson(any(), anyMap());
+    }
+
+    @Test void selfCheckFailureDoesNotFailExtractionAndLeavesFieldUncertain() {
+        when(extraction.extract(any())).thenReturn(new CvExtractionService.Extraction(
+                List.of(new CvExtractionService.TextPart(1, "Page 1", "Permis : C")), "EXTRACTED"));
+        when(qwen.generateJson(any(), anyMap()))
+                .thenReturn("{\"fields\":{\"typePermis\":{\"value\":\"C\",\"snippet\":\"Permis : C\"}}}")
+                .thenThrow(new AiServiceException("self-check unavailable"));
+        var saved = service.analyzeAndSaveCv(new MockMultipartFile("cv", "synthetic.pdf", "application/pdf", new byte[]{1}));
+        assertEquals("UNCERTAIN", saved.getFieldEvidence().get("typePermis").getStatus());
+        assertEquals("EXTRACTED", saved.getExtractionStatus());
+    }
+
     @Test void httpFailureAndInvalidExtractionHaveDistinctSanitizedDiagnostics() {
         when(extraction.extract(any())).thenReturn(new CvExtractionService.Extraction(
                 List.of(new CvExtractionService.TextPart(1, "Page 1", "Permis : C")), "EXTRACTED"));
@@ -198,5 +224,33 @@ class CandidateReviewTest {
         var request = new CandidateReviewRequest(); request.setFields(Map.of("anneesExperience", field("NaN", "VERIFIED")));
         assertThrows(IllegalArgumentException.class, () -> service.review("cv1", request));
         verify(candidates, never()).save(any());
+    }
+
+    @Test void reviewReportsEveryInvalidFieldInOneErrorInsteadOfOneAtATime() {
+        var candidate = CandidateScoringTest.fixture("C", "VERIFIED", 1, "VERIFIED", false, false);
+        candidate.setRequirementsVersion(1);
+        when(candidates.findById("cv1")).thenReturn(Optional.of(candidate));
+        var request = new CandidateReviewRequest();
+        request.setFields(Map.of("anneesExperience", field("NaN", "VERIFIED"), "email", field("not-an-email", "VERIFIED")));
+        var error = assertThrows(IllegalArgumentException.class, () -> service.review("cv1", request));
+        assertTrue(error.getMessage().contains("anneesExperience"));
+        assertTrue(error.getMessage().contains("email"));
+        verify(candidates, never()).save(any());
+    }
+
+    @Test void acceptanceReportsEveryUnverifiedIdentityFieldInOneErrorInsteadOfOneAtATime() {
+        var candidate = CandidateScoringTest.fixture("C", "VERIFIED", 0.5, "VERIFIED", false, false);
+        candidate.setId("cv1"); new CandidateScoringService().evaluate(candidate, DriverRequirements.initial());
+        when(candidates.findById("cv1")).thenReturn(Optional.of(candidate));
+        Map<String, FieldEvidence> values = new LinkedHashMap<>(candidate.getFieldEvidence());
+        Map.of("nom", "Exemple", "prenom", "Test", "numeroPermis", "PERMIS001", "dateExpirationPermis", "2035-01-01")
+                .forEach((key, value) -> values.put(key, field(value, "VERIFIED")));
+        var review = new CandidateReviewRequest(); review.setFields(values); service.review("cv1", review);
+        var error = assertThrows(IllegalArgumentException.class, () -> service.updateDecision("cv1", "ACCEPTE", "Decision"));
+        assertTrue(error.getMessage().contains("cin"));
+        assertTrue(error.getMessage().contains("email"));
+        assertTrue(error.getMessage().contains("telephone"));
+        assertFalse(error.getMessage().contains("nom,") && error.getMessage().contains("prenom,"));
+        verify(users, never()).save(any());
     }
 }

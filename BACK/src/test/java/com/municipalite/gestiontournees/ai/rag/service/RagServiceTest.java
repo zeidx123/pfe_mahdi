@@ -1,6 +1,7 @@
 package com.municipalite.gestiontournees.ai.rag.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.municipalite.gestiontournees.ai.assistant.service.TunisianDialectService;
 import com.municipalite.gestiontournees.ai.common.*;
 import com.municipalite.gestiontournees.ai.config.AiProperties;
 import com.municipalite.gestiontournees.ai.rag.dto.*;
@@ -17,7 +18,8 @@ class RagServiceTest {
     VectorStoreService store = mock(VectorStoreService.class);
     RagGenerationClient generation = mock(RagGenerationClient.class);
     RagConversationRepository histories = mock(RagConversationRepository.class);
-    RagService service = new RagService(embeddings, store, generation, histories, new AiProperties(), new ObjectMapper());
+    TunisianDialectService dialectService = new TunisianDialectService();
+    RagService service = new RagService(embeddings, store, generation, histories, new AiProperties(), new ObjectMapper(), dialectService);
     DocumentChunk chunk = DocumentChunk.builder().id("source-1").documentId("doc-1").documentName("Procédure").pageNumber(2)
             .sectionTitle("Accès").content("Si le point est inaccessible, consulter le superviseur.").build();
 

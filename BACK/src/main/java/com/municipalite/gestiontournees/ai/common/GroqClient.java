@@ -122,6 +122,10 @@ public class GroqClient {
                     .build();
             try (Response response = httpClient.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
+                    if (response.code() == 400 && responseFormat != null && "json_schema".equals(responseFormat.get("type"))) {
+                        // Fallback to json_object if Groq constrained grammar fails on strict json_schema
+                        return complete(model, content, Map.of("type", "json_object"), maxTokens);
+                    }
                     throw failure("Le fournisseur IA est indisponible (HTTP " + response.code() + ").",
                             "PROVIDER_HTTP_ERROR", response.code());
                 }

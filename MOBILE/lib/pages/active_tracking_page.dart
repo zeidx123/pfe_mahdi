@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -41,6 +42,8 @@ class _ActiveTrackingPageState extends State<ActiveTrackingPage>
   String? _driverAssessment;
   PhotoDraft? _draft;
   Timer? _clock;
+  final MapController _mapController = MapController();
+  bool _autoCentered = false;
   TourProgress get _progress => TourProgress(_tour);
   String get _id => _tour['id'].toString();
   bool get _active => _tour['statut'] == 'EN_COURS';
@@ -56,16 +59,59 @@ class _ActiveTrackingPageState extends State<ActiveTrackingPage>
     super.initState();
     _tour = Map<String, dynamic>.from(widget.tournee);
     WidgetsBinding.instance.addObserver(this);
+    TrackingService.state.addListener(_onTrackingState);
     _refresh();
     _clock = Timer.periodic(const Duration(seconds: 10), (_) {
       if (mounted) setState(() {});
     });
   }
 
+  void _onTrackingState() {
+    final pos = TrackingService.state.value.position;
+    if (pos != null && !_autoCentered && mounted) {
+      _autoCentered = true;
+      try {
+        _mapController.move(LatLng(pos.latitude, pos.longitude), 15);
+      } catch (_) {}
+    }
+  }
+
+  Future<void> _centerOnMyLocation() async {
+    final current = TrackingService.state.value.position;
+    if (current != null) {
+      _mapController.move(LatLng(current.latitude, current.longitude), 15);
+      return;
+    }
+    try {
+      final allowed = await TrackingService.requestPermission();
+      if (!allowed) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Veuillez activer et autoriser la géolocalisation.')),
+          );
+        }
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition();
+      if (mounted) {
+        _mapController.move(LatLng(pos.latitude, pos.longitude), 15);
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Position GPS introuvable.')),
+        );
+      }
+    }
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    TrackingService.state.removeListener(_onTrackingState);
     _clock?.cancel();
+    _mapController.dispose();
     // Tracking belongs to the active tour, not this screen; opening Maps/home
     // must not stop it. Completion and logout explicitly stop tracking.
     super.dispose();
@@ -559,46 +605,70 @@ class _ActiveTrackingPageState extends State<ActiveTrackingPage>
         height: 280,
         child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: FlutterMap(
-              key: ValueKey('${_id}_${route.length}'),
-              options: MapOptions(
-                  initialCenter: center,
-                  initialZoom: 13,
-                  initialCameraFit: coords.length > 1
-                      ? CameraFit.bounds(
-                          bounds: LatLngBounds.fromPoints(coords),
-                          padding: const EdgeInsets.all(28),
-                          maxZoom: 16)
-                      : null),
+            child: Stack(
               children: [
-                TileLayer(
-                    urlTemplate:
-                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName:
-                        'com.municipalite.gesticollecte_mobile'),
-                if (route.isNotEmpty)
-                  PolylineLayer(polylines: [
-                    Polyline(
-                        points: route,
-                        color: GestiTheme.primary,
-                        strokeWidth: 4)
-                  ]),
-                MarkerLayer(markers: markers),
-                ValueListenableBuilder<TrackingState>(
-                    valueListenable: TrackingService.state,
-                    builder: (context, state, _) => MarkerLayer(
-                        markers: state.position == null
-                            ? []
-                            : [
-                                Marker(
-                                    point: LatLng(state.position!.latitude,
-                                        state.position!.longitude),
-                                    child: const Icon(Icons.my_location,
-                                        color: Colors.deepOrange, size: 28))
-                              ])),
-                const RichAttributionWidget(attributions: [
-                  TextSourceAttribution('OpenStreetMap contributors')
-                ]),
+                FlutterMap(
+                  mapController: _mapController,
+                  key: ValueKey('${_id}_${route.length}'),
+                  options: MapOptions(
+                      initialCenter: center,
+                      initialZoom: 13,
+                      initialCameraFit: coords.length > 1
+                          ? CameraFit.bounds(
+                              bounds: LatLngBounds.fromPoints(coords),
+                              padding: const EdgeInsets.all(28),
+                              maxZoom: 16)
+                          : null),
+                  children: [
+                    TileLayer(
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName:
+                            'com.municipalite.gesticollecte_mobile'),
+                    if (route.isNotEmpty)
+                      PolylineLayer(polylines: [
+                        Polyline(
+                            points: route,
+                            color: GestiTheme.primary,
+                            strokeWidth: 4)
+                      ]),
+                    MarkerLayer(markers: markers),
+                    ValueListenableBuilder<TrackingState>(
+                        valueListenable: TrackingService.state,
+                        builder: (context, state, _) => MarkerLayer(
+                            markers: state.position == null
+                                ? []
+                                : [
+                                    Marker(
+                                        point: LatLng(state.position!.latitude,
+                                            state.position!.longitude),
+                                        child: const Icon(Icons.my_location,
+                                            color: Colors.deepOrange, size: 28))
+                                  ])),
+                    const RichAttributionWidget(attributions: [
+                      TextSourceAttribution('OpenStreetMap contributors')
+                    ]),
+                  ],
+                ),
+                Positioned(
+                  bottom: 12,
+                  right: 12,
+                  child: Material(
+                    color: Colors.white,
+                    shape: const CircleBorder(),
+                    elevation: 3,
+                    shadowColor: Colors.black38,
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: _centerOnMyLocation,
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(Icons.my_location_rounded,
+                            size: 22, color: GestiTheme.primaryDark),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             )));
   }

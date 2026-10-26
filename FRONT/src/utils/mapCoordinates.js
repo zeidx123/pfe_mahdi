@@ -9,3 +9,21 @@ const isCoordinate = (value, limit) => (
 export const hasValidCoordinates = (latitude, longitude) => (
   isCoordinate(latitude, 90) && isCoordinate(longitude, 180)
 );
+
+export const getUserLocation = () => {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined' || !navigator?.geolocation) {
+      reject(new Error("La géolocalisation n'est pas supportée par votre navigateur"));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve([position.coords.latitude, position.coords.longitude]);
+      },
+      (error) => {
+        reject(error);
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+    );
+  });
+};

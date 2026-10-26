@@ -1,6 +1,7 @@
 package com.municipalite.gestiontournees.ai.rag.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.municipalite.gestiontournees.ai.assistant.service.TunisianDialectService;
 import com.municipalite.gestiontournees.ai.common.*;
 import com.municipalite.gestiontournees.ai.config.AiProperties;
 import com.municipalite.gestiontournees.ai.rag.dto.*;
@@ -27,7 +28,8 @@ class RagEvaluationServiceTest {
     EmbeddingService embeddings = mock(EmbeddingService.class);
     RagGenerationClient generation = mock(RagGenerationClient.class);
     MongoVectorStoreService store = new MongoVectorStoreService(chunks, documents, properties);
-    RagService rag = new RagService(embeddings, store, generation, histories, properties, new ObjectMapper());
+    TunisianDialectService dialectService = new TunisianDialectService();
+    RagService rag = new RagService(embeddings, store, generation, histories, properties, new ObjectMapper(), dialectService);
     RagEvaluationService evaluation = new RagEvaluationService(new AccessService(mock(TourneeRepository.class)),
             store, embeddings, rag, properties, new ObjectMapper());
 

@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { FiTruck, FiMapPin, FiWifi, FiWifiOff } from 'react-icons/fi';
+import { FiTruck, FiMapPin, FiWifi, FiWifiOff, FiNavigation } from 'react-icons/fi';
 import api from '../../services/api';
 import { websocketService } from '../../services/websocketService';
+import { getUserLocation } from '../../utils/mapCoordinates';
 
 // Fix Leaflet icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -28,6 +29,18 @@ const truckIcon = L.divIcon({
   popupAnchor: [0, -44],
 });
 
+const userLocationIcon = L.divIcon({
+  className: '',
+  html: `
+    <div style="position:relative;width:24px;height:24px;">
+      <div style="position:absolute;width:24px;height:24px;background:#3b82f6;opacity:0.35;border-radius:50%;animation:pulse 1.8s infinite;"></div>
+      <div style="position:absolute;top:4px;left:4px;width:16px;height:16px;background:#2563eb;border:2.5px solid white;border-radius:50%;box-shadow:0 0 6px rgba(0,0,0,0.35);"></div>
+    </div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+  popupAnchor: [0, -12],
+});
+
 const MapCenterUpdater = ({ center }) => {
   const map = useMap();
   useEffect(() => {
@@ -41,9 +54,20 @@ const MapCenterUpdater = ({ center }) => {
 const TrackingPage = () => {
   const [positions, setPositions] = useState({});
   const [isConnected, setIsConnected] = useState(false);
-  const [mapCenter] = useState([36.722857, 10.283535]); // Dépôt confirmé pour la démonstration
+  const [mapCenter, setMapCenter] = useState([36.722857, 10.283535]); // Dépôt confirmé pour la démonstration
+  const [userLocation, setUserLocation] = useState(null);
   const [now, setNow] = useState(Date.now());
   const [error, setError] = useState('');
+
+  const handleLocateMe = async () => {
+    try {
+      const loc = await getUserLocation();
+      setUserLocation(loc);
+      setMapCenter([...loc]);
+    } catch {
+      // Ignored
+    }
+  };
 
   useEffect(() => {
     // 1. Fetch initial positions from REST API
@@ -153,6 +177,15 @@ const TrackingPage = () => {
 
         {/* RIGHT: Real-time Map */}
         <div className="map-panel">
+          <button
+            type="button"
+            className="map-locate-btn"
+            onClick={handleLocateMe}
+            title="Centrer sur ma position"
+          >
+            <FiNavigation size={14} />
+            <span>Ma position</span>
+          </button>
           <MapContainer
             center={mapCenter}
             zoom={12}
@@ -163,6 +196,18 @@ const TrackingPage = () => {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
+            {userLocation && (
+              <Marker
+                position={userLocation}
+                icon={userLocationIcon}
+              >
+                <Popup>
+                  <div style={{ padding: 4 }}>
+                    <strong style={{ fontSize: 13, color: '#1d4ed8' }}>📍 Votre position actuelle</strong>
+                  </div>
+                </Popup>
+              </Marker>
+            )}
             
             {activeTrucks.map(truck => (
               Number.isFinite(truck.latitude) && Number.isFinite(truck.longitude) ? (
@@ -233,7 +278,9 @@ const TrackingPage = () => {
         
         .truck-timestamp { font-size: 11px; color: var(--text-muted); text-align: right; }
         
-        .map-panel { border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+        .map-panel { border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); position: relative; }
+        .map-locate-btn { position: absolute; top: 12px; right: 12px; background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 7px 12px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--text-color); box-shadow: var(--shadow-md); cursor: pointer; z-index: 1000; transition: all 0.2s; }
+        .map-locate-btn:hover { background: #f8fafc; color: var(--primary); }
         .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; text-align: center; color: var(--text-muted); height: 100%; }
       `}</style>
     </div>

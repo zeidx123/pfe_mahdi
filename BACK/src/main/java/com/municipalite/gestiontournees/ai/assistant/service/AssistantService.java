@@ -25,6 +25,7 @@ public class AssistantService {
     private final GeminiClient geminiClient;
     private final AssistantTools assistantTools;
     private final ChatConversationRepository conversationRepository;
+    private final TunisianDialectService dialectService;
 
     public ChatConversation chat(String conversationId, String supervisorEmail, String userMessage) {
         if (userMessage == null || userMessage.isBlank() || userMessage.length() > 2000) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Message de 1 à 2000 caractères requis.");
@@ -90,6 +91,8 @@ public class AssistantService {
         sb.append("- Ne réponds PAS avec une procédure s'il a simplement demandé combien d'éléments sont en panne ou actifs.\n\n");
 
         sb.append(assistantTools.buildSystemContext());
+        sb.append("\n");
+        sb.append(dialectService.buildDialectSystemPrompt());
 
         sb.append("\nCONSIGNES DE RÉPONSE :\n");
         sb.append("- Réponds précisément avec les données réelles (noms, immatriculations, chiffres, matricules) fournies ci-dessus.\n");

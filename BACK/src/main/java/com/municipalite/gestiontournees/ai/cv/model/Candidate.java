@@ -30,6 +30,7 @@ public class Candidate {
     private String telephone;
     private String adresse;
     private String dateNaissance;
+    private Integer age;
     private String numeroPermis;
     private String typePermis;
     private Double anneesExperience;

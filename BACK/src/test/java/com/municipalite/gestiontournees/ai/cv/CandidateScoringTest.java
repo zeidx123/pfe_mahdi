@@ -42,6 +42,70 @@ class CandidateScoringTest {
         assertEquals(0, candidate.getCriterionScores().get(1).getPoints());
     }
 
+    @Test void missingOptionalFieldsSettleTheScoreInsteadOfStayingProvisionalForever() {
+        // A CV that never mentions safety training or collection experience leaves those two
+        // MISSING forever; that must not block the recommendation, since there is no pending
+        // AI guess to confirm there (unlike UNCERTAIN, where a proposal is still unreviewed).
+        var candidate = new Candidate(); candidate.setStatut("EN_ATTENTE");
+        candidate.setAge(26);
+        var fields = new LinkedHashMap<String, FieldEvidence>();
+        fields.put("typePermis", field("C", "VERIFIED"));
+        fields.put("anneesExperience", field("3", "VERIFIED"));
+        fields.put("formationSecurite", FieldEvidence.builder().status("MISSING").build());
+        fields.put("experienceCollecteConfirmee", FieldEvidence.builder().status("MISSING").build());
+        candidate.setFieldEvidence(fields);
+        scoring.evaluate(candidate, DriverRequirements.initial());
+        assertFalse(candidate.isScoreProvisional());
+        assertEquals(80, candidate.getScoreCompatibilite());
+        assertEquals("RECOMMANDE", candidate.getRecommandation());
+    }
+
+    @Test void ageBetween20And35IsRecommendedWhenScoreAtLeast70() {
+        var candidate = fixture("C", "VERIFIED", 3, "VERIFIED", true, true);
+        candidate.setAge(25);
+        scoring.evaluate(candidate, DriverRequirements.initial());
+        assertTrue(candidate.getScoreCompatibilite() >= 70);
+        assertEquals("RECOMMANDE", candidate.getRecommandation());
+    }
+
+    @Test void ageBoundaryChecks() {
+        // 20 ans: admissible
+        var c20 = fixture("C", "VERIFIED", 3, "VERIFIED", true, true);
+        c20.setAge(20);
+        scoring.evaluate(c20, DriverRequirements.initial());
+        assertEquals("RECOMMANDE", c20.getRecommandation());
+
+        // 19 ans: non admissible (< 20 ans)
+        var c19 = fixture("C", "VERIFIED", 3, "VERIFIED", true, true);
+        c19.setAge(19);
+        scoring.evaluate(c19, DriverRequirements.initial());
+        assertEquals("PEU_COMPATIBLE", c19.getRecommandation());
+
+        // 34 ans: admissible (< 35 ans)
+        var c34 = fixture("C", "VERIFIED", 3, "VERIFIED", true, true);
+        c34.setAge(34);
+        scoring.evaluate(c34, DriverRequirements.initial());
+        assertEquals("RECOMMANDE", c34.getRecommandation());
+
+        // 35 ans: hors critère (inférieur strict à 35 ans)
+        var c35 = fixture("C", "VERIFIED", 3, "VERIFIED", true, true);
+        c35.setAge(35);
+        scoring.evaluate(c35, DriverRequirements.initial());
+        assertEquals("PEU_COMPATIBLE", c35.getRecommandation());
+
+        // Âge inconnu : reste à examiner
+        var cUnknown = fixture("C", "VERIFIED", 3, "VERIFIED", true, true);
+        scoring.evaluate(cUnknown, DriverRequirements.initial());
+        assertEquals("A_EXAMINER", cUnknown.getRecommandation());
+    }
+
+    @Test void unreviewedAiProposalKeepsTheScoreProvisional() {
+        var candidate = fixture("C", "UNCERTAIN", 3, "VERIFIED", true, true);
+        scoring.evaluate(candidate, DriverRequirements.initial());
+        assertTrue(candidate.isScoreProvisional());
+        assertEquals("A_EXAMINER", candidate.getRecommandation());
+    }
+
     @Test void newEvaluationPreservesOldProfileAndReviewedValues() {
         var candidate = fixture("C", "VERIFIED", 1, "VERIFIED", false, false);
         scoring.evaluate(candidate, DriverRequirements.initial());
