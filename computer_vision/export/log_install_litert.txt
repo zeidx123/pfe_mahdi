@@ -1,0 +1,78 @@
+Collecting litert-torch
+  Downloading litert_torch-0.10.0-py3-none-any.whl.metadata (2.4 kB)
+Collecting torchvision
+  Downloading torchvision-0.29.1-cp313-cp313-win_amd64.whl.metadata (5.7 kB)
+Collecting absl-py (from litert-torch)
+  Using cached absl_py-2.5.1-py3-none-any.whl.metadata (3.3 kB)
+Collecting numpy (from litert-torch)
+  Using cached numpy-2.5.4-cp313-cp313-win_amd64.whl.metadata (6.6 kB)
+Collecting scipy (from litert-torch)
+  Using cached scipy-1.18.1-cp313-cp313-win_amd64.whl.metadata (61 kB)
+Collecting safetensors (from litert-torch)
+  Using cached safetensors-0.8.0-cp310-abi3-win_amd64.whl.metadata (4.2 kB)
+Collecting multipledispatch (from litert-torch)
+  Downloading multipledispatch-1.0.0-py3-none-any.whl.metadata (3.8 kB)
+Collecting transformers (from litert-torch)
+  Using cached transformers-5.21.0-py3-none-any.whl.metadata (31 kB)
+Collecting kagglehub (from litert-torch)
+  Downloading kagglehub-1.0.3-py3-none-any.whl.metadata (40 kB)
+Collecting tabulate (from litert-torch)
+  Downloading tabulate-0.10.0-py3-none-any.whl.metadata (40 kB)
+Collecting torch<2.15.0,>=2.4.0 (from litert-torch)
+  Downloading torch-2.14.1-cp313-cp313-win_amd64.whl.metadata (38 kB)
+Collecting ai-edge-litert<2.4.0,>=2.3.0 (from ai-edge-litert[model-utils]<2.4.0,>=2.3.0->litert-torch)
+  Using cached ai_edge_litert-2.3.0-cp313-cp313-win_amd64.whl.metadata (2.3 kB)
+Collecting ai-edge-quantizer==0.10.* (from litert-torch)
+  Downloading ai_edge_quantizer-0.10.0-py3-none-any.whl.metadata (24 kB)
+INFO: pip is looking at multiple versions of litert-torch to determine which version is compatible with other requirements. This could take a while.
+Collecting litert-torch
+  Downloading litert_torch-0.9.4-py3-none-any.whl.metadata (2.4 kB)
+Collecting torch<2.14.0,>=2.4.0 (from litert-torch)
+  Downloading torch-2.13.0-cp313-cp313-win_amd64.whl.metadata (39 kB)
+Collecting ai-edge-litert<2.3.0,>=2.2.0 (from ai-edge-litert[model-utils]<2.3.0,>=2.2.0->litert-torch)
+  Downloading ai_edge_litert-2.2.0-cp313-cp313-win_amd64.whl.metadata (2.4 kB)
+Collecting ai-edge-quantizer==0.9.* (from litert-torch)
+  Downloading ai_edge_quantizer-0.9.0-py3-none-any.whl.metadata (18 kB)
+Collecting litert-torch
+  Downloading litert_torch-0.9.3-py3-none-any.whl.metadata (2.4 kB)
+Collecting torch<2.13.0,>=2.4.0 (from litert-torch)
+  Downloading torch-2.12.1-cp313-cp313-win_amd64.whl.metadata (31 kB)
+Collecting ai-edge-litert<2.2.0,>=2.1.6 (from ai-edge-litert[model-utils]<2.2.0,>=2.1.6->litert-torch)
+  Downloading ai_edge_litert-2.1.6-cp313-cp313-win_amd64.whl.metadata (2.4 kB)
+Collecting ai-edge-quantizer==0.8.* (from litert-torch)
+  Downloading ai_edge_quantizer-0.8.0-py3-none-any.whl.metadata (16 kB)
+Collecting litert-torch
+  Downloading litert_torch-0.9.2-py3-none-any.whl.metadata (2.4 kB)
+  Downloading litert_torch-0.9.1-py3-none-any.whl.metadata (2.4 kB)
+Collecting ai-edge-quantizer==0.7.* (from litert-torch)
+  Downloading ai_edge_quantizer-0.7.0-py3-none-any.whl.metadata (16 kB)
+Collecting litert-torch
+  Downloading litert_torch-0.9.0-py3-none-any.whl.metadata (2.3 kB)
+Collecting torch<2.12.0,>=2.4.0 (from litert-torch)
+  Downloading torch-2.11.0-cp313-cp313-win_amd64.whl.metadata (29 kB)
+Collecting ai-edge-quantizer==0.6.* (from litert-torch)
+  Downloading ai_edge_quantizer-0.6.0-py3-none-any.whl.metadata (16 kB)
+Collecting litert-torch
+  Downloading litert_torch-0.8.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting torch<2.10.0,>=2.4.0 (from litert-torch)
+  Downloading torch-2.9.1-cp313-cp313-win_amd64.whl.metadata (30 kB)
+ERROR: Cannot install litert-torch==0.10.0, litert-torch==0.8.0, litert-torch==0.9.0, litert-torch==0.9.1, litert-torch==0.9.2, litert-torch==0.9.3 and litert-torch==0.9.4 because these package versions have conflicting dependencies.
+
+The conflict is caused by:
+    litert-torch 0.10.0 depends on litert-converter==0.5.*
+    litert-torch 0.9.4 depends on litert-converter==0.4.*
+    litert-torch 0.9.3 depends on litert-converter==0.3.*
+    litert-torch 0.9.2 depends on litert-converter==0.3.*
+    litert-torch 0.9.1 depends on litert-converter==0.2.*
+    litert-torch 0.9.0 depends on litert-converter==0.1.*
+    litert-torch 0.8.0 depends on ai-edge-tensorflow==2.21.0.dev20251110
+
+Additionally, some packages in these conflicts have no matching distributions available for your environment:
+    ai-edge-tensorflow
+    litert-converter
+
+To fix this you could try to:
+1. loosen the range of package versions you've specified
+2. remove package versions to allow pip to attempt to solve the dependency conflict
+
+ERROR: ResolutionImpossible: for help visit https://pip.pypa.io/en/latest/topics/dependency-resolution/#dealing-with-dependency-conflicts

@@ -1,0 +1,14 @@
+Tu rédiges, pour un superviseur, le résumé d'une analyse automatique de propreté d'un point de collecte municipal.
+Tu n'as PAS vu la photo : tu ne connais que les données JSON ci-dessous, produites par un modèle de classification d'images dont les résultats restent à vérifier.
+
+Consignes :
+- Rédige 2 à 4 phrases en français, 600 caractères au maximum.
+- N'écris que ce qui découle des données. Utilise exclusivement les nombres fournis, tels quels : n'en calcule aucun autre et n'écris aucun autre nombre (pas de date, d'heure, de durée, de numéro, de rang ni de nombre de phrases). N'utilise pas de séparateur de milliers.
+- Écris le pourcentage de la classe prédite suivi du signe « % ».
+- Ne décris jamais le contenu de l'image : ni objets, ni couleurs, ni lieux, ni personnes.
+- N'affirme pas qui a réalisé la collecte. Ne parle ni d'incident, ni de faute, ni de fraude ; n'emploie pas les mots « preuve », « avéré », « certain », « confirmé ».
+- Indique que l'analyse est automatique et qu'elle est à confirmer par un contrôle humain.
+- Si « probleme_qualite » n'est pas null, recommande de reprendre la photo en nommant le problème (trop sombre, floue ou surexposée).
+- Texte brut sur une seule ligne : aucune mise en forme (pas de *, #, {, }, `), aucun lien.
+
+Réponds uniquement par un objet JSON de la forme {"texte": "..."}.

@@ -102,6 +102,7 @@ public class PdfRapportService {
                     addTableCell(table, visit == null || visit.isLegacyProgressMissing() ? "Historique non renseigné" : visit.getStatus().name()
                             + (visit.getNotes() == null ? "" : "\n" + visit.getNotes()), textFont);
                     addTableCell(table, visit == null ? "Non analysé" : "IA : " + (visit.getAnalysisStatus() == null ? "Non analysé" : visit.getAnalysisStatus())
+                            + localAnalysis(visit)
                             + "\nRevue : " + (visit.getReviewLabel() == null ? "À examiner" : visit.getReviewLabel()), textFont);
                     
                     // Embed Point photo
@@ -175,5 +176,19 @@ public class PdfRapportService {
             cell.setPadding(5);
             table.addCell(cell);
         }
+    }
+
+    /** Local vision engine only (empty for LLM analyses); the decision only orders human review. */
+    private static String localAnalysis(com.municipalite.gestiontournees.tournee.model.TourneeVisit visit) {
+        StringBuilder text = new StringBuilder();
+        var p = visit.getAnalysisProbabilities();
+        if (p != null && p.get("PROPRE") != null && p.get("DEBORDEMENT") != null && p.get("CANNOT_DETERMINE") != null) {
+            text.append("\npropre ").append(Math.round(p.get("PROPRE") * 100)).append(" % · débordement ")
+                    .append(Math.round(p.get("DEBORDEMENT") * 100)).append(" % · indéterminé ")
+                    .append(Math.round(p.get("CANNOT_DETERMINE") * 100)).append(" %");
+        }
+        if (visit.getAnalysisQualityIssue() != null) text.append("\nPhoto à refaire : ").append(visit.getAnalysisQualityIssue());
+        if ("A_VERIFIER".equals(visit.getAnalysisDecision())) text.append("\nÀ vérifier par le superviseur");
+        return text.toString();
     }
 }

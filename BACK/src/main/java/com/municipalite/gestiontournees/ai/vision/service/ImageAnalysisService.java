@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.municipalite.gestiontournees.ai.common.AiServiceException;
 import com.municipalite.gestiontournees.ai.common.CollectionAiClient;
+import com.municipalite.gestiontournees.ai.common.LocalVisionClient;
 import com.municipalite.gestiontournees.ai.common.VisionImageInput;
 import com.municipalite.gestiontournees.ai.config.AiProperties;
 import com.municipalite.gestiontournees.ai.vision.model.AiProblem;
@@ -12,6 +13,7 @@ import com.municipalite.gestiontournees.ai.vision.repository.AiProblemRepository
 import com.municipalite.gestiontournees.ai.vision.repository.ImageAnalysisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -33,10 +35,11 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Slf4j
 public class ImageAnalysisService {
     public static final String PROMPT_VERSION = "point-cleanliness-v1";
+    public static final String LOCAL_PROMPT_VERSION = "local-cleanliness-v1";
     public static final Set<String> OBSERVATION_LABELS = Set.of("CLEANED", "NOT_CLEANED", "OBSTRUCTED", "CANNOT_DETERMINE");
     private final CollectionAiClient collectionAiClient;
     private final AiProperties aiProperties;
@@ -44,10 +47,23 @@ public class ImageAnalysisService {
     private final AiProblemRepository aiProblemRepository;
     @Qualifier("aiObjectMapper")
     private final ObjectMapper objectMapper;
+    private final LocalVisionClient localVisionClient;
+
+    /** LLM-only construction (no local client), kept for existing callers and tests. */
+    public ImageAnalysisService(CollectionAiClient collectionAiClient, AiProperties aiProperties,
+                                ImageAnalysisRepository imageAnalysisRepository, AiProblemRepository aiProblemRepository,
+                                ObjectMapper objectMapper) {
+        this(collectionAiClient, aiProperties, imageAnalysisRepository, aiProblemRepository, objectMapper, null);
+    }
 
     public record EvaluationConfiguration(String provider, String model, String promptVersion) {}
 
     public EvaluationConfiguration evaluationConfiguration() {
+        if (aiProperties.getVisionEngine() == AiProperties.VisionEngine.LOCAL) {
+            // A different provider/model/version means reusableVisitAnalysis never reuses another engine's result.
+            AiProperties.LocalVision local = aiProperties.getLocalVision();
+            return new EvaluationConfiguration("LOCAL", local.getModelName() + "@sha256:" + local.getModelSha256(), LOCAL_PROMPT_VERSION);
+        }
         return new EvaluationConfiguration(aiProperties.getCollectionProvider().name(), aiProperties.getCollectionVisionModel(), PROMPT_VERSION);
     }
 
@@ -73,7 +89,7 @@ public class ImageAnalysisService {
     public ImageAnalysis evaluateEvidence(MultipartFile after, MultipartFile before,
                                           String expectedModel, String expectedPromptVersion) {
         if (!Objects.equals(expectedModel, evaluationConfiguration().model()) ||
-                !Objects.equals(expectedPromptVersion, PROMPT_VERSION)) {
+                !Objects.equals(expectedPromptVersion, evaluationConfiguration().promptVersion())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La configuration d'évaluation a changé.");
         }
         if (after == null || after.isEmpty() || (before != null && before.isEmpty())) {
@@ -100,26 +116,31 @@ public class ImageAnalysisService {
                 .photoUrl(afterPhotoUrl).afterPhotoUrl(afterPhotoUrl).beforePhotoUrl(paired ? beforePhotoUrl : null)
                 .inputMode(paired ? "BEFORE_AFTER" : "AFTER_ONLY")
                 .pointCollecteId(pointCollecteId).tourneeId(tourneeId).chauffeurId(chauffeurId)
-                .provider(configuration.provider()).model(configuration.model()).promptVersion(PROMPT_VERSION)
+                .provider(configuration.provider()).model(configuration.model()).promptVersion(configuration.promptVersion())
                 .createdAt(LocalDateTime.now()).problemCreated(false).build();
         try {
-            List<VisionImageInput> images = new ArrayList<>();
-            if (paired) images.add(readStoredPhoto(beforePhotoUrl));
-            images.add(readStoredPhoto(afterPhotoUrl));
-            String prompt = buildVisionPrompt(paired);
-            String response = collectionAiClient.analyzeImages(images, prompt);
-            JsonNode result = objectMapper.readTree(response);
-            if (result == null || !result.isObject()) {
-                throw new AiServiceException("Réponse d'analyse invalide.", "INVALID_ANALYSIS_RESPONSE", null, null);
+            if (aiProperties.getVisionEngine() == AiProperties.VisionEngine.LOCAL) {
+                // Only the stored AFTER photo is sent; inputMode still records whether a BEFORE photo exists.
+                applyLocalPrediction(analysis, readStoredPhoto(afterPhotoUrl));
+            } else {
+                List<VisionImageInput> images = new ArrayList<>();
+                if (paired) images.add(readStoredPhoto(beforePhotoUrl));
+                images.add(readStoredPhoto(afterPhotoUrl));
+                String prompt = buildVisionPrompt(paired);
+                String response = collectionAiClient.analyzeImages(images, prompt);
+                JsonNode result = objectMapper.readTree(response);
+                if (result == null || !result.isObject()) {
+                    throw new AiServiceException("Réponse d'analyse invalide.", "INVALID_ANALYSIS_RESPONSE", null, null);
+                }
+                String label = result.path("status").asText("");
+                String description = result.path("description").asText("").trim();
+                if (!result.path("status").isTextual() || !result.path("description").isTextual()
+                        || !OBSERVATION_LABELS.contains(label) || description.isBlank() || description.length() > 2000) {
+                    throw new AiServiceException("Réponse d'analyse invalide.", "INVALID_ANALYSIS_RESPONSE", null, null);
+                }
+                analysis.setStatus(label);
+                analysis.setDescription(description);
             }
-            String label = result.path("status").asText("");
-            String description = result.path("description").asText("").trim();
-            if (!result.path("status").isTextual() || !result.path("description").isTextual()
-                    || !OBSERVATION_LABELS.contains(label) || description.isBlank() || description.length() > 2000) {
-                throw new AiServiceException("Réponse d'analyse invalide.", "INVALID_ANALYSIS_RESPONSE", null, null);
-            }
-            analysis.setStatus(label);
-            analysis.setDescription(description);
         } catch (AiServiceException e) {
             markUnavailable(analysis, e.getCategory(), e.getProviderHttpStatus());
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
@@ -131,6 +152,24 @@ public class ImageAnalysisService {
         }
         // A model output is evidence for review, not an automatically established incident.
         return imageAnalysisRepository.save(analysis);
+    }
+
+    private void applyLocalPrediction(ImageAnalysis analysis, VisionImageInput after) {
+        if (localVisionClient == null) {
+            throw new AiServiceException("Le moteur de vision local n'est pas configuré.", "NOT_CONFIGURED", null, null);
+        }
+        LocalVisionClient.Prediction prediction = localVisionClient.predict(after);
+        LocalCleanlinessMapper.Result result = LocalCleanlinessMapper.map(prediction, aiProperties.getLocalVision().getPropreThreshold());
+        analysis.setStatus(result.status());
+        analysis.setDescription(result.description());
+        // Review priority only: the decision never validates the visit nor blocks the end of the tour.
+        analysis.setDecision(result.decision());
+        analysis.setProbabilities(prediction.probabilities());
+        analysis.setPredictedClass(prediction.predictedClass());
+        analysis.setQualityIssue(prediction.qualityIssue());
+        analysis.setSharpness(prediction.sharpness());
+        analysis.setMeanBrightness(prediction.meanBrightness());
+        analysis.setModelSha256(prediction.modelSha256());
     }
 
     private void markUnavailable(ImageAnalysis analysis, String category, Integer providerHttpStatus) {

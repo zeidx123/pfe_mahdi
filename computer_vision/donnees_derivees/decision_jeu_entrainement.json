@@ -1,0 +1,11 @@
+{
+  "macro_f1_valid_sous_reel": {
+    "CLIP_all": 0.8981154222719873,
+    "CLIP_reel": 0.9099340401178141
+  },
+  "ecart_all_moins_reel": -0.011818617845826829,
+  "seuil": 0.02,
+  "regle": "si écart > 0,02 : tout train ; sinon (égalité comprise) : train ∩ sous_reel",
+  "decision": "train_sous_reel",
+  "note": "Le seuil de 0,02 est une proposition de départ, pas une valeur démontrée."
+}

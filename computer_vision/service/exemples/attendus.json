@@ -1,0 +1,26 @@
+[
+  {
+    "fichier": "gd_train_002129.jpg",
+    "probabilites": {
+      "CANNOT_DETERMINE": 2.6301356683688937e-06,
+      "DEBORDEMENT": 5.6983060631177196e-11,
+      "PROPRE": 0.9999973773956299
+    }
+  },
+  {
+    "fichier": "gd_train_001198.jpg",
+    "probabilites": {
+      "CANNOT_DETERMINE": 0.0016209775349125266,
+      "DEBORDEMENT": 0.9929568767547607,
+      "PROPRE": 0.005422213114798069
+    }
+  },
+  {
+    "fichier": "cd_flou_093.jpg",
+    "probabilites": {
+      "CANNOT_DETERMINE": 0.9999960660934448,
+      "DEBORDEMENT": 6.538698027469536e-09,
+      "PROPRE": 3.886830654664664e-06
+    }
+  }
+]

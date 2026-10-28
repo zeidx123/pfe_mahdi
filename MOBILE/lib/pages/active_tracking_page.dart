@@ -775,6 +775,25 @@ class _ActiveTrackingPageState extends State<ActiveTrackingPage>
     });
   }
 
+  Widget _retakeAfterButton({required bool highlighted}) {
+    final onPressed = _busy || _draft != null ? null : () => _capture('AFTER');
+    const icon = Icon(Icons.refresh, size: 18);
+    const label = Text(
+        kIsWeb ? 'Remplacer la photo APRÈS' : 'Reprendre la photo APRÈS');
+    // Highlighted when the local quality gate asks for a new photo.
+    return highlighted
+        ? FilledButton.icon(
+            style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
+            onPressed: onPressed,
+            icon: icon,
+            label: label)
+        : TextButton.icon(
+            style: TextButton.styleFrom(minimumSize: const Size(0, 48)),
+            onPressed: onPressed,
+            icon: icon,
+            label: label);
+  }
+
   Color _assessmentColor(dynamic assessment) {
     if (assessment == 'CLEANED') return GestiTheme.primaryDark;
     if (assessment == 'NOT_CLEANED') return const Color(0xFFA4352A);
@@ -883,14 +902,10 @@ class _ActiveTrackingPageState extends State<ActiveTrackingPage>
         ],
         if (after != null) ...[
           const SizedBox(height: 8),
-          TextButton.icon(
-              style: TextButton.styleFrom(minimumSize: const Size(0, 48)),
-              onPressed:
-                  _busy || _draft != null ? null : () => _capture('AFTER'),
-              icon: const Icon(Icons.refresh, size: 18),
-              label: const Text(kIsWeb
-                  ? 'Remplacer la photo APRÈS'
-                  : 'Reprendre la photo APRÈS')),
+          _retakeAfterButton(
+              highlighted:
+                  TourProgress.retakeMessage(visit['analysisQualityIssue']) !=
+                      null),
         ],
         TextButton.icon(
             style: TextButton.styleFrom(minimumSize: const Size(0, 48)),
@@ -928,6 +943,26 @@ class _ActiveTrackingPageState extends State<ActiveTrackingPage>
                             fontWeight: FontWeight.w600,
                             height: 1.5))),
               ])),
+          if (TourProgress.probabilitiesText(visit['analysisProbabilities'])
+              case final probabilities?) ...[
+            const SizedBox(height: 8),
+            Text(probabilities,
+                style: const TextStyle(
+                    fontSize: 13, color: GestiTheme.ink, height: 1.5)),
+          ],
+          if (TourProgress.needsSupervisorReview(visit)) ...[
+            const SizedBox(height: 8),
+            Align(
+                alignment: Alignment.centerLeft,
+                child: _badge('À vérifier par le superviseur',
+                    color: const Color(0xFF8D651C))),
+          ],
+          if (TourProgress.retakeMessage(visit['analysisQualityIssue'])
+              case final retake?) ...[
+            const SizedBox(height: 10),
+            _message('$retake. Utilisez « Reprendre la photo APRÈS ».',
+                error: true),
+          ],
           if (_analysisError != null) ...[
             const SizedBox(height: 10),
             _message(_analysisError!),

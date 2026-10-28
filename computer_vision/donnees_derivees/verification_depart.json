@@ -1,0 +1,71 @@
+{
+  "lignes_csv": 9483,
+  "inclus_1": 9483,
+  "effectifs": {
+    "tout": {
+      "train": {
+        "PROPRE": 960,
+        "DEBORDEMENT": 5295,
+        "CANNOT_DETERMINE": 381
+      },
+      "valid": {
+        "PROPRE": 207,
+        "DEBORDEMENT": 1135,
+        "CANNOT_DETERMINE": 82
+      },
+      "test": {
+        "PROPRE": 207,
+        "DEBORDEMENT": 1135,
+        "CANNOT_DETERMINE": 81
+      }
+    },
+    "sous_reel": {
+      "train": {
+        "PROPRE": 352,
+        "DEBORDEMENT": 2655,
+        "CANNOT_DETERMINE": 381
+      },
+      "valid": {
+        "PROPRE": 76,
+        "DEBORDEMENT": 569,
+        "CANNOT_DETERMINE": 82
+      },
+      "test": {
+        "PROPRE": 76,
+        "DEBORDEMENT": 569,
+        "CANNOT_DETERMINE": 81
+      }
+    }
+  },
+  "ecarts_effectifs": [],
+  "splits_figes_differents": 0,
+  "images_problemes": [],
+  "md5_differents": [],
+  "embeddings": {
+    "fichiers": [
+      "C:\\Users\\hassen\\Desktop\\mahdi\\dataset_entrainement\\_cache\\clip_kaggle.npz",
+      "C:\\Users\\hassen\\Desktop\\mahdi\\dataset_entrainement\\_cache\\clip_gbs.npz",
+      "C:\\Users\\hassen\\Desktop\\mahdi\\dataset_final\\_diagnostic\\clip_embeddings_gd.npz"
+    ],
+    "ids_valides_reutilisables": 8939,
+    "ids_sha256_differents": 0,
+    "exemples_sha_diff": [],
+    "ids_en_trop_hors_csv": 393,
+    "exemples_en_trop": [
+      "gbs_000547_jpg",
+      "gbs_002067_jpg",
+      "gbs_002072_jpg",
+      "gbs_002076_jpg",
+      "gbs_002105_jpg",
+      "gbs_002120_jpg",
+      "gbs_002123_jpg",
+      "gbs_002135_jpg",
+      "gbs_002139_jpg",
+      "gbs_002148_jpg"
+    ],
+    "ids_manquants": 544,
+    "manquants_reels": 0,
+    "manquants_synthetiques": 544
+  },
+  "statut": "OK"
+}

@@ -15,11 +15,19 @@ public class AiProperties {
     private OpenRouter openRouter = new OpenRouter();
     private Groq groq = new Groq();
     private CollectionProvider collectionProvider = CollectionProvider.GROQ;
+    // Moteur des photos de collecte, distinct de collectionProvider (qui sert aussi à l'extraction de CV).
+    private VisionEngine visionEngine = VisionEngine.LLM;
+    private LocalVision localVision = new LocalVision();
+    // Optional wording of a local-model verdict; TEMPLATE never calls a language model.
+    private VisionNarration visionNarration = VisionNarration.TEMPLATE;
+    private int visionNarrationTimeoutSeconds = 10;
     private Storage storage = new Storage();
     private Rag rag = new Rag();
 
     public enum CollectionProvider { GROQ, OPENROUTER }
     public enum RagGenerationProvider { GEMINI, GROQ }
+    public enum VisionEngine { LLM, LOCAL }
+    public enum VisionNarration { TEMPLATE, LLM }
 
     public String getCollectionTextModel() {
         return collectionProvider == CollectionProvider.GROQ ? groq.getModelText() : openRouter.getModelText();
@@ -53,6 +61,23 @@ public class AiProperties {
         private String modelText = "qwen/qwen3.8-27b:free";
         private String modelVision = "qwen/qwen3.8-27b:free";
         private int timeoutSeconds = 60;
+    }
+
+    /**
+     * Service Python local du modèle proprete_mobilenetv3l (computer_vision/service).
+     * Seuils facultatifs : null = désactivé ; aucune valeur par défaut n'est fixée.
+     */
+    @Data
+    public static class LocalVision {
+        private String baseUrl = "http://127.0.0.1:8090";
+        private int timeoutSeconds = 15;
+        private String token;
+        private String modelName = "proprete_mobilenetv3l";
+        private String modelSha256 = "da40e684d2ddc268ae3c976e668dcd2a9861a5e42c46d6143a1dea27b1bbef97";
+        private Double propreThreshold;
+        private Double minSharpness;
+        private Double minBrightness;
+        private Double maxBrightness;
     }
 
     @Data

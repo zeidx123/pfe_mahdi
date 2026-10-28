@@ -1,0 +1,441 @@
+{
+  "note": "Références calculées sur les fichiers ORIGINAUX droits avec export/exemple_pretraitement.py et export/proprete_mobilenetv3l.onnx (onnxruntime CPU). Pour les images tournées, la référence est celle de l'image droite d'origine.",
+  "onnxruntime": "1.31.1",
+  "modele_sha256": "da40e684d2ddc268ae3c976e668dcd2a9861a5e42c46d6143a1dea27b1bbef97",
+  "graine": 42,
+  "source": "resultats/predictions.csv, modele=ONNX, split=valid",
+  "images": [
+    {
+      "id": "gd_train_002129",
+      "fichier": "gd_train_002129.jpg",
+      "classe_vraie": "PROPRE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 2.6301356683688937e-06,
+        "DEBORDEMENT": 5.6983060631177196e-11,
+        "PROPRE": 0.9999973773956299
+      },
+      "classe_reference": "PROPRE",
+      "sha256": "20fa19fd1154aa6a5c6d8a775da4d5efb9b5ff5ebcb3977e79816cf8fd7f2349"
+    },
+    {
+      "id": "gbs_003028_jpg",
+      "fichier": "gbs_003028_jpg.jpg",
+      "classe_vraie": "PROPRE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.03652390092611313,
+        "DEBORDEMENT": 0.02009812369942665,
+        "PROPRE": 0.9433779120445251
+      },
+      "classe_reference": "PROPRE",
+      "sha256": "a5eb0036ec9e210b6fd35dee4d80072c85e8cf2133aae0708885a2dd33f2021f"
+    },
+    {
+      "id": "gbs_03622_png",
+      "fichier": "gbs_03622_png.jpg",
+      "classe_vraie": "PROPRE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.00013024570944253355,
+        "DEBORDEMENT": 1.3745901014772244e-05,
+        "PROPRE": 0.9998559951782227
+      },
+      "classe_reference": "PROPRE",
+      "sha256": "0e9c8c931470f7797de4c312eed977ccba23d697e5515082b2545b24b7a96943"
+    },
+    {
+      "id": "gbs_05437_png",
+      "fichier": "gbs_05437_png.jpg",
+      "classe_vraie": "PROPRE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.1122787669301033,
+        "DEBORDEMENT": 0.19954729080200195,
+        "PROPRE": 0.6881739497184753
+      },
+      "classe_reference": "PROPRE",
+      "sha256": "71308e25099a459edeaa318912eb2890166e4b5495d22aebb47104b560b99b90"
+    },
+    {
+      "id": "gd_train_002215",
+      "fichier": "gd_train_002215.jpg",
+      "classe_vraie": "PROPRE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 8.649452865938656e-06,
+        "DEBORDEMENT": 4.334609471356998e-08,
+        "PROPRE": 0.9999912977218628
+      },
+      "classe_reference": "PROPRE",
+      "sha256": "36df7c9998164e71a64fc0b56fc58379970223cbb9ca35647d8375f3fdedb84a"
+    },
+    {
+      "id": "gbs_002925_jpg",
+      "fichier": "gbs_002925_jpg.jpg",
+      "classe_vraie": "PROPRE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 8.108037582132965e-05,
+        "DEBORDEMENT": 8.410454938712064e-06,
+        "PROPRE": 0.9999104738235474
+      },
+      "classe_reference": "PROPRE",
+      "sha256": "ec9fa97b8980d52ca19f914ff02a0069f108e12b9ebd311c538a8b48115cfbb9"
+    },
+    {
+      "id": "gbs_05483_png",
+      "fichier": "gbs_05483_png.jpg",
+      "classe_vraie": "PROPRE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.00035794771974906325,
+        "DEBORDEMENT": 0.002898498671129346,
+        "PROPRE": 0.9967435598373413
+      },
+      "classe_reference": "PROPRE",
+      "sha256": "da83d1ddd5727176a20b5d25cf961a9b7e15c27055ce671fa9e2a99b2c91a3b7"
+    },
+    {
+      "id": "gbs_07097_png",
+      "fichier": "gbs_07097_png.jpg",
+      "classe_vraie": "PROPRE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.0015369135653600097,
+        "DEBORDEMENT": 1.0555689868851914e-06,
+        "PROPRE": 0.9984620809555054
+      },
+      "classe_reference": "PROPRE",
+      "sha256": "461cd848b42ec201170b17df04c9b0d856b9ca36f8686efc607555dca99ea55b"
+    },
+    {
+      "id": "gbs_01259_png",
+      "fichier": "gbs_01259_png.jpg",
+      "classe_vraie": "PROPRE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.02801809087395668,
+        "DEBORDEMENT": 0.9427409768104553,
+        "PROPRE": 0.02924089878797531
+      },
+      "classe_reference": "DEBORDEMENT",
+      "sha256": "bbd43617fc3987a2427672fc8b20a11442980fc3021cb91d12bd347debf9c847"
+    },
+    {
+      "id": "gd_test_002668",
+      "fichier": "gd_test_002668.jpg",
+      "classe_vraie": "PROPRE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.006373974960297346,
+        "DEBORDEMENT": 0.012141121551394463,
+        "PROPRE": 0.9814848899841309
+      },
+      "classe_reference": "PROPRE",
+      "sha256": "9a1ae033a9f93974a5d40b207ab2a8dc6c8106320f6971d3ce8a06db8bb17bb1"
+    },
+    {
+      "id": "gd_train_001198",
+      "fichier": "gd_train_001198.jpg",
+      "classe_vraie": "DEBORDEMENT",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.0016209775349125266,
+        "DEBORDEMENT": 0.9929568767547607,
+        "PROPRE": 0.005422213114798069
+      },
+      "classe_reference": "DEBORDEMENT",
+      "sha256": "a06971973db06b6ca089f30917d28d5c1f13d4cb3dcc9a2ed0230a6ff2ad6e69"
+    },
+    {
+      "id": "gd_train_003064",
+      "fichier": "gd_train_003064.jpg",
+      "classe_vraie": "DEBORDEMENT",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.01368529349565506,
+        "DEBORDEMENT": 0.9581586122512817,
+        "PROPRE": 0.028156017884612083
+      },
+      "classe_reference": "DEBORDEMENT",
+      "sha256": "2e509d6997e727314f5997b093dd54b5ce07aaaec79260cccd72db2884e6a513"
+    },
+    {
+      "id": "gbs_04417_png",
+      "fichier": "gbs_04417_png.jpg",
+      "classe_vraie": "DEBORDEMENT",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.004473951645195484,
+        "DEBORDEMENT": 0.9841033220291138,
+        "PROPRE": 0.011422800831496716
+      },
+      "classe_reference": "DEBORDEMENT",
+      "sha256": "4b22aa261bbb3d5566af109f3c9c12fced8befabc6419def0aaf41648d983dcb"
+    },
+    {
+      "id": "gbs_04852_png",
+      "fichier": "gbs_04852_png.jpg",
+      "classe_vraie": "DEBORDEMENT",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.014877625741064548,
+        "DEBORDEMENT": 0.8713976740837097,
+        "PROPRE": 0.11372474581003189
+      },
+      "classe_reference": "DEBORDEMENT",
+      "sha256": "9d13e4ca3af46e1f04f9a2a7505b9b5033e9beb3fa9325dc6f50fae62d6aae0c"
+    },
+    {
+      "id": "gd_train_000825",
+      "fichier": "gd_train_000825.jpg",
+      "classe_vraie": "DEBORDEMENT",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.015540982596576214,
+        "DEBORDEMENT": 0.9506959319114685,
+        "PROPRE": 0.03376307711005211
+      },
+      "classe_reference": "DEBORDEMENT",
+      "sha256": "c1bc99c8a0eab84f6b879d508df8a72032b4d72dbe13e7938db6db732360ef3d"
+    },
+    {
+      "id": "gbs_01252_png",
+      "fichier": "gbs_01252_png.jpg",
+      "classe_vraie": "DEBORDEMENT",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.002602372085675597,
+        "DEBORDEMENT": 0.9941892623901367,
+        "PROPRE": 0.0032083317637443542
+      },
+      "classe_reference": "DEBORDEMENT",
+      "sha256": "c450e8403e10f91be16aecaba86ee704b8896b1b49b867148e36e98ddc1116dc"
+    },
+    {
+      "id": "gbs_05402_png",
+      "fichier": "gbs_05402_png.jpg",
+      "classe_vraie": "DEBORDEMENT",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.06344734132289886,
+        "DEBORDEMENT": 0.9033851027488708,
+        "PROPRE": 0.03316756710410118
+      },
+      "classe_reference": "DEBORDEMENT",
+      "sha256": "41d6b92232c5c927c98b8f73aa4cc9a2a64c5bfc486cd724445c3b86ad032e52"
+    },
+    {
+      "id": "gbs_001973_jpg",
+      "fichier": "gbs_001973_jpg.jpg",
+      "classe_vraie": "DEBORDEMENT",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.006079705897718668,
+        "DEBORDEMENT": 0.9836564064025879,
+        "PROPRE": 0.010263838805258274
+      },
+      "classe_reference": "DEBORDEMENT",
+      "sha256": "92cb1fe2de9debcd948d491125b39c2d0a9c9aaa2cb2e58d79b170db818642a2"
+    },
+    {
+      "id": "kg_train_000254",
+      "fichier": "kg_train_000254.jpg",
+      "classe_vraie": "DEBORDEMENT",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.000678754469845444,
+        "DEBORDEMENT": 0.9931787252426147,
+        "PROPRE": 0.006142472382634878
+      },
+      "classe_reference": "DEBORDEMENT",
+      "sha256": "05dc28e8d3291cb916b6cb22558103c0a627a4de782fe93dc6e738212c68c0c5"
+    },
+    {
+      "id": "gd_valid_002888",
+      "fichier": "gd_valid_002888.jpg",
+      "classe_vraie": "DEBORDEMENT",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.05455407872796059,
+        "DEBORDEMENT": 0.9042050838470459,
+        "PROPRE": 0.041240908205509186
+      },
+      "classe_reference": "DEBORDEMENT",
+      "sha256": "fd789afeecae510895f98c02fc4a3bb2ccd7d239c3861df6967541625957332a"
+    },
+    {
+      "id": "cd_flou_093",
+      "fichier": "cd_flou_093.jpg",
+      "classe_vraie": "CANNOT_DETERMINE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.9999960660934448,
+        "DEBORDEMENT": 6.538698027469536e-09,
+        "PROPRE": 3.886830654664664e-06
+      },
+      "classe_reference": "CANNOT_DETERMINE",
+      "sha256": "841aa9f3583253b0f20060587152062493e4c95b08c956130cfd3773500875fc"
+    },
+    {
+      "id": "cd_cadrage_029",
+      "fichier": "cd_cadrage_029.jpg",
+      "classe_vraie": "CANNOT_DETERMINE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.9581237435340881,
+        "DEBORDEMENT": 7.36935346079548e-10,
+        "PROPRE": 0.04187631234526634
+      },
+      "classe_reference": "CANNOT_DETERMINE",
+      "sha256": "2787a71a5120e4d80e8387911dd026a6b477133eeb7753a3d757276d333da52c"
+    },
+    {
+      "id": "cd_flou_014",
+      "fichier": "cd_flou_014.jpg",
+      "classe_vraie": "CANNOT_DETERMINE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.9997772574424744,
+        "DEBORDEMENT": 4.7362831878672296e-07,
+        "PROPRE": 0.00022230875038076192
+      },
+      "classe_reference": "CANNOT_DETERMINE",
+      "sha256": "edb50cebf2e673a5aa96a97f4f26c1a59ba58d423d67d29e8635f512137fe018"
+    },
+    {
+      "id": "cd_flou_096",
+      "fichier": "cd_flou_096.jpg",
+      "classe_vraie": "CANNOT_DETERMINE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.9999303817749023,
+        "DEBORDEMENT": 2.333463555714843e-08,
+        "PROPRE": 6.964712520129979e-05
+      },
+      "classe_reference": "CANNOT_DETERMINE",
+      "sha256": "a4a05980113489016eb308b56d83eeec23d94f6109941a562c1a698a3ba65a64"
+    },
+    {
+      "id": "cd_cadrage_175",
+      "fichier": "cd_cadrage_175.jpg",
+      "classe_vraie": "CANNOT_DETERMINE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.9963550567626953,
+        "DEBORDEMENT": 0.00013478881737682968,
+        "PROPRE": 0.003510125679895282
+      },
+      "classe_reference": "CANNOT_DETERMINE",
+      "sha256": "0334c50e7da9f3d7a5ad602cba36e83583d361eda7a169b6dcff37f9166d23f2"
+    },
+    {
+      "id": "cd_flou_077",
+      "fichier": "cd_flou_077.jpg",
+      "classe_vraie": "CANNOT_DETERMINE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.9999940395355225,
+        "DEBORDEMENT": 2.7042543759847604e-09,
+        "PROPRE": 5.9413432609289885e-06
+      },
+      "classe_reference": "CANNOT_DETERMINE",
+      "sha256": "698762d8f8c027a3b3001ce788bcffb0268a3f1836d8287a6ed466e020a6bcd4"
+    },
+    {
+      "id": "cd_cadrage_107",
+      "fichier": "cd_cadrage_107.jpg",
+      "classe_vraie": "CANNOT_DETERMINE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.999992847442627,
+        "DEBORDEMENT": 1.4813136495206436e-08,
+        "PROPRE": 7.160293080232805e-06
+      },
+      "classe_reference": "CANNOT_DETERMINE",
+      "sha256": "8be6a58d6792d393412649223b82055e9338a66521da125df595f90a6c767d04"
+    },
+    {
+      "id": "cd_nuit_032",
+      "fichier": "cd_nuit_032.jpg",
+      "classe_vraie": "CANNOT_DETERMINE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.9999932050704956,
+        "DEBORDEMENT": 2.4009594312701665e-08,
+        "PROPRE": 6.766423666704213e-06
+      },
+      "classe_reference": "CANNOT_DETERMINE",
+      "sha256": "6b2f6eab0478cc91fb6c88228a7b9d2b281c7944cb7a87dd571e6468f729f47d"
+    },
+    {
+      "id": "cd_cadrage_062",
+      "fichier": "cd_cadrage_062.jpg",
+      "classe_vraie": "CANNOT_DETERMINE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.9999126195907593,
+        "DEBORDEMENT": 2.9879554830358757e-08,
+        "PROPRE": 8.739942131796852e-05
+      },
+      "classe_reference": "CANNOT_DETERMINE",
+      "sha256": "90666f09e20805af4cc5dbdd708cc5bc325c04565d3da48ad32b3c01d5cb8ee8"
+    },
+    {
+      "id": "cd_cadrage_118",
+      "fichier": "cd_cadrage_118.jpg",
+      "classe_vraie": "CANNOT_DETERMINE",
+      "type": "original",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.9487884640693665,
+        "DEBORDEMENT": 0.044674571603536606,
+        "PROPRE": 0.006536979228258133
+      },
+      "classe_reference": "CANNOT_DETERMINE",
+      "sha256": "a0453d4f16e6b1e85357e5a983b36dde58fd63175824103e964527affbc9aa29"
+    },
+    {
+      "id": "gd_train_002129",
+      "fichier": "gd_train_002129_tourne_exif6.png",
+      "classe_vraie": "PROPRE",
+      "type": "tourne_exif6",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 2.6301356683688937e-06,
+        "DEBORDEMENT": 5.6983060631177196e-11,
+        "PROPRE": 0.9999973773956299
+      },
+      "classe_reference": "PROPRE",
+      "sha256": "9d301a04f62e434bc93d1ba2b3a09ee26d01e0430ba241b129b9fcdfd34bcece",
+      "original": "gd_train_002129.jpg"
+    },
+    {
+      "id": "gd_train_001198",
+      "fichier": "gd_train_001198_tourne_exif8.png",
+      "classe_vraie": "DEBORDEMENT",
+      "type": "tourne_exif8",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.0016209775349125266,
+        "DEBORDEMENT": 0.9929568767547607,
+        "PROPRE": 0.005422213114798069
+      },
+      "classe_reference": "DEBORDEMENT",
+      "sha256": "ee4b72874ba30607b93244315ada77a248922a7f8b6054e979c569a0838bc272",
+      "original": "gd_train_001198.jpg"
+    },
+    {
+      "id": "cd_flou_093",
+      "fichier": "cd_flou_093_tourne_exif6.png",
+      "classe_vraie": "CANNOT_DETERMINE",
+      "type": "tourne_exif6",
+      "probabilites_reference": {
+        "CANNOT_DETERMINE": 0.9999960660934448,
+        "DEBORDEMENT": 6.538698027469536e-09,
+        "PROPRE": 3.886830654664664e-06
+      },
+      "classe_reference": "CANNOT_DETERMINE",
+      "sha256": "a1f838c6fff2021d58b7b6eb3b0d0f1370c705693ff8d640fdeae41d5073e611",
+      "original": "cd_flou_093.jpg"
+    }
+  ]
+}

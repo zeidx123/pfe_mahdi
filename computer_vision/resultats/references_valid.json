@@ -1,0 +1,867 @@
+{
+  "selection": "macro-F1 sur valid ∩ sous_reel",
+  "grille_C": [
+    0.01,
+    0.1,
+    1,
+    10,
+    100
+  ],
+  "CLIP_all": {
+    "n_train": 6636,
+    "C_retenu": 100,
+    "macro_f1_valid_reel_par_C": {
+      "0.01": 0.6486754898920951,
+      "0.1": 0.7804665763701227,
+      "1": 0.8826846873509923,
+      "10": 0.8966690929991653,
+      "100": 0.8981154222719873
+    }
+  },
+  "CLIP_reel": {
+    "n_train": 3388,
+    "C_retenu": 100,
+    "macro_f1_valid_reel_par_C": {
+      "0.01": 0.634364403726094,
+      "0.1": 0.7941802731657842,
+      "1": 0.8543724145911077,
+      "10": 0.8914366210091207,
+      "100": 0.9099340401178141
+    }
+  },
+  "B1": {
+    "table_origine_vers_classe": {
+      "garbage_detection": "DEBORDEMENT",
+      "gbs": "DEBORDEMENT",
+      "kaggle": "DEBORDEMENT",
+      "synthetique": "CANNOT_DETERMINE"
+    }
+  },
+  "B2": {
+    "variables_num": [
+      "largeur_origine",
+      "hauteur_origine",
+      "nettete",
+      "luminosite",
+      "fraction_fond_blanc"
+    ],
+    "variables_cat": [
+      "origine",
+      "famille",
+      "flag_collage",
+      "plage_2001_3000"
+    ],
+    "manquant_num": -1.0,
+    "manquant_cat": "__manquant__"
+  },
+  "valid": {
+    "CLIP_all": {
+      "tout": {
+        "n": 1424,
+        "exactitude": 0.8981741573033708,
+        "exactitude_equilibree": 0.9145026158171944,
+        "macro_f1": 0.8692087589276042,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 0.9294117647058824,
+            "rappel": 0.9634146341463414,
+            "f1": 0.9461077844311377,
+            "support": 82
+          },
+          "DEBORDEMENT": {
+            "precision": 0.975071907957814,
+            "rappel": 0.8960352422907489,
+            "f1": 0.9338842975206612,
+            "support": 1135
+          },
+          "PROPRE": {
+            "precision": 0.6182432432432432,
+            "rappel": 0.8840579710144928,
+            "f1": 0.7276341948310139,
+            "support": 207
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              79,
+              2,
+              1
+            ],
+            [
+              6,
+              1017,
+              112
+            ],
+            [
+              0,
+              24,
+              183
+            ]
+          ]
+        }
+      },
+      "sous_reel": {
+        "n": 727,
+        "exactitude": 0.936726272352132,
+        "exactitude_equilibree": 0.9436137763930595,
+        "macro_f1": 0.8981154222719873,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 0.9294117647058824,
+            "rappel": 0.9634146341463414,
+            "f1": 0.9461077844311377,
+            "support": 82
+          },
+          "DEBORDEMENT": {
+            "precision": 0.9869888475836431,
+            "rappel": 0.9332161687170475,
+            "f1": 0.959349593495935,
+            "support": 569
+          },
+          "PROPRE": {
+            "precision": 0.6826923076923077,
+            "rappel": 0.9342105263157895,
+            "f1": 0.7888888888888889,
+            "support": 76
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              79,
+              2,
+              1
+            ],
+            [
+              6,
+              531,
+              32
+            ],
+            [
+              0,
+              5,
+              71
+            ]
+          ]
+        }
+      },
+      "ia_probable": {
+        "n": 697,
+        "exactitude": 0.8579626972740315,
+        "exactitude_equilibree": 0.8568095379386615,
+        "macro_f1": 0.8005307386112339,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 0.0,
+            "rappel": 0.0,
+            "f1": 0.0,
+            "support": 0
+          },
+          "DEBORDEMENT": {
+            "precision": 0.9623762376237623,
+            "rappel": 0.8586572438162544,
+            "f1": 0.907563025210084,
+            "support": 566
+          },
+          "PROPRE": {
+            "precision": 0.5833333333333334,
+            "rappel": 0.8549618320610687,
+            "f1": 0.6934984520123839,
+            "support": 131
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              486,
+              80
+            ],
+            [
+              0,
+              19,
+              112
+            ]
+          ]
+        }
+      },
+      "sous_strict": {
+        "n": 541,
+        "exactitude": 0.9353049907578558,
+        "exactitude_equilibree": 0.9383306751727805,
+        "macro_f1": 0.8965247472710159,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 0.9411764705882353,
+            "rappel": 0.9696969696969697,
+            "f1": 0.9552238805970149,
+            "support": 66
+          },
+          "DEBORDEMENT": {
+            "precision": 0.9848484848484849,
+            "rappel": 0.9330143540669856,
+            "f1": 0.9582309582309583,
+            "support": 418
+          },
+          "PROPRE": {
+            "precision": 0.6753246753246753,
+            "rappel": 0.9122807017543859,
+            "f1": 0.7761194029850746,
+            "support": 57
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              64,
+              1,
+              1
+            ],
+            [
+              4,
+              390,
+              24
+            ],
+            [
+              0,
+              5,
+              52
+            ]
+          ]
+        }
+      }
+    },
+    "CLIP_reel": {
+      "tout": {
+        "n": 1424,
+        "exactitude": 0.9143258426966292,
+        "exactitude_equilibree": 0.8685925801350843,
+        "macro_f1": 0.8654427919340536,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 0.9080459770114943,
+            "rappel": 0.9634146341463414,
+            "f1": 0.9349112426035503,
+            "support": 82
+          },
+          "DEBORDEMENT": {
+            "precision": 0.9448818897637795,
+            "rappel": 0.9515418502202643,
+            "f1": 0.9482001755926251,
+            "support": 1135
+          },
+          "PROPRE": {
+            "precision": 0.7371134020618557,
+            "rappel": 0.6908212560386473,
+            "f1": 0.713216957605985,
+            "support": 207
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              79,
+              2,
+              1
+            ],
+            [
+              5,
+              1080,
+              50
+            ],
+            [
+              3,
+              61,
+              143
+            ]
+          ]
+        }
+      },
+      "sous_reel": {
+        "n": 727,
+        "exactitude": 0.9449793672627235,
+        "exactitude_equilibree": 0.9433285730507847,
+        "macro_f1": 0.9099340401178141,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 0.9753086419753086,
+            "rappel": 0.9634146341463414,
+            "f1": 0.9693251533742331,
+            "support": 82
+          },
+          "DEBORDEMENT": {
+            "precision": 0.9853479853479854,
+            "rappel": 0.945518453427065,
+            "f1": 0.9650224215246637,
+            "support": 569
+          },
+          "PROPRE": {
+            "precision": 0.7,
+            "rappel": 0.9210526315789473,
+            "f1": 0.7954545454545454,
+            "support": 76
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              79,
+              2,
+              1
+            ],
+            [
+              2,
+              538,
+              29
+            ],
+            [
+              0,
+              6,
+              70
+            ]
+          ]
+        }
+      },
+      "ia_probable": {
+        "n": 697,
+        "exactitude": 0.8823529411764706,
+        "exactitude_equilibree": 0.7574245407709115,
+        "macro_f1": 0.7904805579440145,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 0.0,
+            "rappel": 0.0,
+            "f1": 0.0,
+            "support": 0
+          },
+          "DEBORDEMENT": {
+            "precision": 0.9078726968174204,
+            "rappel": 0.9575971731448764,
+            "f1": 0.9320722269991402,
+            "support": 566
+          },
+          "PROPRE": {
+            "precision": 0.776595744680851,
+            "rappel": 0.5572519083969466,
+            "f1": 0.6488888888888888,
+            "support": 131
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              3,
+              542,
+              21
+            ],
+            [
+              3,
+              55,
+              73
+            ]
+          ]
+        }
+      },
+      "sous_strict": {
+        "n": 541,
+        "exactitude": 0.9426987060998152,
+        "exactitude_equilibree": 0.9372674109516215,
+        "macro_f1": 0.9063799416620121,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 0.9692307692307692,
+            "rappel": 0.9545454545454546,
+            "f1": 0.9618320610687023,
+            "support": 66
+          },
+          "DEBORDEMENT": {
+            "precision": 0.9825870646766169,
+            "rappel": 0.9449760765550239,
+            "f1": 0.9634146341463414,
+            "support": 418
+          },
+          "PROPRE": {
+            "precision": 0.7027027027027027,
+            "rappel": 0.9122807017543859,
+            "f1": 0.7938931297709924,
+            "support": 57
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              63,
+              2,
+              1
+            ],
+            [
+              2,
+              395,
+              21
+            ],
+            [
+              0,
+              5,
+              52
+            ]
+          ]
+        }
+      }
+    },
+    "B1": {
+      "tout": {
+        "n": 1424,
+        "exactitude": 0.8546348314606742,
+        "exactitude_equilibree": 0.6666666666666666,
+        "macro_f1": 0.6388103889113174,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 1.0,
+            "rappel": 1.0,
+            "f1": 1.0,
+            "support": 82
+          },
+          "DEBORDEMENT": {
+            "precision": 0.84575260804769,
+            "rappel": 1.0,
+            "f1": 0.9164311667339523,
+            "support": 1135
+          },
+          "PROPRE": {
+            "precision": 0.0,
+            "rappel": 0.0,
+            "f1": 0.0,
+            "support": 207
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              82,
+              0,
+              0
+            ],
+            [
+              0,
+              1135,
+              0
+            ],
+            [
+              0,
+              207,
+              0
+            ]
+          ]
+        }
+      },
+      "sous_reel": {
+        "n": 727,
+        "exactitude": 0.8954607977991746,
+        "exactitude_equilibree": 0.6666666666666666,
+        "macro_f1": 0.6457990115321252,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 1.0,
+            "rappel": 1.0,
+            "f1": 1.0,
+            "support": 82
+          },
+          "DEBORDEMENT": {
+            "precision": 0.8821705426356589,
+            "rappel": 1.0,
+            "f1": 0.9373970345963756,
+            "support": 569
+          },
+          "PROPRE": {
+            "precision": 0.0,
+            "rappel": 0.0,
+            "f1": 0.0,
+            "support": 76
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              82,
+              0,
+              0
+            ],
+            [
+              0,
+              569,
+              0
+            ],
+            [
+              0,
+              76,
+              0
+            ]
+          ]
+        }
+      },
+      "ia_probable": {
+        "n": 697,
+        "exactitude": 0.812051649928264,
+        "exactitude_equilibree": 0.5,
+        "macro_f1": 0.44813935075217737,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 0.0,
+            "rappel": 0.0,
+            "f1": 0.0,
+            "support": 0
+          },
+          "DEBORDEMENT": {
+            "precision": 0.812051649928264,
+            "rappel": 1.0,
+            "f1": 0.8962787015043547,
+            "support": 566
+          },
+          "PROPRE": {
+            "precision": 0.0,
+            "rappel": 0.0,
+            "f1": 0.0,
+            "support": 131
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              566,
+              0
+            ],
+            [
+              0,
+              131,
+              0
+            ]
+          ]
+        }
+      },
+      "sous_strict": {
+        "n": 541,
+        "exactitude": 0.8946395563770795,
+        "exactitude_equilibree": 0.6666666666666666,
+        "macro_f1": 0.6453900709219859,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 1.0,
+            "rappel": 1.0,
+            "f1": 1.0,
+            "support": 66
+          },
+          "DEBORDEMENT": {
+            "precision": 0.88,
+            "rappel": 1.0,
+            "f1": 0.9361702127659575,
+            "support": 418
+          },
+          "PROPRE": {
+            "precision": 0.0,
+            "rappel": 0.0,
+            "f1": 0.0,
+            "support": 57
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              66,
+              0,
+              0
+            ],
+            [
+              0,
+              418,
+              0
+            ],
+            [
+              0,
+              57,
+              0
+            ]
+          ]
+        }
+      }
+    },
+    "B2": {
+      "tout": {
+        "n": 1424,
+        "exactitude": 0.8174157303370787,
+        "exactitude_equilibree": 0.8262118084374356,
+        "macro_f1": 0.7950738314474628,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 1.0,
+            "rappel": 1.0,
+            "f1": 1.0,
+            "support": 82
+          },
+          "DEBORDEMENT": {
+            "precision": 0.927663734115347,
+            "rappel": 0.8361233480176211,
+            "f1": 0.8795180722891566,
+            "support": 1135
+          },
+          "PROPRE": {
+            "precision": 0.4169278996865204,
+            "rappel": 0.642512077294686,
+            "f1": 0.5057034220532319,
+            "support": 207
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              82,
+              0,
+              0
+            ],
+            [
+              0,
+              949,
+              186
+            ],
+            [
+              0,
+              74,
+              133
+            ]
+          ]
+        }
+      },
+      "sous_reel": {
+        "n": 727,
+        "exactitude": 0.889958734525447,
+        "exactitude_equilibree": 0.8695310332069189,
+        "macro_f1": 0.833957601266556,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 1.0,
+            "rappel": 1.0,
+            "f1": 1.0,
+            "support": 82
+          },
+          "DEBORDEMENT": {
+            "precision": 0.9587242026266416,
+            "rappel": 0.8980667838312829,
+            "f1": 0.9274047186932849,
+            "support": 569
+          },
+          "PROPRE": {
+            "precision": 0.48214285714285715,
+            "rappel": 0.7105263157894737,
+            "f1": 0.574468085106383,
+            "support": 76
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              82,
+              0,
+              0
+            ],
+            [
+              0,
+              511,
+              58
+            ],
+            [
+              0,
+              22,
+              54
+            ]
+          ]
+        }
+      },
+      "ia_probable": {
+        "n": 697,
+        "exactitude": 0.7417503586800573,
+        "exactitude_equilibree": 0.6884525126102554,
+        "macro_f1": 0.6485005379236148,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 0.0,
+            "rappel": 0.0,
+            "f1": 0.0,
+            "support": 0
+          },
+          "DEBORDEMENT": {
+            "precision": 0.8938775510204081,
+            "rappel": 0.773851590106007,
+            "f1": 0.8295454545454546,
+            "support": 566
+          },
+          "PROPRE": {
+            "precision": 0.38164251207729466,
+            "rappel": 0.6030534351145038,
+            "f1": 0.46745562130177515,
+            "support": 131
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              438,
+              128
+            ],
+            [
+              0,
+              52,
+              79
+            ]
+          ]
+        }
+      },
+      "sous_strict": {
+        "n": 541,
+        "exactitude": 0.9149722735674677,
+        "exactitude_equilibree": 0.8774587985114302,
+        "macro_f1": 0.859698464067396,
+        "par_classe": {
+          "CANNOT_DETERMINE": {
+            "precision": 1.0,
+            "rappel": 1.0,
+            "f1": 1.0,
+            "support": 66
+          },
+          "DEBORDEMENT": {
+            "precision": 0.958128078817734,
+            "rappel": 0.930622009569378,
+            "f1": 0.9441747572815534,
+            "support": 418
+          },
+          "PROPRE": {
+            "precision": 0.5797101449275363,
+            "rappel": 0.7017543859649122,
+            "f1": 0.6349206349206349,
+            "support": 57
+          }
+        },
+        "confusion": {
+          "lignes=vrai, colonnes=prédit, ordre": [
+            "CANNOT_DETERMINE",
+            "DEBORDEMENT",
+            "PROPRE"
+          ],
+          "matrice": [
+            [
+              66,
+              0,
+              0
+            ],
+            [
+              0,
+              389,
+              29
+            ],
+            [
+              0,
+              17,
+              40
+            ]
+          ]
+        }
+      }
+    }
+  }
+}

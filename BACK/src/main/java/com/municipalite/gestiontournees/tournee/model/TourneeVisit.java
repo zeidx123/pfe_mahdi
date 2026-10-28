@@ -19,6 +19,10 @@ public class TourneeVisit {
     private boolean legacyProgressMissing;
     private String analysisId;
     private String analysisStatus;
+    // Local engine only (null for LLM analyses). analysisDecision orders human review; it never changes this visit.
+    private java.util.Map<String, Double> analysisProbabilities;
+    private String analysisDecision;
+    private String analysisQualityIssue;
     private String driverOutcome;
     private String driverAssessment;
     private String notes;

@@ -1,0 +1,15 @@
+{
+  "total": 9483,
+  "reutilises": 8939,
+  "calcules": 544,
+  "controle_recalcul_vs_cache": {
+    "n": 20,
+    "cos_min": 0.9999670386314392,
+    "cos_moyen": 0.9999903440475464
+  },
+  "modele": "openai/clip-vit-base-patch32",
+  "versions": {
+    "torch": "2.14.1+cu126",
+    "transformers": "5.21.0"
+  }
+}

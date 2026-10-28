@@ -1,0 +1,31 @@
+# Expressions interdites dans un résumé rédigé (règle V3 de NarrativeValidator et de scripts/evaluation/narrative_validator.py).
+# Une entrée par ligne ; les lignes vides et celles qui commencent par # sont ignorées.
+# Comparaison insensible à la casse et aux accents, sur des mots entiers ; chaque entrée accepte aussi les
+# terminaisons e, s, es ou x (« sac » couvre « sacs », « confirmé » couvre « confirmée » mais pas « confirmer »).
+on voit
+on observe
+on distingue
+on aperçoit
+la photo montre
+l'image montre
+la photographie montre
+visible
+visiblement
+sac
+conteneur
+benne
+poubelle
+camion
+trottoir
+chauffeur
+collecté par
+preuve
+prouvé
+avéré
+confirmé
+certain
+certainement
+certitude
+incident
+faute
+fraude

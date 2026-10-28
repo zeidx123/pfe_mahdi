@@ -1,0 +1,908 @@
+{
+  "note": "Vecteurs partagés entre NarrativeValidatorTest (Java) et scripts/evaluation/test_narrative_validator.py ; motifs = codes triés des règles violées.",
+  "cas": [
+    {
+      "id": "ok_propre",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : le point est probablement propre, avec une probabilité de 91 %. Les probabilités de débordement et d'indétermination sont de 7 % et 2 %. Ce résultat est à confirmer par un contrôle humain.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_debordement",
+      "donnees": {
+        "classe_predite": "DEBORDEMENT",
+        "pourcentages": {
+          "PROPRE": 10,
+          "DEBORDEMENT": 85,
+          "CANNOT_DETERMINE": 5
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : le modèle estime un débordement probable à 85 %, contre 10 % pour un point propre et 5 % d'indétermination. Une vérification humaine reste nécessaire.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_indetermine",
+      "donnees": {
+        "classe_predite": "CANNOT_DETERMINE",
+        "pourcentages": {
+          "PROPRE": 10,
+          "DEBORDEMENT": 20,
+          "CANNOT_DETERMINE": 70
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "L'analyse automatique ne permet pas de conclure : indétermination à 70 %. Il faut vérifier le point lors d'un contrôle humain.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_qualite_sombre",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 60,
+          "DEBORDEMENT": 30,
+          "CANNOT_DETERMINE": 10
+        },
+        "probleme_qualite": "TROP_SOMBRE",
+        "nettete": 85.2,
+        "luminosite": 22.4
+      },
+      "texte": "Analyse automatique : la photo est trop sombre (luminosité 22,4), il est conseillé de reprendre la photo. Le modèle indique propre à 60 %, résultat à confirmer par un contrôle humain.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_qualite_floue",
+      "donnees": {
+        "classe_predite": "DEBORDEMENT",
+        "pourcentages": {
+          "PROPRE": 5,
+          "DEBORDEMENT": 50,
+          "CANNOT_DETERMINE": 45
+        },
+        "probleme_qualite": "FLOUE",
+        "nettete": 12.4,
+        "luminosite": 110.0
+      },
+      "texte": "Analyse automatique sur une photo floue (netteté 12,4) : reprenez la photo. Débordement estimé à 50 %, à vérifier par un contrôle humain.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_qualite_surexposee",
+      "donnees": {
+        "classe_predite": "CANNOT_DETERMINE",
+        "pourcentages": {
+          "PROPRE": 25,
+          "DEBORDEMENT": 35,
+          "CANNOT_DETERMINE": 40
+        },
+        "probleme_qualite": "SUREXPOSEE",
+        "nettete": 300.0,
+        "luminosite": 245.6
+      },
+      "texte": "Analyse automatique : photo surexposée (luminosité 245,6), à reprendre. Résultat indéterminé à 40 %, à confirmer.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_pour_cent",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 91 pour cent. À confirmer par un contrôle humain.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_limite_100_et_0",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 100,
+          "DEBORDEMENT": 0,
+          "CANNOT_DETERMINE": 0
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 100 %, débordement 0 %. À confirmer par un contrôle humain.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_point_decimal",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 91 % (netteté 412.5). À vérifier par un contrôle humain.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_virgule_decimale",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 91 % (netteté 412,5). À vérifier par un contrôle humain.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_entier_pour_decimale_nulle",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.0
+      },
+      "texte": "Analyse automatique : propre à 91 % ; luminosité 120. Contrôle humain requis.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_sans_accents",
+      "donnees": {
+        "classe_predite": "DEBORDEMENT",
+        "pourcentages": {
+          "PROPRE": 10,
+          "DEBORDEMENT": 85,
+          "CANNOT_DETERMINE": 5
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : debordement probable a 85 %. A verifier.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_majuscules",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "ANALYSE AUTOMATIQUE : PROPRE À 91 %. À CONFIRMER PAR UN CONTRÔLE HUMAIN.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_espace_insecable",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 91 %. À confirmer par un contrôle humain.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_espace_fine_et_apostrophe",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "L’analyse automatique indique propre à 91 %. À confirmer par un contrôle humain.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_mot_proche_non_interdit",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 91 %, sachant que le résultat reste à confirmer par un contrôle humain.",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "ok_limite_600",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : le point est probablement propre, avec une probabilité de 91 %. Les probabilités de débordement et d'indétermination sont de 7 % et 2 %. Ce résultat est à confirmer par un contrôle humain. .....................................................................................................................................................................................................................................................................................................................................................................................................",
+      "attendu": "accepte",
+      "motifs": []
+    },
+    {
+      "id": "v1_vide",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "",
+      "attendu": "rejete",
+      "motifs": [
+        "V1"
+      ]
+    },
+    {
+      "id": "v1_espaces",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "   \n ",
+      "attendu": "rejete",
+      "motifs": [
+        "V1"
+      ]
+    },
+    {
+      "id": "v1_601",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : le point est probablement propre, avec une probabilité de 91 %. Les probabilités de débordement et d'indétermination sont de 7 % et 2 %. Ce résultat est à confirmer par un contrôle humain. ......................................................................................................................................................................................................................................................................................................................................................................................................",
+      "attendu": "rejete",
+      "motifs": [
+        "V1"
+      ]
+    },
+    {
+      "id": "v1_trop_long",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : le point est probablement propre, avec une probabilité de 91 %. Les probabilités de débordement et d'indétermination sont de 7 % et 2 %. Ce résultat est à confirmer par un contrôle humain. Ce résultat reste une estimation. Ce résultat reste une estimation. Ce résultat reste une estimation. Ce résultat reste une estimation. Ce résultat reste une estimation. Ce résultat reste une estimation. Ce résultat reste une estimation. Ce résultat reste une estimation. Ce résultat reste une estimation. Ce résultat reste une estimation. Ce résultat reste une estimation. Ce résultat reste une estimation. Ce résultat reste une estimation. Ce résultat reste une estimation. Ce résultat reste une estimation.",
+      "attendu": "rejete",
+      "motifs": [
+        "V1"
+      ]
+    },
+    {
+      "id": "v2_nombre_invente",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 91 % sur 3 critères. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V2"
+      ]
+    },
+    {
+      "id": "v2_pourcentage_modifie",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 92 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V2",
+        "V5"
+      ]
+    },
+    {
+      "id": "v2_decimale_en_trop",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 91 % (netteté 412,53). À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V2"
+      ]
+    },
+    {
+      "id": "v2_date",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique du 28/10 : propre à 91 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V2"
+      ]
+    },
+    {
+      "id": "v2_191_et_pas_91",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 191 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V2",
+        "V5"
+      ]
+    },
+    {
+      "id": "v2_decimal_0_91",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 0,91 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V2",
+        "V5"
+      ]
+    },
+    {
+      "id": "v3_on_voit",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : on voit un point propre à 91 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V3"
+      ]
+    },
+    {
+      "id": "v3_sac",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : aucun sac au sol, propre à 91 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V3"
+      ]
+    },
+    {
+      "id": "v3_conteneurs_pluriel",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : les conteneurs semblent propres à 91 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V3"
+      ]
+    },
+    {
+      "id": "v3_chauffeur",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : le chauffeur a bien travaillé, propre à 91 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V3"
+      ]
+    },
+    {
+      "id": "v3_preuve_majuscules",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "PREUVE d'une analyse automatique : propre à 91 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V3"
+      ]
+    },
+    {
+      "id": "v3_confirme_sans_confirmer",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Résultat confirmé : propre à 91 %, analyse automatique.",
+      "attendu": "rejete",
+      "motifs": [
+        "V3",
+        "V4"
+      ]
+    },
+    {
+      "id": "v3_incident_sans_accent",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : aucun incident, propre à 91 %. A confirmer par un controle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V3"
+      ]
+    },
+    {
+      "id": "v3_l_image_montre_apostrophe_courbe",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : l’image montre un point propre à 91 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V3"
+      ]
+    },
+    {
+      "id": "v3_visible",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : rien de visible, propre à 91 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V3"
+      ]
+    },
+    {
+      "id": "v4_sans_automatique",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Le point est propre à 91 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V4"
+      ]
+    },
+    {
+      "id": "v4_sans_controle",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 91 %.",
+      "attendu": "rejete",
+      "motifs": [
+        "V4"
+      ]
+    },
+    {
+      "id": "v5_pourcentage_predit_absent",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : débordement 7 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V5"
+      ]
+    },
+    {
+      "id": "v5_pourcentage_sans_symbole",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 91. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V5"
+      ]
+    },
+    {
+      "id": "v5_qualite_non_mentionnee",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 60,
+          "DEBORDEMENT": 30,
+          "CANNOT_DETERMINE": 10
+        },
+        "probleme_qualite": "TROP_SOMBRE",
+        "nettete": 85.2,
+        "luminosite": 22.4
+      },
+      "texte": "Analyse automatique : propre à 60 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V5"
+      ]
+    },
+    {
+      "id": "v5_qualite_sans_photo",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 60,
+          "DEBORDEMENT": 30,
+          "CANNOT_DETERMINE": 10
+        },
+        "probleme_qualite": "TROP_SOMBRE",
+        "nettete": 85.2,
+        "luminosite": 22.4
+      },
+      "texte": "Analyse automatique, image trop sombre : propre à 60 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V5"
+      ]
+    },
+    {
+      "id": "v5_mauvais_motif",
+      "donnees": {
+        "classe_predite": "DEBORDEMENT",
+        "pourcentages": {
+          "PROPRE": 5,
+          "DEBORDEMENT": 50,
+          "CANNOT_DETERMINE": 45
+        },
+        "probleme_qualite": "FLOUE",
+        "nettete": 12.4,
+        "luminosite": 110.0
+      },
+      "texte": "Analyse automatique : photo trop sombre, débordement à 50 %. À vérifier par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V5"
+      ]
+    },
+    {
+      "id": "v6_gras_markdown",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "**Analyse automatique** : propre à 91 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V6"
+      ]
+    },
+    {
+      "id": "v6_accolades",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "{Analyse automatique} : propre à 91 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V6"
+      ]
+    },
+    {
+      "id": "v6_diese_et_apostrophe_inverse",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "# Analyse automatique : `propre` à 91 %. À confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V6"
+      ]
+    },
+    {
+      "id": "v7_url",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 91 %. À confirmer par un contrôle humain, voir https://exemple.fr/aide.",
+      "attendu": "rejete",
+      "motifs": [
+        "V7"
+      ]
+    },
+    {
+      "id": "v7_www",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "Analyse automatique : propre à 91 %. Détails sur www.exemple.fr, à confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V7"
+      ]
+    },
+    {
+      "id": "multiple_v2_v3_v6",
+      "donnees": {
+        "classe_predite": "PROPRE",
+        "pourcentages": {
+          "PROPRE": 91,
+          "DEBORDEMENT": 7,
+          "CANNOT_DETERMINE": 2
+        },
+        "probleme_qualite": null,
+        "nettete": 412.5,
+        "luminosite": 120.3
+      },
+      "texte": "**On voit** 5 sacs : analyse automatique, propre à 91 %, à confirmer par un contrôle humain.",
+      "attendu": "rejete",
+      "motifs": [
+        "V2",
+        "V3",
+        "V6"
+      ]
+    }
+  ]
+}

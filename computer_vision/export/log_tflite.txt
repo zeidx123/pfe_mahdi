@@ -1,0 +1,249 @@
+flatbuffer_direct write timing: stage=float32 mode=builder_direct total=0.043s serialize=0.034s (sanitize=0.000s build=0.005s pack=0.026s output=0.002s) write=0.006s size=16.05MB
+flatbuffer_direct write timing: stage=float16 mode=builder_direct total=0.027s serialize=0.023s (sanitize=0.000s build=0.003s pack=0.019s output=0.001s) write=0.003s size=8.05MB
+Saved artifact at 'C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf'. The following endpoints are available:
+
+* Endpoint 'serving_default'
+  inputs_0 (POSITIONAL_ONLY): TensorSpec(shape=(1, 224, 224, 3), dtype=tf.float32, name='input')
+Output Type:
+  TensorSpec(shape=(1, 3), dtype=tf.float32, name=None)
+
+
+{
+ "tentatives": [
+  {
+   "outil": "litert_torch",
+   "resultat": "échec",
+   "erreur": "ModuleNotFoundError(\"No module named 'litert_torch'\")",
+   "cause_installation": "pip install litert-torch / ai-edge-torch : ResolutionImpossible ; litert-converter (litert-torch 0.9.x/0.10.0) et ai-edge-tensorflow (0.8.0) n'ont aucune distribution pour Windows / Python 3.13 (voir export/log_install_litert.txt et export/log_install_aiedgetorch.txt)"
+  },
+  {
+   "outil": "ai_edge_torch",
+   "resultat": "échec",
+   "erreur": "ModuleNotFoundError(\"No module named 'ai_edge_torch'\")",
+   "cause_installation": "pip install litert-torch / ai-edge-torch : ResolutionImpossible ; litert-converter (litert-torch 0.9.x/0.10.0) et ai-edge-tensorflow (0.8.0) n'ont aucune distribution pour Windows / Python 3.13 (voir export/log_install_litert.txt et export/log_install_aiedgetorch.txt)"
+  },
+  {
+   "outil": "onnx2tf 2.6.9 (TensorFlow 2.21.0), backend flatbuffer_direct (défaut)",
+   "resultat": "conversion faite, mais float16 à entrée/activations float16 non exécutable sur CPU et aucun SavedModel produit (int8 calibré impossible) : non livré",
+   "fichiers": {
+    "proprete_mobilenetv3l_float16.tflite": "ne s'exécute pas : RuntimeError('tflite/kernels/conv.cc:360 input_type == kTfLiteFloat32 || input_type == kTfLiteUInt8 || input_type == kTfLiteInt8 || input_type == kTfLiteInt16 was not true.Node number 1 (CONV_2D) failed to prepare.')",
+    "proprete_mobilenetv3l_float32.tflite": "s'exécute"
+   }
+  },
+  {
+   "outil": "onnx2tf 2.6.9 (TensorFlow 2.21.0), backend tf_converter",
+   "resultat": "réussi",
+   "fichiers_produits": [
+    "proprete_mobilenetv3l_dynamic_range_quant.tflite",
+    "proprete_mobilenetv3l_float16.tflite",
+    "proprete_mobilenetv3l_float32.tflite",
+    "proprete_mobilenetv3l_full_integer_quant.tflite",
+    "proprete_mobilenetv3l_full_integer_quant_with_int16_act.tflite",
+    "proprete_mobilenetv3l_integer_quant.tflite",
+    "proprete_mobilenetv3l_integer_quant_with_int16_act.tflite"
+   ]
+  }
+ ],
+ "formats": {
+  "tflite_float32": {
+   "fichier": "export\\proprete_mobilenetv3l_float32.tflite",
+   "taille_mo": 16.818276,
+   "sha256": "11a688266cddd44191ea70bd7964e1c845cf08c4fff2b0aebc3ef9f135f7d99d",
+   "interpreteur": "ai_edge_litert",
+   "entree": {
+    "forme": [
+     1,
+     224,
+     224,
+     3
+    ],
+    "type": "float32",
+    "disposition": "NHWC",
+    "quantification": [
+     0.0,
+     0.0
+    ]
+   },
+   "sortie": {
+    "forme": [
+     1,
+     3
+    ],
+    "type": "float32",
+    "quantification": [
+     0.0,
+     0.0
+    ]
+   },
+   "latence_mediane_cpu_ms": 68.84160001936834,
+   "concordance_classes_pct": 100.0,
+   "diff_proba_max": 9.238719940185547e-06,
+   "diff_proba_moyenne": 2.2857048520563694e-07
+  },
+  "tflite_float16": {
+   "fichier": "export\\proprete_mobilenetv3l_float16.tflite",
+   "taille_mo": 8.451752,
+   "sha256": "4b6ed559d1e3361ff22033f02f01e9ed582d74c6cce3e913751a5a444985203d",
+   "interpreteur": "ai_edge_litert",
+   "entree": {
+  
+
+--- stderr ---
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1793150080.272492    2080 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1793150082.111218    2080 port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+
+flatbuffer_direct lowering:   0%|          | 0/142 [00:00<?, ?it/s]
+flatbuffer_direct lowering:   0%|          | 0/142 [00:00<?, ?it/s]
+flatbuffer_direct lowering:   0%|          | 0/142 [00:00<?, ?it/s, |]
+flatbuffer_direct lowering: 100%|██████████| 142/142 [00:00<00:00, 11438.72it/s]
+flatbuffer_direct lowering: 100%|██████████| 142/142 [00:00<00:00, 11283.77it/s]
+
+flatbuffer_direct post-lowering:   0%|          | 0/6 [00:00<?, ?it/s]
+flatbuffer_direct post-lowering:   0%|          | 0/6 [00:00<?, ?it/s]
+flatbuffer_direct post-lowering:   0%|          | 0/6 [00:00<?, ?it/s, |]
+flatbuffer_direct post-lowering [1/6] outputs:   0%|          | 0/6 [00:00<?, ?it/s, |]
+flatbuffer_direct post-lowering [1/6] outputs:   0%|          | 0/6 [00:00<?, ?it/s]   
+flatbuffer_direct post-lowering [1/6] outputs:  17%|█▋        | 1/6 [00:00<00:00, 866.95it/s]
+flatbuffer_direct post-lowering [1/6] outputs:  17%|█▋        | 1/6 [00:00<00:00, 817.13it/s, |]
+flatbuffer_direct post-lowering [2/6] layout optimize pass-set 1:  17%|█▋        | 1/6 [00:00<00:00, 673.57it/s, |]
+flatbuffer_direct post-lowering [2/6] layout optimize pass-set 1:  17%|█▋        | 1/6 [00:00<00:00,  7.89it/s, /] 
+flatbuffer_direct post-lowering [2/6] layout optimize pass-set 1:  17%|█▋        | 1/6 [00:00<00:00,  5.61it/s]   
+flatbuffer_direct post-lowering [2/6] layout optimize pass-set 1:  33%|███▎      | 2/6 [00:00<00:00, 11.20it/s]
+flatbuffer_direct post-lowering [2/6] layout optimize pass-set 1:  33%|███▎      | 2/6 [00:00<00:00, 11.20it/s]
+flatbuffer_direct post-lowering [2/6] layout optimize pass-set 1:  33%|███▎      | 2/6 [00:00<00:00, 11.20it/s, |]
+flatbuffer_direct post-lowering [3/6] core cleanup passes:  33%|███▎      | 2/6 [00:00<00:00, 11.20it/s, |]       
+flatbuffer_direct post-lowering [3/6] core cleanup passes:  33%|███▎      | 2/6 [00:00<00:00, 11.20it/s]   
+flatbuffer_direct post-lowering [3/6] core cleanup passes:  50%|█████     | 3/6 [00:00<00:00, 11.20it/s]
+flatbuffer_direct post-lowering [3/6] core cleanup passes:  50%|█████     | 3/6 [00:00<00:00, 11.20it/s, |]
+flatbuffer_direct post-lowering [4/6] layout recovery pass-set 2:  50%|█████     | 3/6 [00:00<00:00, 11.20it/s, |]
+flatbuffer_direct post-lowering [4/6] layout recovery pass-set 2:  50%|█████     | 3/6 [00:00<00:00, 11.20it/s]   
+flatbuffer_direct post-lowering [4/6] layout recovery pass-set 2:  67%|██████▋   | 4/6 [00:00<00:00, 11.20it/s]
+flatbuffer_direct post-lowering [4/6] layout recovery pass-set 2:  67%|██████▋   | 4/6 [00:00<00:00, 11.20it/s, |]
+flatbuffer_direct post-lowering [5/6] terminal cleanup passes:  67%|██████▋   | 4/6 [00:00<00:00, 11.20it/s, |]   
+flatbuffer_direct post-lowering [5/6] terminal cleanup passes:  67%|██████▋   | 4/6 [00:00<00:00, 11.20it/s]   
+flatbuffer_direct post-lowering [5/6] terminal cleanup passes:  83%|████████▎ | 5/6 [00:00<00:00, 14.96it/s]
+flatbuffer_direct post-lowering [5/6] terminal cleanup passes:  83%|████████▎ | 5/6 [00:00<00:00, 14.96it/s]
+flatbuffer_direct post-lowering [5/6] terminal cleanup passes:  83%|████████▎ | 5/6 [00:00<00:00, 14.96it/s, |]
+flatbuffer_direct post-lowering [6/6] topological sort:  83%|████████▎ | 5/6 [00:00<00:00, 14.96it/s, |]       
+flatbuffer_direct post-lowering [6/6] topological sort:  83%|████████▎ | 5/6 [00:00<00:00, 14.96it/s]   
+flatbuffer_direct post-lowering [6/6] topological sort: 100%|██████████| 6/6 [00:00<00:00, 14.96it/s]
+flatbuffer_direct post-lowering [6/6] topological sort: 100%|██████████| 6/6 [00:00<00:00, 15.75it/s]
+
+flatbuffer_direct export:   0%|          | 0/3 [00:00<?, ?it/s]
+flatbuffer_direct export:   0%|          | 0/3 [00:00<?, ?it/s]
+flatbuffer_direct export:   0%|          | 0/3 [00:00<?, ?it/s, |]
+flatbuffer_direct export [1/3] tensor correspondence report:   0%|          | 0/3 [00:00<?, ?it/s, |]
+flatbuffer_direct export [1/3] tensor correspondence report:   0%|          | 0/3 [00:00<?, ?it/s]   
+flatbuffer_direct export [1/3] tensor correspondence report:  33%|███▎      | 1/3 [00:00<00:00, 36.48it/s]
+flatbuffer_direct export [1/3] tensor correspondence report:  33%|███▎      | 1/3 [00:00<00:00, 36.26it/s, |]
+flatbuffer_direct export [2/3] write float32 tflite:  33%|███▎      | 1/3 [00:00<00:00, 35.34it/s, |]        
+                                                                                                     
+
+flatbuffer_direct export [2/3] write float32 tflite:  33%|███▎      | 1/3 [00:00<00:00, 11.89it/s, |]
+flatbuffer_direct export [2/3] write float32 tflite:  33%|███▎      | 1/3 [00:00<00:00, 11.77it/s]   
+flatbuffer_direct export [2/3] write float32 tflite:  67%|██████▋   | 2/3 [00:00<00:00, 22.86it/s]
+flatbuffer_direct export [2/3] write float32 tflite:  67%|██████▋   | 2/3 [00:00<00:00, 22.81it/s, |]
+flatbuffer_direct export [3/3] write float16 tflite:  67%|██████▋   | 2/3 [00:00<00:00, 22.59it/s, |]
+                                                                                                     
+
+flatbuffer_direct export [3/3] write float16 tflite:  67%|██████▋   | 2/3 [00:00<00:00, 14.53it/s, |]
+flatbuffer_direct export [3/3] write float16 tflite:  67%|██████▋   | 2/3 [00:00<00:00, 14.48it/s]   
+flatbuffer_direct export [3/3] write float16 tflite: 100%|██████████| 3/3 [00:00<00:00, 21.70it/s]
+flatbuffer_direct export [3/3] write float16 tflite: 100%|██████████| 3/3 [00:00<00:00, 21.70it/s]
+flatbuffer_direct export [3/3] write float16 tflite: 100%|██████████| 3/3 [00:00<00:00, 21.56it/s]
+I0000 00:00:1793150088.011553    2080 cpu_feature_guard.cc:227] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+W0000 00:00:1793150108.390197    2080 tf_tfl_flatbuffer_helpers.cc:364] Ignored output_format.
+W0000 00:00:1793150108.390257    2080 tf_tfl_flatbuffer_helpers.cc:367] Ignored drop_control_dependency.
+I0000 00:00:1793150108.390871    2080 reader.cc:83] Reading SavedModel from: C:\Users\hassen\AppData\Local\Temp\tmpt2m13c1q
+I0000 00:00:1793150108.406768    2080 reader.cc:52] Reading meta graph with tags { serve }
+I0000 00:00:1793150108.406832    2080 reader.cc:147] Reading SavedModel debug info (if present) from: C:\Users\hassen\AppData\Local\Temp\tmpt2m13c1q
+I0000 00:00:1793150108.437956    2080 mlir_graph_optimization_pass.cc:437] MLIR V1 optimization pass is not enabled
+I0000 00:00:1793150108.439614    2080 loader.cc:236] Restoring SavedModel bundle.
+I0000 00:00:1793150108.473329    2080 loader.cc:220] Running initialization op on SavedModel bundle at path: C:\Users\hassen\AppData\Local\Temp\tmpt2m13c1q
+I0000 00:00:1793150108.514198    2080 loader.cc:471] SavedModel load for tags { serve }; Status: success: OK. Took 123352 microseconds.
+I0000 00:00:1793150108.592639    2080 dump_mlir_util.cc:269] disabling MLIR crash reproducer, set env var `MLIR_CRASH_REPRODUCER_DIRECTORY` to enable.
+I0000 00:00:1793150108.778017    2080 flatbuffer_export.cc:4302] Estimated count of arithmetic ops: 436.054 M  ops, equivalently 218.027 M  MACs
+W0000 00:00:1793150126.680901    2080 tf_tfl_flatbuffer_helpers.cc:364] Ignored output_format.
+W0000 00:00:1793150126.680968    2080 tf_tfl_flatbuffer_helpers.cc:367] Ignored drop_control_dependency.
+I0000 00:00:1793150126.681448    2080 reader.cc:83] Reading SavedModel from: C:\Users\hassen\AppData\Local\Temp\tmp5n60hzbt
+I0000 00:00:1793150126.690982    2080 reader.cc:52] Reading meta graph with tags { serve }
+I0000 00:00:1793150126.691025    2080 reader.cc:147] Reading SavedModel debug info (if present) from: C:\Users\hassen\AppData\Local\Temp\tmp5n60hzbt
+I0000 00:00:1793150126.730445    2080 loader.cc:236] Restoring SavedModel bundle.
+I0000 00:00:1793150126.774085    2080 loader.cc:220] Running initialization op on SavedModel bundle at path: C:\Users\hassen\AppData\Local\Temp\tmp5n60hzbt
+I0000 00:00:1793150126.806279    2080 loader.cc:471] SavedModel load for tags { serve }; Status: success: OK. Took 124847 microseconds.
+I0000 00:00:1793150127.078505    2080 flatbuffer_export.cc:4302] Estimated count of arithmetic ops: 436.054 M  ops, equivalently 218.027 M  MACs
+I0000 00:00:1793150127.501469    2080 devices.cc:76] Number of eligible GPUs (core count >= 8, compute capability >= 0.0): 0 (Note: TensorFlow was not compiled with CUDA or ROCm support)
+I0000 00:00:1793150127.501714    2080 single_machine.cc:376] Starting new session
+W0000 00:00:1793150128.006771    2080 tf_tfl_flatbuffer_helpers.cc:364] Ignored output_format.
+W0000 00:00:1793150128.006830    2080 tf_tfl_flatbuffer_helpers.cc:367] Ignored drop_control_dependency.
+I0000 00:00:1793150128.411192    2080 flatbuffer_export.cc:4302] Estimated count of arithmetic ops: 436.054 M  ops, equivalently 218.027 M  MACs
+W0000 00:00:1793150129.596908    2080 tf_tfl_flatbuffer_helpers.cc:364] Ignored output_format.
+W0000 00:00:1793150129.596980    2080 tf_tfl_flatbuffer_helpers.cc:367] Ignored drop_control_dependency.
+I0000 00:00:1793150129.597486    2080 reader.cc:83] Reading SavedModel from: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150129.604550    2080 reader.cc:52] Reading meta graph with tags { serve }
+I0000 00:00:1793150129.604585    2080 reader.cc:147] Reading SavedModel debug info (if present) from: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150129.630437    2080 loader.cc:236] Restoring SavedModel bundle.
+I0000 00:00:1793150129.657849    2080 loader.cc:220] Running initialization op on SavedModel bundle at path: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150129.684907    2080 loader.cc:471] SavedModel load for tags { serve }; Status: success: OK. Took 87437 microseconds.
+I0000 00:00:1793150129.946355    2080 flatbuffer_export.cc:4302] Estimated count of arithmetic ops: 436.054 M  ops, equivalently 218.027 M  MACs
+fully_quantize: 0, inference_type: 6, input_inference_type: FLOAT32, output_inference_type: FLOAT32
+I0000 00:00:1793150160.951876    2080 flatbuffer_export.cc:4302] Estimated count of arithmetic ops: 436.054 M  ops, equivalently 218.027 M  MACs
+W0000 00:00:1793150160.951937    2080 flatbuffer_export.cc:3851] Skipping runtime version metadata in the model. This will be generated by the exporter.
+W0000 00:00:1793150161.628447    2080 tf_tfl_flatbuffer_helpers.cc:364] Ignored output_format.
+W0000 00:00:1793150161.628517    2080 tf_tfl_flatbuffer_helpers.cc:367] Ignored drop_control_dependency.
+I0000 00:00:1793150161.629062    2080 reader.cc:83] Reading SavedModel from: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150161.635953    2080 reader.cc:52] Reading meta graph with tags { serve }
+I0000 00:00:1793150161.635994    2080 reader.cc:147] Reading SavedModel debug info (if present) from: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150161.669640    2080 loader.cc:236] Restoring SavedModel bundle.
+I0000 00:00:1793150161.709060    2080 loader.cc:220] Running initialization op on SavedModel bundle at path: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150161.737642    2080 loader.cc:471] SavedModel load for tags { serve }; Status: success: OK. Took 108596 microseconds.
+I0000 00:00:1793150161.999626    2080 flatbuffer_export.cc:4302] Estimated count of arithmetic ops: 436.054 M  ops, equivalently 218.027 M  MACs
+fully_quantize: 0, inference_type: 6, input_inference_type: INT8, output_inference_type: INT8
+I0000 00:00:1793150192.632196    2080 flatbuffer_export.cc:4302] Estimated count of arithmetic ops: 436.054 M  ops, equivalently 218.027 M  MACs
+W0000 00:00:1793150192.632253    2080 flatbuffer_export.cc:3851] Skipping runtime version metadata in the model. This will be generated by the exporter.
+W0000 00:00:1793150193.323567    2080 tf_tfl_flatbuffer_helpers.cc:364] Ignored output_format.
+W0000 00:00:1793150193.323629    2080 tf_tfl_flatbuffer_helpers.cc:367] Ignored drop_control_dependency.
+I0000 00:00:1793150193.324136    2080 reader.cc:83] Reading SavedModel from: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150193.334454    2080 reader.cc:52] Reading meta graph with tags { serve }
+I0000 00:00:1793150193.334583    2080 reader.cc:147] Reading SavedModel debug info (if present) from: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150193.371040    2080 loader.cc:236] Restoring SavedModel bundle.
+I0000 00:00:1793150193.405106    2080 loader.cc:220] Running initialization op on SavedModel bundle at path: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150193.440235    2080 loader.cc:471] SavedModel load for tags { serve }; Status: success: OK. Took 116107 microseconds.
+I0000 00:00:1793150193.699494    2080 flatbuffer_export.cc:4302] Estimated count of arithmetic ops: 436.054 M  ops, equivalently 218.027 M  MACs
+W0000 00:00:1793150253.982701    2080 tf_tfl_flatbuffer_helpers.cc:364] Ignored output_format.
+W0000 00:00:1793150253.982856    2080 tf_tfl_flatbuffer_helpers.cc:367] Ignored drop_control_dependency.
+I0000 00:00:1793150253.984381    2080 reader.cc:83] Reading SavedModel from: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150253.998993    2080 reader.cc:52] Reading meta graph with tags { serve }
+I0000 00:00:1793150253.999037    2080 reader.cc:147] Reading SavedModel debug info (if present) from: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150254.032302    2080 loader.cc:236] Restoring SavedModel bundle.
+I0000 00:00:1793150254.067997    2080 loader.cc:220] Running initialization op on SavedModel bundle at path: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150254.091840    2080 loader.cc:471] SavedModel load for tags { serve }; Status: success: OK. Took 107473 microseconds.
+I0000 00:00:1793150254.321055    2080 flatbuffer_export.cc:4302] Estimated count of arithmetic ops: 436.054 M  ops, equivalently 218.027 M  MACs
+W0000 00:00:1793150505.499241    2080 tf_tfl_flatbuffer_helpers.cc:364] Ignored output_format.
+W0000 00:00:1793150505.499298    2080 tf_tfl_flatbuffer_helpers.cc:367] Ignored drop_control_dependency.
+I0000 00:00:1793150505.499818    2080 reader.cc:83] Reading SavedModel from: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150505.506864    2080 reader.cc:52] Reading meta graph with tags { serve }
+I0000 00:00:1793150505.506904    2080 reader.cc:147] Reading SavedModel debug info (if present) from: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150505.538060    2080 loader.cc:236] Restoring SavedModel bundle.
+I0000 00:00:1793150505.563804    2080 loader.cc:220] Running initialization op on SavedModel bundle at path: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150505.587175    2080 loader.cc:471] SavedModel load for tags { serve }; Status: success: OK. Took 87368 microseconds.
+I0000 00:00:1793150505.841641    2080 flatbuffer_export.cc:4302] Estimated count of arithmetic ops: 436.054 M  ops, equivalently 218.027 M  MACs
+fully_quantize: 0, inference_type: 6, input_inference_type: FLOAT32, output_inference_type: FLOAT32
+I0000 00:00:1793150537.840587    2080 flatbuffer_export.cc:4302] Estimated count of arithmetic ops: 436.054 M  ops, equivalently 218.027 M  MACs
+W0000 00:00:1793150537.840652    2080 flatbuffer_export.cc:3851] Skipping runtime version metadata in the model. This will be generated by the exporter.
+W0000 00:00:1793150674.253544    2080 tf_tfl_flatbuffer_helpers.cc:364] Ignored output_format.
+W0000 00:00:1793150674.253603    2080 tf_tfl_flatbuffer_helpers.cc:367] Ignored drop_control_dependency.
+I0000 00:00:1793150674.254046    2080 reader.cc:83] Reading SavedModel from: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150674.259659    2080 reader.cc:52] Reading meta graph with tags { serve }
+I0000 00:00:1793150674.259699    2080 reader.cc:147] Reading SavedModel debug info (if present) from: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150674.277694    2080 loader.cc:236] Restoring SavedModel bundle.
+I0000 00:00:1793150674.302762    2080 loader.cc:220] Running initialization op on SavedModel bundle at path: C:\Users\hassen\Desktop\mahdi\pfe_mahdi\computer_vision\donnees_derivees\export_tmp\onnx2tf
+I0000 00:00:1793150674.328769    2080 loader.cc:471] SavedModel load for tags { serve }; Status: success: OK. Took 74733 microseconds.
+I0000 00:00:1793150674.564661    2080 flatbuffer_export.cc:4302] Estimated count of arithmetic ops: 436.054 M  ops, equivalently 218.027 M  MACs
+fully_quantize: 0, inference_type: 6, input_inference_type: FLOAT32, output_inference_type: FLOAT32
+I0000 00:00:1793150685.758193    2080 flatbuffer_export.cc:4302] Estimated count of arithmetic ops: 872.109 M  ops, equivalently 436.054 M  MACs
+W0000 00:00:1793150685.758250    2080 flatbuffer_export.cc:3851] Skipping runtime version metadata in the model. This will be generated by the exporter.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.

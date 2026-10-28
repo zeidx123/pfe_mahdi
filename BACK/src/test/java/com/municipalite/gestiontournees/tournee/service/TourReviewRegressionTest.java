@@ -144,4 +144,35 @@ class TourReviewRegressionTest {
             release.countDown(); executor.shutdownNow();
         }
     }
+
+    // Local vision engine: added fields are copied like analysisStatus and cleared with it.
+    @Test void localAnalysisFieldsAreCopiedThenClearedByReplacementPhoto() throws Exception {
+        var probabilities = java.util.Map.of("CANNOT_DETERMINE", 0.02, "DEBORDEMENT", 0.07, "PROPRE", 0.91);
+        when(vision.analyzeStoredEvidence(eq("/uploads/photos/old.jpg"), isNull(), eq("point"), eq("tour"), eq("driver")))
+                .thenReturn(ImageAnalysis.builder().id("local").status("CANNOT_DETERMINE").probabilities(probabilities)
+                        .decision("A_VERIFIER").qualityIssue("FLOUE").build());
+        var analysed = service.analyzeVisit("tour", "point").getVisits().get(0);
+        assertEquals("local", analysed.getAnalysisId());
+        assertEquals("CANNOT_DETERMINE", analysed.getAnalysisStatus());
+        assertEquals(probabilities, analysed.getAnalysisProbabilities());
+        assertEquals("A_VERIFIER", analysed.getAnalysisDecision());
+        assertEquals("FLOUE", analysed.getAnalysisQualityIssue());
+        assertEquals(TourneeVisit.Status.ARRIVED, analysed.getStatus(), "The decision never changes the visit state");
+
+        visit.setReviewLabel("CLEANED"); visit.setReviewNotes("Old image reviewed");
+        var bytes = new ByteArrayOutputStream();
+        ImageIO.write(new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB), "png", bytes);
+        service.savePointPhoto("tour", "point", new MockMultipartFile("photo", "new.png", "image/png", bytes.toByteArray()), "AFTER");
+        assertNull(visit.getAnalysisId()); assertNull(visit.getAnalysisStatus());
+        assertNull(visit.getAnalysisProbabilities()); assertNull(visit.getAnalysisDecision()); assertNull(visit.getAnalysisQualityIssue());
+        assertNull(visit.getReviewLabel()); assertNull(visit.getReviewNotes());
+    }
+
+    @Test void reusedLocalAnalysisRestoresDecisionWithoutAnotherCall() {
+        visit.setAnalysisId("saved"); visit.setAnalysisStatus("CLEANED");
+        when(vision.reusableVisitAnalysis("saved", "/uploads/photos/old.jpg", null, "point", "tour", "driver"))
+                .thenReturn(Optional.of(ImageAnalysis.builder().id("saved").status("CLEANED").decision("A_VERIFIER").build()));
+        assertEquals("A_VERIFIER", service.analyzeVisit("tour", "point").getVisits().get(0).getAnalysisDecision());
+        verify(vision, never()).analyzeStoredEvidence(anyString(), any(), anyString(), anyString(), anyString());
+    }
 }

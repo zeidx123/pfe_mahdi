@@ -99,6 +99,38 @@ class TourProgress {
   static String assessmentLabel(dynamic value) =>
       assessmentLabels[value] ?? 'Aucune analyse disponible';
 
+  // Local vision engine only; these fields are absent for LLM analyses.
+  static const qualityIssueLabels = {
+    'TROP_SOMBRE': 'trop sombre',
+    'SUREXPOSEE': 'surexposée',
+    'FLOUE': 'floue',
+  };
+
+  /// « propre 91 % · débordement 7 % · indéterminé 2 % », or null without probabilities.
+  static String? probabilitiesText(dynamic probabilities) {
+    if (probabilities is! Map) return null;
+    final parts = <String>[];
+    for (final entry in const {
+      'PROPRE': 'propre',
+      'DEBORDEMENT': 'débordement',
+      'CANNOT_DETERMINE': 'indéterminé',
+    }.entries) {
+      final value = probabilities[entry.key];
+      if (value is! num) return null;
+      parts.add('${entry.value} ${(value * 100).round()} %');
+    }
+    return parts.join(' · ');
+  }
+
+  static String? retakeMessage(dynamic qualityIssue) {
+    final reason = qualityIssueLabels[qualityIssue];
+    return reason == null ? null : 'Photo à refaire : $reason';
+  }
+
+  /// A_VERIFIER only orders the supervisor's review; it never blocks the visit.
+  static bool needsSupervisorReview(Map<String, dynamic>? visit) =>
+      visit?['analysisDecision'] == 'A_VERIFIER';
+
   static String duration(dynamic seconds) =>
       seconds is num ? '${(seconds / 60).ceil()} min' : 'Non disponible';
 }

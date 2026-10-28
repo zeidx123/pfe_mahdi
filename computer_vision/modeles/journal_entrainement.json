@@ -1,0 +1,335 @@
+{
+  "appareil": "cuda",
+  "gpu": "NVIDIA GeForce RTX 2050",
+  "jeu_entrainement": "train_sous_reel",
+  "n_train": 3388,
+  "effectifs_train": {
+    "CANNOT_DETERMINE": 381,
+    "DEBORDEMENT": 2655,
+    "PROPRE": 352
+  },
+  "poids_classes": {
+    "CANNOT_DETERMINE": 2.9641294838145233,
+    "DEBORDEMENT": 0.4253609541745135,
+    "PROPRE": 3.2083333333333335
+  },
+  "poids_pretraines": "MobileNet_V3_Large_Weights.IMAGENET1K_V2",
+  "phase1": [
+    {
+      "epoque": 1,
+      "perte_train": 0.8973309004320867,
+      "perte_valid_reel": 0.7539734840393066,
+      "macro_f1_valid_reel": 0.7211322728811767,
+      "duree_s": 84.00144028663635
+    },
+    {
+      "epoque": 2,
+      "perte_train": 0.7222684375510728,
+      "perte_valid_reel": 0.7222219705581665,
+      "macro_f1_valid_reel": 0.7923227917615615,
+      "duree_s": 8.83841586112976
+    }
+  ],
+  "phase2": {
+    "3e-05": {
+      "historique": [
+        {
+          "epoque": 1,
+          "perte_train": 0.7845883269518297,
+          "perte_valid_reel": 0.7618812918663025,
+          "macro_f1_valid_reel": 0.7996952471629881,
+          "lr_fin": 2.9488887394336022e-05,
+          "duree_s": 20.559231281280518
+        },
+        {
+          "epoque": 2,
+          "perte_train": 0.6722268935781162,
+          "perte_valid_reel": 0.6922309398651123,
+          "macro_f1_valid_reel": 0.8572579568777269,
+          "lr_fin": 2.799038105676658e-05,
+          "duree_s": 20.26835560798645
+        },
+        {
+          "epoque": 3,
+          "perte_train": 0.6486838842789426,
+          "perte_valid_reel": 0.6616032719612122,
+          "macro_f1_valid_reel": 0.8712947723705163,
+          "lr_fin": 2.560660171779821e-05,
+          "duree_s": 20.320865631103516
+        },
+        {
+          "epoque": 4,
+          "perte_train": 0.634222928650123,
+          "perte_valid_reel": 0.6441782712936401,
+          "macro_f1_valid_reel": 0.8754133205456625,
+          "lr_fin": 2.2500000000000005e-05,
+          "duree_s": 20.270541191101074
+        },
+        {
+          "epoque": 5,
+          "perte_train": 0.6287149060011754,
+          "perte_valid_reel": 0.6375274658203125,
+          "macro_f1_valid_reel": 0.8998932109064169,
+          "lr_fin": 1.8882285676537825e-05,
+          "duree_s": 20.18637490272522
+        },
+        {
+          "epoque": 6,
+          "perte_train": 0.6151527803228484,
+          "perte_valid_reel": 0.629978597164154,
+          "macro_f1_valid_reel": 0.8961395768911808,
+          "lr_fin": 1.500000000000002e-05,
+          "duree_s": 20.235021829605103
+        },
+        {
+          "epoque": 7,
+          "perte_train": 0.6095351032129849,
+          "perte_valid_reel": 0.6280980706214905,
+          "macro_f1_valid_reel": 0.9027124039029655,
+          "lr_fin": 1.1117714323462205e-05,
+          "duree_s": 20.301246881484985
+        },
+        {
+          "epoque": 8,
+          "perte_train": 0.6067276691320795,
+          "perte_valid_reel": 0.6265179514884949,
+          "macro_f1_valid_reel": 0.9043890138972737,
+          "lr_fin": 7.5000000000000154e-06,
+          "duree_s": 20.066112756729126
+        },
+        {
+          "epoque": 9,
+          "perte_train": 0.5966144653813475,
+          "perte_valid_reel": 0.62404465675354,
+          "macro_f1_valid_reel": 0.9010493746554076,
+          "lr_fin": 4.393398282201797e-06,
+          "duree_s": 20.157134532928467
+        },
+        {
+          "epoque": 10,
+          "perte_train": 0.5969494773336679,
+          "perte_valid_reel": 0.6234124898910522,
+          "macro_f1_valid_reel": 0.8988055978123893,
+          "lr_fin": 2.0096189432334236e-06,
+          "duree_s": 20.117982864379883
+        },
+        {
+          "epoque": 11,
+          "perte_train": 0.5992177533427827,
+          "perte_valid_reel": 0.6228810548782349,
+          "macro_f1_valid_reel": 0.8988055978123893,
+          "lr_fin": 5.111126056639779e-07,
+          "duree_s": 20.25536799430847
+        }
+      ],
+      "meilleure_macro_f1_valid_reel": 0.9043890138972737,
+      "meilleure_epoque": 8,
+      "arret_anticipe": true
+    },
+    "0.0001": {
+      "historique": [
+        {
+          "epoque": 1,
+          "perte_train": 0.727020108010158,
+          "perte_valid_reel": 0.7471907138824463,
+          "macro_f1_valid_reel": 0.8141429414304464,
+          "lr_fin": 9.829629131445343e-05,
+          "duree_s": 20.27753210067749
+        },
+        {
+          "epoque": 2,
+          "perte_train": 0.6207503207740424,
+          "perte_valid_reel": 0.6581466197967529,
+          "macro_f1_valid_reel": 0.8954098896264379,
+          "lr_fin": 9.330127018922195e-05,
+          "duree_s": 20.26234722137451
+        },
+        {
+          "epoque": 3,
+          "perte_train": 0.5914879238591425,
+          "perte_valid_reel": 0.6224750280380249,
+          "macro_f1_valid_reel": 0.9286916024562863,
+          "lr_fin": 8.535533905932742e-05,
+          "duree_s": 20.344199657440186
+        },
+        {
+          "epoque": 4,
+          "perte_train": 0.5772841097050321,
+          "perte_valid_reel": 0.6097964644432068,
+          "macro_f1_valid_reel": 0.9377567150872302,
+          "lr_fin": 7.500000000000005e-05,
+          "duree_s": 20.45320749282837
+        },
+        {
+          "epoque": 5,
+          "perte_train": 0.5748803450900801,
+          "perte_valid_reel": 0.6081804037094116,
+          "macro_f1_valid_reel": 0.9338009893763686,
+          "lr_fin": 6.294095225512606e-05,
+          "duree_s": 20.471042156219482
+        },
+        {
+          "epoque": 6,
+          "perte_train": 0.564067868372907,
+          "perte_valid_reel": 0.6061724424362183,
+          "macro_f1_valid_reel": 0.9415417635093886,
+          "lr_fin": 5.000000000000005e-05,
+          "duree_s": 20.44710946083069
+        },
+        {
+          "epoque": 7,
+          "perte_train": 0.562422889182531,
+          "perte_valid_reel": 0.6010146737098694,
+          "macro_f1_valid_reel": 0.9417919027675125,
+          "lr_fin": 3.7059047744874e-05,
+          "duree_s": 20.43704652786255
+        },
+        {
+          "epoque": 8,
+          "perte_train": 0.5614181455783326,
+          "perte_valid_reel": 0.6000511050224304,
+          "macro_f1_valid_reel": 0.9423664273110143,
+          "lr_fin": 2.5000000000000035e-05,
+          "duree_s": 20.211523294448853
+        },
+        {
+          "epoque": 9,
+          "perte_train": 0.5546265905272159,
+          "perte_valid_reel": 0.602145791053772,
+          "macro_f1_valid_reel": 0.9423664273110143,
+          "lr_fin": 1.4644660940672642e-05,
+          "duree_s": 20.08340859413147
+        },
+        {
+          "epoque": 10,
+          "perte_train": 0.553801233892317,
+          "perte_valid_reel": 0.6001673936843872,
+          "macro_f1_valid_reel": 0.9423664273110143,
+          "lr_fin": 6.698729810778069e-06,
+          "duree_s": 20.161491870880127
+        },
+        {
+          "epoque": 11,
+          "perte_train": 0.5561676815662362,
+          "perte_valid_reel": 0.6005189418792725,
+          "macro_f1_valid_reel": 0.9426419132758633,
+          "lr_fin": 1.7037086855465911e-06,
+          "duree_s": 19.97299861907959
+        },
+        {
+          "epoque": 12,
+          "perte_train": 0.5573782751242132,
+          "perte_valid_reel": 0.5994505882263184,
+          "macro_f1_valid_reel": 0.9429269115263762,
+          "lr_fin": 0.0,
+          "duree_s": 20.022961854934692
+        }
+      ],
+      "meilleure_macro_f1_valid_reel": 0.9429269115263762,
+      "meilleure_epoque": 12,
+      "arret_anticipe": false
+    }
+  },
+  "meilleur": {
+    "f1": 0.9429269115263762,
+    "lr": 0.0001,
+    "epoque": 12
+  },
+  "duree_entrainement_s": 565.1936841011047,
+  "etalonnage": {
+    "temperature": 0.2983912655360501,
+    "ajustee_sur": "valid ∩ sous_reel",
+    "nll_valid_reel_avant": 0.398091766090944,
+    "nll_valid_reel_apres": 0.1518061754223576,
+    "ece_15_bins": {
+      "valid_tout": {
+        "avant": 0.2460298373290662,
+        "apres": 0.022370472173677356
+      },
+      "valid_sous_reel": {
+        "avant": 0.2601141633242984,
+        "apres": 0.009843978134113302
+      }
+    },
+    "note": "l'ECE sur valid ∩ sous_reel est mesurée sur le jeu qui a servi à ajuster T (optimiste).",
+    "couverture_exactitude_valid_reel": [
+      {
+        "seuil": 0.5,
+        "couverture": 0.9986244841815681,
+        "exactitude": 0.9669421487603306,
+        "macro_f1": 0.9449287572042063,
+        "n": 726
+      },
+      {
+        "seuil": 0.55,
+        "couverture": 0.9958734525447043,
+        "exactitude": 0.9668508287292817,
+        "macro_f1": 0.9443595164525398,
+        "n": 724
+      },
+      {
+        "seuil": 0.6,
+        "couverture": 0.9944979367262724,
+        "exactitude": 0.966804979253112,
+        "macro_f1": 0.9437893980910103,
+        "n": 723
+      },
+      {
+        "seuil": 0.65,
+        "couverture": 0.9821182943603851,
+        "exactitude": 0.9705882352941176,
+        "macro_f1": 0.9499668031173018,
+        "n": 714
+      },
+      {
+        "seuil": 0.7,
+        "couverture": 0.9711141678129298,
+        "exactitude": 0.9745042492917847,
+        "macro_f1": 0.9563817925648114,
+        "n": 706
+      },
+      {
+        "seuil": 0.75,
+        "couverture": 0.9642365887207703,
+        "exactitude": 0.9743223965763196,
+        "macro_f1": 0.9563308241652191,
+        "n": 701
+      },
+      {
+        "seuil": 0.8,
+        "couverture": 0.9504814305364512,
+        "exactitude": 0.9782923299565847,
+        "macro_f1": 0.9629730988150556,
+        "n": 691
+      },
+      {
+        "seuil": 0.85,
+        "couverture": 0.9257221458046767,
+        "exactitude": 0.9806835066864784,
+        "macro_f1": 0.9670993891354757,
+        "n": 673
+      },
+      {
+        "seuil": 0.9,
+        "couverture": 0.8913342503438789,
+        "exactitude": 0.9861111111111112,
+        "macro_f1": 0.9762708311497746,
+        "n": 648
+      },
+      {
+        "seuil": 0.95,
+        "couverture": 0.782668500687758,
+        "exactitude": 0.9876977152899824,
+        "macro_f1": 0.9806638026724963,
+        "n": 569
+      }
+    ]
+  },
+  "macro_f1_valid_reel_modele_final": 0.9429269115263762,
+  "versions": {
+    "torch": "2.14.1+cu126",
+    "torchvision": "0.29.1+cu126",
+    "cuda": "12.6",
+    "cudnn": 91002
+  }
+}

@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 /**
  * Image evidence assessment with provider metadata and separate human review.
@@ -48,6 +49,23 @@ public class ImageAnalysis {
 
     private boolean problemCreated;
     private String problemId;
+
+    // Moteur LOCAL uniquement (null pour les analyses LLM). confidence reste null dans les deux moteurs.
+    private Map<String, Double> probabilities; // CANNOT_DETERMINE, DEBORDEMENT, PROPRE
+    private String predictedClass;   // sortie brute du modèle, avant correspondance avec status
+    private String qualityIssue;     // TROP_SOMBRE, SUREXPOSEE, FLOUE ou null
+    private Double sharpness;
+    private Double meanBrightness;
+    private String decision;         // CONFIRMATION_AUTO ou A_VERIFIER : ordonne la revue humaine, rien d'autre
+    private String modelSha256;
+
+    // Résumé rédigé facultatif (moteur LOCAL, à la demande d'un superviseur) ; description ne change pas.
+    private String narrative;
+    private String narrativeSource;          // LLM ou TEMPLATE
+    private String narrativeModel;
+    private String narrativeFailureCategory; // repli sur le gabarit : catégorie d'AiServiceException ou VALIDATION_Vx
+    private String narrativePromptVersion;
+    private LocalDateTime narrativeGeneratedAt;
 
     // Validation chauffeur
     private Boolean valideeParChauffeur;

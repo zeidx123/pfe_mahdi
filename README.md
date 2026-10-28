@@ -374,6 +374,68 @@ Neither selection falls back automatically to another provider, paid model or Ge
 
 Verify live Qwen responses on your installation with your real key; a configured model name or a passing integration test does not establish classification or extraction accuracy. Follow the [CV and photo test steps](docs/LOCAL_AI_TEST_GUIDE.md) to verify the results in the application.
 
+## Moteur de vision local
+
+Les photos APRÈS peuvent être analysées par le modèle local `proprete_mobilenetv3l` (ONNX Runtime) au lieu du fournisseur LLM. Le choix se fait par `VISION_ENGINE` et ne touche pas `COLLECTION_AI_PROVIDER`, qui reste utilisé pour l'extraction de CV.
+
+1. Démarrer le service (Python 3.10+ ; le premier lancement crée `computer_vision/service/.venv_service`) :
+
+   ```bat
+   scripts\run-local-vision.bat
+   ```
+
+   ```sh
+   scripts/run-local-vision.sh
+   ```
+
+   Il écoute sur `http://127.0.0.1:8090` (`GET /health`, `POST /predict`) et refuse de démarrer si le SHA-256 du modèle diffère de `computer_vision/service/modele/model_card.json`. Détails : `computer_vision/service/README_service.md`.
+
+2. Dans `BACK/.env`, puis redémarrer le backend :
+
+   ```dotenv
+   VISION_ENGINE=LOCAL
+   LOCAL_VISION_URL=http://127.0.0.1:8090
+   LOCAL_VISION_TIMEOUT_SECONDS=15
+   LOCAL_VISION_TOKEN=
+   VISION_PROPRE_THRESHOLD=
+   VISION_MIN_SHARPNESS=
+   VISION_MIN_BRIGHTNESS=
+   VISION_MAX_BRIGHTNESS=
+   ```
+
+   `LOCAL_VISION_TOKEN` est facultatif ; s'il est défini, il doit avoir la même valeur pour le service et pour le backend. Seuils vides : porte de qualité désactivée et décision toujours `A_VERIFIER`. Aucun seuil par défaut n'est fourni ; les valeurs d'exemple de `BACK/.env.example` ont été mesurées sur des images synthétiques et doivent être recalibrées sur des photos réelles.
+
+Correspondance : PROPRE → `CLEANED`, DEBORDEMENT → `NOT_CLEANED`, CANNOT_DETERMINE ou photo refusée par la porte de qualité → `CANNOT_DETERMINE`. `OBSTRUCTED` n'est jamais produit par le modèle local. La décision `CONFIRMATION_AUTO` / `A_VERIFIER` sert seulement à ordonner la revue humaine ; elle ne change ni l'état de la visite ni la fin de tournée. Un service arrêté donne `ANALYSIS_UNAVAILABLE`, comme une panne du fournisseur.
+
+Limites du modèle : étiquettes d'entraînement en partie extrapolées, classe CANNOT_DETERMINE apprise sur des images synthétiques, précision de PROPRE d'environ 0,71 sur le test, images surtout issues du web chinois, rien validé sur le terrain.
+
+**Retour en arrière** : `VISION_ENGINE=LLM` (ou supprimer la ligne), redémarrer le backend, puis arrêter le service (Ctrl+C). Les analyses locales déjà enregistrées restent en base avec `provider=LOCAL` et ne sont jamais réutilisées par l'autre moteur.
+
+## Rédaction facultative par modèle de langage
+
+Pour une analyse du moteur local (`provider=LOCAL`), un superviseur peut demander dans le web un résumé rédigé (bouton « Générer un résumé rédigé », `POST /api/ai/vision/analyses/{id}/narrative`). Le texte standard (`description`), le statut et la décision ne changent jamais.
+
+```dotenv
+VISION_NARRATION=TEMPLATE
+VISION_NARRATION_TIMEOUT_SECONDS=10
+```
+
+- `TEMPLATE` (défaut) : aucun appel à un modèle de langage ; le résumé est le texte standard.
+- `LLM` : le résumé est rédigé par le fournisseur `COLLECTION_AI_PROVIDER` et son modèle de texte (même clé et même quota que l'extraction de CV et les photos). Le modèle **ne voit pas la photo** : il reçoit seulement la classe prédite, les trois pourcentages, la décision, le problème de qualité, la netteté, la luminosité et le mode photo. Le prompt versionné est `BACK/src/main/resources/prompts/vision-narrative-v1.txt`.
+- Chaque texte est vérifié par un validateur déterministe (longueur, nombres fournis uniquement, mots interdits, mention d'une analyse automatique à confirmer, pourcentage de la classe prédite, ni balisage ni lien). Un refus donne une seule nouvelle tentative ; erreur, délai dépassé ou limite de débit (429) : aucune nouvelle tentative. Dans tous ces cas, repli sur le texte standard (`narrativeSource=TEMPLATE`, `narrativeFailureCategory` renseignée).
+
+Évaluation hors application (40 cas structurés, graine 42) :
+
+```powershell
+python scripts\evaluation\evaluate_narration.py              # --dry-run par défaut : prompts seulement, aucun réseau
+$env:GROQ_API_KEY = '<votre clé>'                              # jamais affichée ni écrite par le script
+python scripts\evaluation\evaluate_narration.py --live --provider GROQ --sortie evaluation\narration
+```
+
+Le CSV `narration_live.csv` donne pour chaque cas le texte, l'acceptation, les motifs de rejet (V1 à V7) et la latence ; `narration_live_resume.json` donne le taux d'acceptation, le taux de repli, les motifs les plus fréquents et la latence médiane. Le lot s'arrête au premier 429.
+
+Limites : le validateur ne détecte pas toutes les formulations trompeuses ; le texte n'ajoute aucune information aux probabilités ; il dépend du quota du fournisseur ; les limites du modèle de vision restent entières (étiquettes en partie extrapolées, CANNOT_DETERMINE appris sur des images synthétiques, précision de PROPRE d'environ 0,71, rien validé sur le terrain). Retour en arrière : `VISION_NARRATION=TEMPLATE` (ou ne rien définir), puis redémarrer le backend ; l'endpoint reste disponible mais n'appelle plus de modèle.
+
 For the complete demonstration sequence, evaluation commands and known limitations, see [the detailed setup guide](docs/DEMO_SETUP.md), [delivery checks](docs/DELIVERY_CHECKS.md) and [P1 results](docs/evaluation/P1_RUN_RESULTS.md).
 
 To test the chatbot, local CVs and image uploads in Flutter web, follow [the local AI test guide](docs/LOCAL_AI_TEST_GUIDE.md). It identifies the prepared documents and public photos, expected checks, and the difference between successful AI output and an unavailable provider.

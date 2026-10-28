@@ -1,0 +1,594 @@
+{
+  "n_reference_train": 3007,
+  "n_cd_synth_valid": 82,
+  "n_reel_pd_valid": 645,
+  "n_cd_par_operation_valid": {
+    "nuit": 31,
+    "flou": 30,
+    "cadrage": 21
+  },
+  "note": "Test optimiste : les CANNOT_DETERMINE sont fabriquées par flou, assombrissement et recadrage.",
+  "nettete_224": [
+    {
+      "percentile": 1,
+      "seuil": 118.67698817782578,
+      "cd_detectees_pct": 86.58536585365853,
+      "reel_faux_pct": 0.9302325581395349,
+      "cd_cadrage_pct": 76.19047619047619,
+      "cd_flou_pct": 86.66666666666667,
+      "cd_nuit_pct": 93.54838709677419
+    },
+    {
+      "percentile": 2,
+      "seuil": 167.74913839388668,
+      "cd_detectees_pct": 91.46341463414635,
+      "reel_faux_pct": 3.4108527131782944,
+      "cd_cadrage_pct": 85.71428571428571,
+      "cd_flou_pct": 90.0,
+      "cd_nuit_pct": 96.7741935483871
+    },
+    {
+      "percentile": 3,
+      "seuil": 201.42780912100596,
+      "cd_detectees_pct": 92.6829268292683,
+      "reel_faux_pct": 4.651162790697675,
+      "cd_cadrage_pct": 85.71428571428571,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 96.7741935483871
+    },
+    {
+      "percentile": 4,
+      "seuil": 220.73826338259988,
+      "cd_detectees_pct": 92.6829268292683,
+      "reel_faux_pct": 6.2015503875969,
+      "cd_cadrage_pct": 85.71428571428571,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 96.7741935483871
+    },
+    {
+      "percentile": 5,
+      "seuil": 241.12814942284064,
+      "cd_detectees_pct": 95.1219512195122,
+      "reel_faux_pct": 7.906976744186046,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 6,
+      "seuil": 265.7550294319703,
+      "cd_detectees_pct": 95.1219512195122,
+      "reel_faux_pct": 9.612403100775193,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 7,
+      "seuil": 280.67135842942537,
+      "cd_detectees_pct": 96.34146341463415,
+      "reel_faux_pct": 10.387596899224807,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 96.66666666666667,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 8,
+      "seuil": 294.0757084063301,
+      "cd_detectees_pct": 96.34146341463415,
+      "reel_faux_pct": 11.627906976744185,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 96.66666666666667,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 9,
+      "seuil": 309.00562194994217,
+      "cd_detectees_pct": 96.34146341463415,
+      "reel_faux_pct": 13.023255813953488,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 96.66666666666667,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 10,
+      "seuil": 324.25786662310276,
+      "cd_detectees_pct": 96.34146341463415,
+      "reel_faux_pct": 13.798449612403102,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 96.66666666666667,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 11,
+      "seuil": 341.29031565438606,
+      "cd_detectees_pct": 96.34146341463415,
+      "reel_faux_pct": 15.348837209302326,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 96.66666666666667,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 12,
+      "seuil": 356.30140461568584,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 16.27906976744186,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 100.0,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 13,
+      "seuil": 380.37488446254326,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 17.05426356589147,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 100.0,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 14,
+      "seuil": 400.3734906270235,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 18.13953488372093,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 100.0,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 15,
+      "seuil": 411.86357024731814,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 20.0,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 100.0,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 16,
+      "seuil": 430.3014240593138,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 21.085271317829456,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 100.0,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 17,
+      "seuil": 448.97843509643087,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 21.86046511627907,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 100.0,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 18,
+      "seuil": 466.10894917556016,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 22.170542635658915,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 100.0,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 19,
+      "seuil": 485.6313398612235,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 23.410852713178297,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 100.0,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "percentile": 20,
+      "seuil": 504.5146310102438,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 24.186046511627907,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 100.0,
+      "cd_nuit_pct": 100.0
+    }
+  ],
+  "nettete_640": [
+    {
+      "percentile": 1,
+      "seuil": 39.40117819510042,
+      "cd_detectees_pct": 67.07317073170732,
+      "reel_faux_pct": 0.9302325581395349,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 25.806451612903224
+    },
+    {
+      "percentile": 2,
+      "seuil": 56.019994407470705,
+      "cd_detectees_pct": 69.51219512195121,
+      "reel_faux_pct": 1.8604651162790697,
+      "cd_cadrage_pct": 90.47619047619048,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 32.25806451612903
+    },
+    {
+      "percentile": 3,
+      "seuil": 69.15328649744224,
+      "cd_detectees_pct": 73.17073170731707,
+      "reel_faux_pct": 2.635658914728682,
+      "cd_cadrage_pct": 95.23809523809523,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 38.70967741935484
+    },
+    {
+      "percentile": 4,
+      "seuil": 80.13818186925842,
+      "cd_detectees_pct": 75.60975609756098,
+      "reel_faux_pct": 3.255813953488372,
+      "cd_cadrage_pct": 95.23809523809523,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 45.16129032258064
+    },
+    {
+      "percentile": 5,
+      "seuil": 91.0504718183124,
+      "cd_detectees_pct": 76.82926829268293,
+      "reel_faux_pct": 4.496124031007752,
+      "cd_cadrage_pct": 95.23809523809523,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 48.38709677419355
+    },
+    {
+      "percentile": 6,
+      "seuil": 102.53958215776801,
+      "cd_detectees_pct": 79.26829268292683,
+      "reel_faux_pct": 5.426356589147287,
+      "cd_cadrage_pct": 95.23809523809523,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 54.83870967741935
+    },
+    {
+      "percentile": 7,
+      "seuil": 110.60189589271917,
+      "cd_detectees_pct": 79.26829268292683,
+      "reel_faux_pct": 6.3565891472868215,
+      "cd_cadrage_pct": 95.23809523809523,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 54.83870967741935
+    },
+    {
+      "percentile": 8,
+      "seuil": 118.12328096132255,
+      "cd_detectees_pct": 79.26829268292683,
+      "reel_faux_pct": 7.131782945736434,
+      "cd_cadrage_pct": 95.23809523809523,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 54.83870967741935
+    },
+    {
+      "percentile": 9,
+      "seuil": 125.9348055623078,
+      "cd_detectees_pct": 80.48780487804879,
+      "reel_faux_pct": 8.682170542635658,
+      "cd_cadrage_pct": 100.0,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 54.83870967741935
+    },
+    {
+      "percentile": 10,
+      "seuil": 132.1422825555861,
+      "cd_detectees_pct": 80.48780487804879,
+      "reel_faux_pct": 9.147286821705427,
+      "cd_cadrage_pct": 100.0,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 54.83870967741935
+    },
+    {
+      "percentile": 11,
+      "seuil": 140.3214296760652,
+      "cd_detectees_pct": 80.48780487804879,
+      "reel_faux_pct": 10.852713178294573,
+      "cd_cadrage_pct": 100.0,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 54.83870967741935
+    },
+    {
+      "percentile": 12,
+      "seuil": 146.85854609469558,
+      "cd_detectees_pct": 82.92682926829268,
+      "reel_faux_pct": 11.472868217054263,
+      "cd_cadrage_pct": 100.0,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 61.29032258064516
+    },
+    {
+      "percentile": 13,
+      "seuil": 159.07940798659718,
+      "cd_detectees_pct": 84.14634146341463,
+      "reel_faux_pct": 12.868217054263567,
+      "cd_cadrage_pct": 100.0,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 64.51612903225806
+    },
+    {
+      "percentile": 14,
+      "seuil": 166.89423380802347,
+      "cd_detectees_pct": 85.36585365853658,
+      "reel_faux_pct": 13.953488372093023,
+      "cd_cadrage_pct": 100.0,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 67.74193548387096
+    },
+    {
+      "percentile": 15,
+      "seuil": 174.97469759845137,
+      "cd_detectees_pct": 86.58536585365853,
+      "reel_faux_pct": 14.883720930232558,
+      "cd_cadrage_pct": 100.0,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 70.96774193548387
+    },
+    {
+      "percentile": 16,
+      "seuil": 182.8028179147482,
+      "cd_detectees_pct": 87.8048780487805,
+      "reel_faux_pct": 15.813953488372093,
+      "cd_cadrage_pct": 100.0,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 74.19354838709677
+    },
+    {
+      "percentile": 17,
+      "seuil": 189.09105226917652,
+      "cd_detectees_pct": 89.02439024390245,
+      "reel_faux_pct": 16.434108527131784,
+      "cd_cadrage_pct": 100.0,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 77.41935483870968
+    },
+    {
+      "percentile": 18,
+      "seuil": 197.62075509684658,
+      "cd_detectees_pct": 90.2439024390244,
+      "reel_faux_pct": 17.984496124031008,
+      "cd_cadrage_pct": 100.0,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 80.64516129032258
+    },
+    {
+      "percentile": 19,
+      "seuil": 206.2487778817564,
+      "cd_detectees_pct": 90.2439024390244,
+      "reel_faux_pct": 18.75968992248062,
+      "cd_cadrage_pct": 100.0,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 80.64516129032258
+    },
+    {
+      "percentile": 20,
+      "seuil": 213.73318242475867,
+      "cd_detectees_pct": 91.46341463414635,
+      "reel_faux_pct": 19.689922480620154,
+      "cd_cadrage_pct": 100.0,
+      "cd_flou_pct": 93.33333333333333,
+      "cd_nuit_pct": 83.87096774193549
+    }
+  ],
+  "luminosite": [
+    {
+      "seuil": 20,
+      "cd_detectees_pct": 24.390243902439025,
+      "reel_faux_pct": 0.6201550387596899,
+      "cd_cadrage_pct": 0.0,
+      "cd_flou_pct": 0.0,
+      "cd_nuit_pct": 64.51612903225806
+    },
+    {
+      "seuil": 30,
+      "cd_detectees_pct": 37.80487804878049,
+      "reel_faux_pct": 1.550387596899225,
+      "cd_cadrage_pct": 0.0,
+      "cd_flou_pct": 0.0,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "seuil": 40,
+      "cd_detectees_pct": 39.02439024390244,
+      "reel_faux_pct": 2.7906976744186047,
+      "cd_cadrage_pct": 0.0,
+      "cd_flou_pct": 3.3333333333333335,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "seuil": 50,
+      "cd_detectees_pct": 39.02439024390244,
+      "reel_faux_pct": 3.565891472868217,
+      "cd_cadrage_pct": 0.0,
+      "cd_flou_pct": 3.3333333333333335,
+      "cd_nuit_pct": 100.0
+    },
+    {
+      "seuil": 60,
+      "cd_detectees_pct": 40.243902439024396,
+      "reel_faux_pct": 4.8062015503875966,
+      "cd_cadrage_pct": 4.761904761904762,
+      "cd_flou_pct": 3.3333333333333335,
+      "cd_nuit_pct": 100.0
+    }
+  ],
+  "combinaison_nettete224_ou_luminosite": [
+    {
+      "percentile_nettete": 1,
+      "seuil_nettete": 118.67698817782578,
+      "seuil_luminosite": 20,
+      "cd_detectees_pct": 86.58536585365853,
+      "reel_faux_pct": 1.2403100775193798
+    },
+    {
+      "percentile_nettete": 1,
+      "seuil_nettete": 118.67698817782578,
+      "seuil_luminosite": 30,
+      "cd_detectees_pct": 89.02439024390245,
+      "reel_faux_pct": 2.1705426356589146
+    },
+    {
+      "percentile_nettete": 1,
+      "seuil_nettete": 118.67698817782578,
+      "seuil_luminosite": 40,
+      "cd_detectees_pct": 89.02439024390245,
+      "reel_faux_pct": 3.4108527131782944
+    },
+    {
+      "percentile_nettete": 1,
+      "seuil_nettete": 118.67698817782578,
+      "seuil_luminosite": 50,
+      "cd_detectees_pct": 89.02439024390245,
+      "reel_faux_pct": 4.186046511627907
+    },
+    {
+      "percentile_nettete": 1,
+      "seuil_nettete": 118.67698817782578,
+      "seuil_luminosite": 60,
+      "cd_detectees_pct": 89.02439024390245,
+      "reel_faux_pct": 5.426356589147287
+    },
+    {
+      "percentile_nettete": 5,
+      "seuil_nettete": 241.12814942284064,
+      "seuil_luminosite": 20,
+      "cd_detectees_pct": 95.1219512195122,
+      "reel_faux_pct": 8.062015503875969
+    },
+    {
+      "percentile_nettete": 5,
+      "seuil_nettete": 241.12814942284064,
+      "seuil_luminosite": 30,
+      "cd_detectees_pct": 95.1219512195122,
+      "reel_faux_pct": 8.682170542635658
+    },
+    {
+      "percentile_nettete": 5,
+      "seuil_nettete": 241.12814942284064,
+      "seuil_luminosite": 40,
+      "cd_detectees_pct": 95.1219512195122,
+      "reel_faux_pct": 9.767441860465116
+    },
+    {
+      "percentile_nettete": 5,
+      "seuil_nettete": 241.12814942284064,
+      "seuil_luminosite": 50,
+      "cd_detectees_pct": 95.1219512195122,
+      "reel_faux_pct": 10.542635658914728
+    },
+    {
+      "percentile_nettete": 5,
+      "seuil_nettete": 241.12814942284064,
+      "seuil_luminosite": 60,
+      "cd_detectees_pct": 95.1219512195122,
+      "reel_faux_pct": 11.627906976744185
+    },
+    {
+      "percentile_nettete": 10,
+      "seuil_nettete": 324.25786662310276,
+      "seuil_luminosite": 20,
+      "cd_detectees_pct": 96.34146341463415,
+      "reel_faux_pct": 13.798449612403102
+    },
+    {
+      "percentile_nettete": 10,
+      "seuil_nettete": 324.25786662310276,
+      "seuil_luminosite": 30,
+      "cd_detectees_pct": 96.34146341463415,
+      "reel_faux_pct": 14.418604651162791
+    },
+    {
+      "percentile_nettete": 10,
+      "seuil_nettete": 324.25786662310276,
+      "seuil_luminosite": 40,
+      "cd_detectees_pct": 96.34146341463415,
+      "reel_faux_pct": 15.348837209302326
+    },
+    {
+      "percentile_nettete": 10,
+      "seuil_nettete": 324.25786662310276,
+      "seuil_luminosite": 50,
+      "cd_detectees_pct": 96.34146341463415,
+      "reel_faux_pct": 16.124031007751938
+    },
+    {
+      "percentile_nettete": 10,
+      "seuil_nettete": 324.25786662310276,
+      "seuil_luminosite": 60,
+      "cd_detectees_pct": 96.34146341463415,
+      "reel_faux_pct": 17.05426356589147
+    },
+    {
+      "percentile_nettete": 15,
+      "seuil_nettete": 411.86357024731814,
+      "seuil_luminosite": 20,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 20.0
+    },
+    {
+      "percentile_nettete": 15,
+      "seuil_nettete": 411.86357024731814,
+      "seuil_luminosite": 30,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 20.0
+    },
+    {
+      "percentile_nettete": 15,
+      "seuil_nettete": 411.86357024731814,
+      "seuil_luminosite": 40,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 20.775193798449614
+    },
+    {
+      "percentile_nettete": 15,
+      "seuil_nettete": 411.86357024731814,
+      "seuil_luminosite": 50,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 21.3953488372093
+    },
+    {
+      "percentile_nettete": 15,
+      "seuil_nettete": 411.86357024731814,
+      "seuil_luminosite": 60,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 22.015503875968992
+    },
+    {
+      "percentile_nettete": 20,
+      "seuil_nettete": 504.5146310102438,
+      "seuil_luminosite": 20,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 24.186046511627907
+    },
+    {
+      "percentile_nettete": 20,
+      "seuil_nettete": 504.5146310102438,
+      "seuil_luminosite": 30,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 24.186046511627907
+    },
+    {
+      "percentile_nettete": 20,
+      "seuil_nettete": 504.5146310102438,
+      "seuil_luminosite": 40,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 24.496124031007753
+    },
+    {
+      "percentile_nettete": 20,
+      "seuil_nettete": 504.5146310102438,
+      "seuil_luminosite": 50,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 24.96124031007752
+    },
+    {
+      "percentile_nettete": 20,
+      "seuil_nettete": 504.5146310102438,
+      "seuil_luminosite": 60,
+      "cd_detectees_pct": 97.5609756097561,
+      "reel_faux_pct": 25.426356589147286
+    }
+  ]
+}

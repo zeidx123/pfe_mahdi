@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { FiX, FiMapPin, FiCalendar, FiTruck, FiUser, FiCamera, FiCheck, FiAlertTriangle, FiRefreshCw, FiFileText } from 'react-icons/fi';
 import { tourneeService } from '../../services/tourneeService';
 import { rapportService } from '../../services/rapportService';
+import { aiService } from '../../services/aiService';
 import ProtectedImage from '../../components/ProtectedImage';
 import toast from 'react-hot-toast';
 
@@ -11,6 +12,17 @@ const assessmentLabels = {
   CLEANED: 'Le point apparaît nettoyé', NOT_CLEANED: 'Le point ne paraît pas nettoyé',
   OBSTRUCTED: 'Point obstrué', CANNOT_DETERMINE: 'Impossible à déterminer', ANALYSIS_UNAVAILABLE: 'Analyse indisponible',
 };
+// Moteur de vision local uniquement : ces champs sont absents des analyses LLM.
+const qualityLabels = { TROP_SOMBRE: 'trop sombre', SUREXPOSEE: 'surexposée', FLOUE: 'floue' };
+const percent = value => `${Math.round(value * 100)} %`;
+const probabilitiesText = p => p && ['PROPRE', 'DEBORDEMENT', 'CANNOT_DETERMINE'].every(k => Number.isFinite(p[k]))
+  ? `propre ${percent(p.PROPRE)} · débordement ${percent(p.DEBORDEMENT)} · indéterminé ${percent(p.CANNOT_DETERMINE)}` : null;
+const narrativeNotices = {
+  LLM: 'Texte rédigé par un modèle de langage à partir des seules probabilités ; il n’a pas vu la photo. À confirmer par un contrôle humain.',
+  TEMPLATE: 'Texte standard (modèle de langage désactivé ou indisponible).',
+};
+const analysisDetails = result => ({ description: result?.description || null, provider: result?.provider || null,
+  narrative: result?.narrative || null, narrativeSource: result?.narrativeSource || null });
 const visitLabels = { PENDING: 'À visiter', ARRIVED: 'Arrivé', COMPLETED_REPORTED: 'Collecte déclarée', ISSUE_REPORTED: 'Problème signalé' };
 const tourStatusLabels = { PLANIFIEE: 'Planifiée', EN_COURS: 'En cours', TERMINEE: 'Terminée', ANNULEE: 'Annulée' };
 const algorithmLabels = { MANUAL: 'Ordre manuel', NN: 'Plus proche voisin', NN_2OPT: 'Plus proche voisin + 2-opt', EXACT: 'Exact (Held–Karp)' };
@@ -52,8 +64,33 @@ function VisitEvidence({ tourId, point, visit, onRefresh, onZoom }) {
   const [label, setLabel] = useState(visit.reviewLabel || '');
   const [notes, setNotes] = useState(visit.reviewNotes || '');
   const [saving, setSaving] = useState(false);
+  const [analysis, setAnalysis] = useState({ id: null, description: null });
+  const [narrating, setNarrating] = useState(false);
   const historyMissing = Boolean(visit.legacyProgressMissing);
+  const probabilities = probabilitiesText(visit.analysisProbabilities);
+  const current = analysis.id === visit.analysisId ? analysis : {};
+  const description = current.description || null;
+  useEffect(() => {
+    if (!visit.analysisId) return undefined;
+    let active = true;
+    // The justification is stored with the analysis, not with the visit.
+    aiService.getPhotoAnalysis(visit.analysisId)
+      .then(result => { if (active) setAnalysis({ id: visit.analysisId, ...analysisDetails(result) }); })
+      .catch(() => { if (active) setAnalysis({ id: visit.analysisId, description: null }); });
+    return () => { active = false; };
+  }, [visit.analysisId]);
   const handled = !historyMissing && ['COMPLETED_REPORTED', 'ISSUE_REPORTED'].includes(visit.status);
+  // Optional wording of a LOCAL verdict; the status, decision and standard description never change.
+  const narrate = async () => {
+    if (!visit.analysisId || narrating) return;
+    setNarrating(true);
+    try {
+      const result = await aiService.generatePhotoNarrative(visit.analysisId);
+      setAnalysis({ id: visit.analysisId, ...analysisDetails(result) });
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Résumé non généré. Réessayez.');
+    } finally { setNarrating(false); }
+  };
   const review = async event => {
     event.preventDefault();
     if (!label || saving) return;
@@ -82,6 +119,19 @@ function VisitEvidence({ tourId, point, visit, onRefresh, onZoom }) {
     </div>
     <div className="visit-assessments">
       <p><strong>Observation IA :</strong> {assessmentLabels[visit.analysisStatus] || 'Aucune analyse disponible'}</p>
+      {probabilities && <p><strong>Probabilités (modèle local) :</strong> {probabilities}</p>}
+      {visit.analysisDecision === 'A_VERIFIER' && <p><span className="badge-pending"><FiAlertTriangle /> À vérifier par le superviseur</span></p>}
+      {qualityLabels[visit.analysisQualityIssue] && <p><strong>Photo à refaire :</strong> {qualityLabels[visit.analysisQualityIssue]}</p>}
+      {description && <p><strong>Justification de l’analyse :</strong> {description}</p>}
+      {current.narrative && <div className="visit-narrative">
+        <p><strong>Résumé rédigé :</strong> {current.narrative}</p>
+        <p className="visit-meta">{narrativeNotices[current.narrativeSource] || narrativeNotices.TEMPLATE}</p>
+      </div>}
+      {current.provider === 'LOCAL' && current.narrativeSource !== 'LLM' && <p>
+        <button type="button" className="btn-secondary" onClick={narrate} disabled={narrating}>
+          {narrating ? 'Rédaction…' : 'Générer un résumé rédigé'}
+        </button>
+      </p>}
       {visit.driverAssessment && <p><strong>Observation du chauffeur :</strong> {assessmentLabels[visit.driverAssessment] || visit.driverAssessment}</p>}
       {visit.notes && <p><strong>Note du chauffeur :</strong> {visit.notes}</p>}
       {visit.reviewLabel && <p><strong>Avis du superviseur :</strong> {assessmentLabels[visit.reviewLabel]}{visit.reviewNotes ? ` — ${visit.reviewNotes}` : ''}</p>}

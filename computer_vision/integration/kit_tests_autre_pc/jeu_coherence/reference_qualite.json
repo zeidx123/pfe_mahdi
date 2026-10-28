@@ -1,0 +1,203 @@
+{
+  "note": "code/e7_qualite_image.mesures sur les fichiers originaux (netteté sur 224x224 étiré, luminosité sur l'image entière)",
+  "images": [
+    {
+      "id": "gd_train_002129",
+      "fichier": "gd_train_002129.jpg",
+      "nettete_224": 710.9885045928987,
+      "luminosite": 150.49770263671874
+    },
+    {
+      "id": "gbs_003028_jpg",
+      "fichier": "gbs_003028_jpg.jpg",
+      "nettete_224": 1874.8099989054947,
+      "luminosite": 126.27060302734375
+    },
+    {
+      "id": "gbs_03622_png",
+      "fichier": "gbs_03622_png.jpg",
+      "nettete_224": 1029.6048891320916,
+      "luminosite": 96.94305908203125
+    },
+    {
+      "id": "gbs_05437_png",
+      "fichier": "gbs_05437_png.jpg",
+      "nettete_224": 326.16711469910035,
+      "luminosite": 113.946943359375
+    },
+    {
+      "id": "gd_train_002215",
+      "fichier": "gd_train_002215.jpg",
+      "nettete_224": 1767.3285924473787,
+      "luminosite": 108.58622802734375
+    },
+    {
+      "id": "gbs_002925_jpg",
+      "fichier": "gbs_002925_jpg.jpg",
+      "nettete_224": 2490.646144963463,
+      "luminosite": 139.3822216796875
+    },
+    {
+      "id": "gbs_05483_png",
+      "fichier": "gbs_05483_png.jpg",
+      "nettete_224": 376.2634295074705,
+      "luminosite": 111.8337109375
+    },
+    {
+      "id": "gbs_07097_png",
+      "fichier": "gbs_07097_png.jpg",
+      "nettete_224": 866.9003707805507,
+      "luminosite": 194.0114990234375
+    },
+    {
+      "id": "gbs_01259_png",
+      "fichier": "gbs_01259_png.jpg",
+      "nettete_224": 495.4547282341668,
+      "luminosite": 77.07669189453125
+    },
+    {
+      "id": "gd_test_002668",
+      "fichier": "gd_test_002668.jpg",
+      "nettete_224": 2166.5795140832424,
+      "luminosite": 101.84931396484374
+    },
+    {
+      "id": "gd_train_001198",
+      "fichier": "gd_train_001198.jpg",
+      "nettete_224": 1370.4430126009856,
+      "luminosite": 108.66975341796875
+    },
+    {
+      "id": "gd_train_003064",
+      "fichier": "gd_train_003064.jpg",
+      "nettete_224": 258.9073062497147,
+      "luminosite": 110.80334716796875
+    },
+    {
+      "id": "gbs_04417_png",
+      "fichier": "gbs_04417_png.jpg",
+      "nettete_224": 1043.8785839243662,
+      "luminosite": 86.150087890625
+    },
+    {
+      "id": "gbs_04852_png",
+      "fichier": "gbs_04852_png.jpg",
+      "nettete_224": 1184.4105329561214,
+      "luminosite": 98.6842236328125
+    },
+    {
+      "id": "gd_train_000825",
+      "fichier": "gd_train_000825.jpg",
+      "nettete_224": 1048.8350252864857,
+      "luminosite": 151.10734130859376
+    },
+    {
+      "id": "gbs_01252_png",
+      "fichier": "gbs_01252_png.jpg",
+      "nettete_224": 884.3958428814628,
+      "luminosite": 90.88907958984375
+    },
+    {
+      "id": "gbs_05402_png",
+      "fichier": "gbs_05402_png.jpg",
+      "nettete_224": 411.37752565330686,
+      "luminosite": 110.8876513671875
+    },
+    {
+      "id": "gbs_001973_jpg",
+      "fichier": "gbs_001973_jpg.jpg",
+      "nettete_224": 1026.6139993278348,
+      "luminosite": 105.40830078125
+    },
+    {
+      "id": "kg_train_000254",
+      "fichier": "kg_train_000254.jpg",
+      "nettete_224": 281.42415267137227,
+      "luminosite": 39.92307861328125
+    },
+    {
+      "id": "gd_valid_002888",
+      "fichier": "gd_valid_002888.jpg",
+      "nettete_224": 127.00693579923605,
+      "luminosite": 107.0033251953125
+    },
+    {
+      "id": "cd_flou_093",
+      "fichier": "cd_flou_093.jpg",
+      "nettete_224": 10.970563234363384,
+      "luminosite": 79.97811279296874
+    },
+    {
+      "id": "cd_cadrage_029",
+      "fichier": "cd_cadrage_029.jpg",
+      "nettete_224": 135.9689666592345,
+      "luminosite": 105.302236328125
+    },
+    {
+      "id": "cd_flou_014",
+      "fichier": "cd_flou_014.jpg",
+      "nettete_224": 42.109150334429316,
+      "luminosite": 98.38005126953125
+    },
+    {
+      "id": "cd_flou_096",
+      "fichier": "cd_flou_096.jpg",
+      "nettete_224": 79.50811423762845,
+      "luminosite": 100.6225341796875
+    },
+    {
+      "id": "cd_cadrage_175",
+      "fichier": "cd_cadrage_175.jpg",
+      "nettete_224": 3046.6062060395466,
+      "luminosite": 66.72318603515625
+    },
+    {
+      "id": "cd_flou_077",
+      "fichier": "cd_flou_077.jpg",
+      "nettete_224": 3.908517706448811,
+      "luminosite": 116.44584716796875
+    },
+    {
+      "id": "cd_cadrage_107",
+      "fichier": "cd_cadrage_107.jpg",
+      "nettete_224": 5.458881436562051,
+      "luminosite": 99.34675537109375
+    },
+    {
+      "id": "cd_nuit_032",
+      "fichier": "cd_nuit_032.jpg",
+      "nettete_224": 13.932607145917162,
+      "luminosite": 17.64436279296875
+    },
+    {
+      "id": "cd_cadrage_062",
+      "fichier": "cd_cadrage_062.jpg",
+      "nettete_224": 22.374693403438645,
+      "luminosite": 145.16842041015624
+    },
+    {
+      "id": "cd_cadrage_118",
+      "fichier": "cd_cadrage_118.jpg",
+      "nettete_224": 1346.0870859474999,
+      "luminosite": 105.48204833984374
+    },
+    {
+      "id": "gd_train_002129",
+      "fichier": "gd_train_002129_tourne_exif6.png",
+      "nettete_224": 710.9885045928987,
+      "luminosite": 150.49770263671874
+    },
+    {
+      "id": "gd_train_001198",
+      "fichier": "gd_train_001198_tourne_exif8.png",
+      "nettete_224": 1370.4430126009856,
+      "luminosite": 108.66975341796875
+    },
+    {
+      "id": "cd_flou_093",
+      "fichier": "cd_flou_093_tourne_exif6.png",
+      "nettete_224": 10.970563234363384,
+      "luminosite": 79.97811279296874
+    }
+  ]
+}

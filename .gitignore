@@ -1,3 +1,4 @@
+# Règles d'origine du dépôt, conservées telles quelles (titres d'origine en anglais)
 # Environment and secrets
 .env
 .env.*
@@ -48,3 +49,81 @@ __pycache__/
 # Local-only delivery inputs, screenshots, and generated reports
 /local-data/
 /output/
+
+# 1. Secrets (compléments ; .env, .env.*, !.env.example, *.pem, *.key, *.p12 et *.jks sont déjà ci-dessus)
+*.keystore
+key.properties
+local.properties
+
+# 2. Java / Maven (le dossier .mvn et mvnw restent suivis ; *.jar n'est pas ignoré en général)
+target/
+*.class
+*.log
+hs_err_pid*
+
+# 3. Node / web
+node_modules/
+dist/
+.vite/
+coverage/
+npm-debug.log*
+*.tsbuildinfo
+
+# 4. Flutter / Dart (motifs **/ pour s'appliquer sous MOBILE/)
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+**/android/.gradle/
+**/android/local.properties
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+
+# 5. Python
+*.py[cod]
+.venv*/
+venv/
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+.ipynb_checkpoints/
+
+# 6. Éditeurs et système
+*.swp
+Thumbs.db
+desktop.ini
+
+# 7. Données des utilisateurs (photos, CV et documents téléversés)
+uploads/
+
+# 8. Modèles de langage et fichiers lourds (dossier Llama : nom avec deux espaces, couvert par le joker)
+*.gguf
+*.safetensors
+*.ckpt
+*.pth
+/llm_Agent*/
+
+# 9. Artefacts de modèle régénérables de computer_vision, sauf le modèle livrable
+computer_vision/**/*.pt
+computer_vision/**/*.joblib
+computer_vision/**/*.npz
+computer_vision/**/*.onnx
+computer_vision/**/*.tflite
+# Exceptions de conservation : modèle du service et export mobile float16
+!computer_vision/service/modele/*.onnx
+!computer_vision/service/modele/*.json
+!computer_vision/export/*float16.tflite
+
+# 10. Outils et temporaires d'intégration (JDK portable, paquet de transfert)
+computer_vision/integration/outils/
+computer_vision/integration/transfert/
+*.zip
+*.tmp
+
+# 11. Données dérivées volumineuses (ajout après inventaire : 620 Mo d'intermédiaires de conversion TFLite)
+computer_vision/donnees_derivees/export_tmp/

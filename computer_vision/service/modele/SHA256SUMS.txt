@@ -1,0 +1,2 @@
+da40e684d2ddc268ae3c976e668dcd2a9861a5e42c46d6143a1dea27b1bbef97 *proprete_mobilenetv3l.onnx
+6deddf2450c353d03299ea8d02b6941cf8febc61f0257c813bebb283f1fea88f *model_card.json

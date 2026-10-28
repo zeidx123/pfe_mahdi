@@ -42,6 +42,14 @@ export const aiService = {
     const res = await api.get('/ai/vision/analyses');
     return res.data;
   },
+  getPhotoAnalysis: async (id) => {
+    const res = await api.get(`/ai/vision/analyses/${id}`);
+    return res.data;
+  },
+  generatePhotoNarrative: async (id) => {
+    const res = await api.post(`/ai/vision/analyses/${id}/narrative`);
+    return res.data;
+  },
   getAiProblems: async () => {
     const res = await api.get('/ai/problems');
     return res.data;

@@ -171,7 +171,7 @@ public class TourneeService {
         String filename = storePhoto(file);
         if (stage.equals("BEFORE")) v.setBeforePhoto(filename);
         else { v.setAfterPhoto(filename); if (t.getPhotosPoints() == null) t.setPhotosPoints(new HashMap<>()); t.getPhotosPoints().put(pointId, filename); }
-        v.setAnalysisId(null); v.setAnalysisStatus(null);
+        v.setAnalysisId(null); v.setAnalysisStatus(null); copyLocalAnalysis(v, null);
         v.setReviewLabel(null); v.setReviewNotes(null); v.setReviewedBy(null); v.setReviewedAt(null);
         return save(t);
     }
@@ -197,8 +197,9 @@ public class TourneeService {
                 t = load(id); v = visit(t, pointId);
                 if (!Objects.equals(after, v.getAfterPhoto()) || !Objects.equals(before, v.getBeforePhoto()))
                     throw conflict("Les photos ont changé pendant l'analyse. Analysez les nouvelles preuves.");
-                if (!Objects.equals(v.getAnalysisStatus(), stored.get().getStatus())) {
-                    v.setAnalysisStatus(stored.get().getStatus()); return save(t);
+                if (!Objects.equals(v.getAnalysisStatus(), stored.get().getStatus())
+                        || !Objects.equals(v.getAnalysisDecision(), stored.get().getDecision())) {
+                    v.setAnalysisStatus(stored.get().getStatus()); copyLocalAnalysis(v, stored.get()); return save(t);
                 }
                 return mapToResponse(t);
             }
@@ -208,10 +209,16 @@ public class TourneeService {
             t = load(id); v = visit(t, pointId);
             if (!Objects.equals(after, v.getAfterPhoto()) || !Objects.equals(before, v.getBeforePhoto()))
                 throw conflict("Les photos ont changé pendant l'analyse. Analysez les nouvelles preuves.");
-            v.setAnalysisId(result.getId()); v.setAnalysisStatus(result.getStatus()); return save(t);
+            v.setAnalysisId(result.getId()); v.setAnalysisStatus(result.getStatus()); copyLocalAnalysis(v, result); return save(t);
         } finally {
             analysesInProgress.remove(key);
         }
+    }
+    /** Copies the local-engine fields (null for LLM analyses); they have no effect on the visit or the tour end. */
+    private void copyLocalAnalysis(TourneeVisit v, ImageAnalysis analysis) {
+        v.setAnalysisProbabilities(analysis == null ? null : analysis.getProbabilities());
+        v.setAnalysisDecision(analysis == null ? null : analysis.getDecision());
+        v.setAnalysisQualityIssue(analysis == null ? null : analysis.getQualityIssue());
     }
     public TourneeResponse reviewVisit(String id, String pointId, VisitReviewRequest request) {
         access.requireSupervisor(); Tournee t = load(id); TourneeVisit v = visit(t, pointId);

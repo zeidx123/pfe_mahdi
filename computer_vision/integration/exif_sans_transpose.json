@@ -1,0 +1,23 @@
+[
+  {
+    "fichier": "gd_train_002129_tourne_exif6.png",
+    "orientation": 6,
+    "ecart_max_sans_exif_transpose": 0.000835418701171875,
+    "classe_sans_exif": "PROPRE",
+    "classe_reference": "PROPRE"
+  },
+  {
+    "fichier": "gd_train_001198_tourne_exif8.png",
+    "orientation": 8,
+    "ecart_max_sans_exif_transpose": 0.01766437292098999,
+    "classe_sans_exif": "DEBORDEMENT",
+    "classe_reference": "DEBORDEMENT"
+  },
+  {
+    "fichier": "cd_flou_093_tourne_exif6.png",
+    "orientation": 6,
+    "ecart_max_sans_exif_transpose": 2.0265579223632812e-06,
+    "classe_sans_exif": "CANNOT_DETERMINE",
+    "classe_reference": "CANNOT_DETERMINE"
+  }
+]

@@ -181,6 +181,8 @@ const TourneePage = () => {
               <tbody>
                 {filtered.map(t => {
                   const cfg = STATUT_CONFIG[t.statut] || STATUT_CONFIG.PLANIFIEE;
+                  // Review priority from the local vision engine; it has no effect on the tour status.
+                  const toReview = (t.visits || []).filter(v => v.analysisDecision === 'A_VERIFIER').length;
                   return (
                     <tr key={t.id}>
                       <td><strong style={{fontFamily:'monospace'}}>{t.reference}</strong></td>
@@ -213,6 +215,7 @@ const TourneePage = () => {
                       <td>
                         <div className="statut-control">
                           <span className={`status-badge ${cfg.cls}`}>{cfg.icon} {cfg.label}</span>
+                          {toReview > 0 && <span className="status-badge badge-warning" title="Analyses photo à vérifier par le superviseur">À vérifier : {toReview}</span>}
                         </div>
                       </td>
                       <td className="actions-cell">

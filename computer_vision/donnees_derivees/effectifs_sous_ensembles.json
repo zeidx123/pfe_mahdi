@@ -1,0 +1,49 @@
+{
+  "sous_reel": {
+    "test": {
+      "CANNOT_DETERMINE": 81,
+      "DEBORDEMENT": 569,
+      "PROPRE": 76
+    },
+    "train": {
+      "CANNOT_DETERMINE": 381,
+      "DEBORDEMENT": 2655,
+      "PROPRE": 352
+    },
+    "valid": {
+      "CANNOT_DETERMINE": 82,
+      "DEBORDEMENT": 569,
+      "PROPRE": 76
+    }
+  },
+  "ia_probable": {
+    "test": {
+      "DEBORDEMENT": 566,
+      "PROPRE": 131
+    },
+    "train": {
+      "DEBORDEMENT": 2640,
+      "PROPRE": 608
+    },
+    "valid": {
+      "DEBORDEMENT": 566,
+      "PROPRE": 131
+    }
+  },
+  "sous_strict": {
+    "test": {
+      "CANNOT_DETERMINE": 63,
+      "DEBORDEMENT": 415,
+      "PROPRE": 49
+    },
+    "valid": {
+      "CANNOT_DETERMINE": 66,
+      "DEBORDEMENT": 418,
+      "PROPRE": 57
+    }
+  },
+  "part_reelles_non_ia_retenues": {
+    "valid": 0.7364341085271318,
+    "test": 0.7193798449612403
+  }
+}

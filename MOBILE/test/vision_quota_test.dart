@@ -196,4 +196,63 @@ void main() {
     expect(adapter.analyses, 0);
     await closePage(tester);
   });
+
+  // Local vision engine (NON TESTÉ sur le poste A : Flutter absent).
+  testWidgets(
+      'local probabilities and review badge are shown without another model call',
+      (tester) async {
+    final adapter = QuotaAdapter(stored: true);
+    adapter.data['visits'][0]['analysisStatus'] = 'CLEANED';
+    adapter.data['visits'][0]['analysisProbabilities'] = {
+      'CANNOT_DETERMINE': 0.02,
+      'DEBORDEMENT': 0.07,
+      'PROPRE': 0.91
+    };
+    adapter.data['visits'][0]['analysisDecision'] = 'A_VERIFIER';
+    await openPage(tester, adapter);
+    expect(find.text('propre 91 % · débordement 7 % · indéterminé 2 %'),
+        findsOneWidget);
+    expect(find.text('À vérifier par le superviseur'), findsOneWidget);
+    expect(find.text('Résultat IA enregistré'), findsOneWidget);
+    expect(find.text('Analyser la photo'), findsNothing);
+    expect(adapter.analyses, 0);
+    expect(canComplete(tester), isTrue);
+    await closePage(tester);
+  });
+
+  testWidgets(
+      'quality refusal asks for a new photo and highlights the retake button',
+      (tester) async {
+    final adapter = QuotaAdapter(stored: true);
+    adapter.data['visits'][0]['analysisStatus'] = 'CANNOT_DETERMINE';
+    adapter.data['visits'][0]['analysisQualityIssue'] = 'TROP_SOMBRE';
+    adapter.data['visits'][0]['analysisDecision'] = 'A_VERIFIER';
+    await openPage(tester, adapter);
+    expect(find.textContaining('Photo à refaire : trop sombre'), findsOneWidget);
+    expect(
+        find.ancestor(
+            of: find.text('Reprendre la photo APRÈS'),
+            matching: find.byWidgetPredicate((widget) => widget is FilledButton)),
+        findsOneWidget);
+    expect(find.text('À vérifier par le superviseur'), findsOneWidget);
+    expect(adapter.analyses, 0);
+    expect(canComplete(tester), isTrue);
+    await closePage(tester);
+  });
+
+  testWidgets('LLM analysis without local fields shows no probabilities',
+      (tester) async {
+    final adapter = QuotaAdapter(stored: true);
+    adapter.data['visits'][0]['analysisStatus'] = 'NOT_CLEANED';
+    await openPage(tester, adapter);
+    expect(find.textContaining('débordement'), findsNothing);
+    expect(find.text('À vérifier par le superviseur'), findsNothing);
+    expect(find.textContaining('Photo à refaire'), findsNothing);
+    expect(
+        find.ancestor(
+            of: find.text('Reprendre la photo APRÈS'),
+            matching: find.byWidgetPredicate((widget) => widget is FilledButton)),
+        findsNothing);
+    await closePage(tester);
+  });
 }

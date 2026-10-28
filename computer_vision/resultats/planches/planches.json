@@ -1,0 +1,52 @@
+{
+  "erreurs_propre_predit_debordement": 2,
+  "erreurs_debordement_predit_propre": 30,
+  "ids_01": [
+    "gd_train_001374",
+    "gbs_001392_jpg"
+  ],
+  "ids_02": [
+    "gd_train_002929",
+    "gd_train_000373",
+    "gbs_000276_jpg",
+    "gd_train_001659",
+    "gd_train_003046",
+    "gd_train_000850",
+    "gbs_003193_jpg",
+    "gd_test_000138",
+    "gd_train_000755",
+    "gd_train_002731",
+    "gd_train_001598",
+    "gd_valid_000951",
+    "gd_train_001116",
+    "gd_train_002732",
+    "gd_train_002730",
+    "gd_train_002735",
+    "gbs_002999_jpg",
+    "gbs_003178_jpg",
+    "kg_test_000524",
+    "gd_train_000870"
+  ],
+  "ids_03": [
+    "gbs_002428_jpg",
+    "gd_train_002704",
+    "gd_train_000335",
+    "gbs_001318_jpg",
+    "gd_train_002160",
+    "gd_valid_003016",
+    "gbs_002791_jpg",
+    "gd_train_002287",
+    "gbs_003334_jpg",
+    "gd_train_002571",
+    "gd_train_002790",
+    "gd_train_002268",
+    "gbs_002702_jpg",
+    "gd_train_002438",
+    "gbs_002429_jpg",
+    "gd_train_002054",
+    "gd_train_002621",
+    "gd_train_002530",
+    "gd_train_002274",
+    "gd_train_002343"
+  ]
+}

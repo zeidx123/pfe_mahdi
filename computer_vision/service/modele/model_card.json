@@ -1,0 +1,316 @@
+{
+  "nom": "proprete_mobilenetv3l",
+  "version": "1.0.0",
+  "tache": "classification d'image, une étiquette par photo de point de collecte",
+  "architecture": "torchvision MobileNetV3-Large, tête remplacée par 3 sorties",
+  "classes": {
+    "CANNOT_DETERMINE": 0,
+    "DEBORDEMENT": 1,
+    "PROPRE": 2
+  },
+  "ordre_sorties": [
+    "CANNOT_DETERMINE",
+    "DEBORDEMENT",
+    "PROPRE"
+  ],
+  "entree": {
+    "taille": [
+      224,
+      224
+    ],
+    "redimensionnement": "étirement direct en 224x224, SANS recadrage, proportions non conservées, interpolation bilinéaire",
+    "ordre_canaux": "RGB",
+    "valeurs": "float32, (pixel/255 - moyenne) / écart-type",
+    "normalisation": {
+      "moyenne": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "ecart_type": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "faite_dans_le_modele": false
+    },
+    "disposition_entree": {
+      "onnx": "NCHW [1, 3, 224, 224]",
+      "tflite_float32": "NHWC",
+      "tflite_float16": "NHWC",
+      "tflite_int8": "NHWC"
+    },
+    "reference_pretraitement": "export/exemple_pretraitement.py",
+    "ecart_max_reference_numpy_vs_entrainement": 0.0
+  },
+  "sortie": {
+    "contenu": "3 probabilités (softmax) dans l'ordre de classes.json",
+    "temperature": 0.2983912655360501,
+    "temperature_incluse_dans_le_graphe": true,
+    "note": "sortie = softmax(logits / T) ; ne pas réappliquer la température ni le softmax"
+  },
+  "formats": {
+    "pytorch": {
+      "fichier": "modeles\\mobilenet_final.pt",
+      "taille_mo": 17.031743,
+      "latence_mediane_cpu_ms": 9.694649997982197,
+      "concordance_classes_pct": 100.0,
+      "diff_proba_max": 0.0,
+      "diff_proba_moyenne": 0.0
+    },
+    "onnx": {
+      "fichier": "export\\proprete_mobilenetv3l.onnx",
+      "taille_mo": 16.814711,
+      "sha256": "da40e684d2ddc268ae3c976e668dcd2a9861a5e42c46d6143a1dea27b1bbef97",
+      "outil": "torch.onnx.export (TorchScript, dynamo=False), opset 18",
+      "erreur_tentative_precedente": null,
+      "entree": {
+        "nom": "input",
+        "forme": [
+          1,
+          3,
+          224,
+          224
+        ],
+        "type": "tensor(float)",
+        "disposition": "NCHW"
+      },
+      "sortie": {
+        "nom": "probabilites",
+        "forme": [
+          1,
+          3
+        ],
+        "type": "tensor(float)"
+      },
+      "latence_mediane_cpu_ms": 2.2833499970147386,
+      "concordance_classes_pct": 100.0,
+      "diff_proba_max": 1.436471939086914e-05,
+      "diff_proba_moyenne": 2.3485478095608414e-07,
+      "note_sha256": "Copie pour le service : SHA-256 corrigé le 2026-10-28. La fiche d'export (export/model_card.json) indique c235229e72fc1abcf89fa84c0387074be7ab8a64c82cc5aff66f543a5c2f95fe, qui ne correspond pas au fichier .onnx livré ; ce fichier est bien celui évalué à l'étape 8 (écart 4,8e-7 avec resultats/predictions.csv sur 40 images de valid). Cause de l'écart non établie."
+    },
+    "tflite_float32": {
+      "fichier": "export\\proprete_mobilenetv3l_float32.tflite",
+      "taille_mo": 16.818276,
+      "sha256": "11a688266cddd44191ea70bd7964e1c845cf08c4fff2b0aebc3ef9f135f7d99d",
+      "interpreteur": "ai_edge_litert",
+      "entree": {
+        "forme": [
+          1,
+          224,
+          224,
+          3
+        ],
+        "type": "float32",
+        "disposition": "NHWC",
+        "quantification": [
+          0.0,
+          0.0
+        ]
+      },
+      "sortie": {
+        "forme": [
+          1,
+          3
+        ],
+        "type": "float32",
+        "quantification": [
+          0.0,
+          0.0
+        ]
+      },
+      "latence_mediane_cpu_ms": 68.84160001936834,
+      "concordance_classes_pct": 100.0,
+      "diff_proba_max": 9.238719940185547e-06,
+      "diff_proba_moyenne": 2.2857048520563694e-07
+    },
+    "tflite_float16": {
+      "fichier": "export\\proprete_mobilenetv3l_float16.tflite",
+      "taille_mo": 8.451752,
+      "sha256": "4b6ed559d1e3361ff22033f02f01e9ed582d74c6cce3e913751a5a444985203d",
+      "interpreteur": "ai_edge_litert",
+      "entree": {
+        "forme": [
+          1,
+          224,
+          224,
+          3
+        ],
+        "type": "float32",
+        "disposition": "NHWC",
+        "quantification": [
+          0.0,
+          0.0
+        ]
+      },
+      "sortie": {
+        "forme": [
+          1,
+          3
+        ],
+        "type": "float32",
+        "quantification": [
+          0.0,
+          0.0
+        ]
+      },
+      "latence_mediane_cpu_ms": 70.0790500122821,
+      "concordance_classes_pct": 100.0,
+      "diff_proba_max": 0.04480093717575073,
+      "diff_proba_moyenne": 0.0005768697010353208
+    },
+    "tflite_int8": {
+      "fichier": "export\\proprete_mobilenetv3l_int8.tflite",
+      "taille_mo": 4.745888,
+      "sha256": "600c9fc3f0940a826affa3a9307b7303485fa9c83704e3f978d32bde5da0f74b",
+      "interpreteur": "ai_edge_litert",
+      "entree": {
+        "forme": [
+          1,
+          224,
+          224,
+          3
+        ],
+        "type": "float32",
+        "disposition": "NHWC",
+        "quantification": [
+          0.0,
+          0.0
+        ]
+      },
+      "sortie": {
+        "forme": [
+          1,
+          3
+        ],
+        "type": "float32",
+        "quantification": [
+          0.0,
+          0.0
+        ]
+      },
+      "latence_mediane_cpu_ms": 322.1958500071196,
+      "concordance_classes_pct": 38.333333333333336,
+      "diff_proba_max": 0.9591145515441895,
+      "diff_proba_moyenne": 0.3917713165283203
+    }
+  },
+  "coherence": {
+    "images": "300 images de VALID tirées avec la graine 42",
+    "reference": "modèle PyTorch (avec T)",
+    "latence": "médiane sur le CPU de l'ordinateur d'entraînement, lot de 1 ; ce n'est PAS la latence d'un téléphone"
+  },
+  "conversion_tflite": [
+    {
+      "outil": "litert_torch",
+      "resultat": "échec",
+      "erreur": "ModuleNotFoundError(\"No module named 'litert_torch'\")",
+      "cause_installation": "pip install litert-torch / ai-edge-torch : ResolutionImpossible ; litert-converter (litert-torch 0.9.x/0.10.0) et ai-edge-tensorflow (0.8.0) n'ont aucune distribution pour Windows / Python 3.13 (voir export/log_install_litert.txt et export/log_install_aiedgetorch.txt)"
+    },
+    {
+      "outil": "ai_edge_torch",
+      "resultat": "échec",
+      "erreur": "ModuleNotFoundError(\"No module named 'ai_edge_torch'\")",
+      "cause_installation": "pip install litert-torch / ai-edge-torch : ResolutionImpossible ; litert-converter (litert-torch 0.9.x/0.10.0) et ai-edge-tensorflow (0.8.0) n'ont aucune distribution pour Windows / Python 3.13 (voir export/log_install_litert.txt et export/log_install_aiedgetorch.txt)"
+    },
+    {
+      "outil": "onnx2tf 2.6.9 (TensorFlow 2.21.0), backend flatbuffer_direct (défaut)",
+      "resultat": "conversion faite, mais float16 à entrée/activations float16 non exécutable sur CPU et aucun SavedModel produit (int8 calibré impossible) : non livré",
+      "fichiers": {
+        "proprete_mobilenetv3l_float16.tflite": "ne s'exécute pas : RuntimeError('tflite/kernels/conv.cc:360 input_type == kTfLiteFloat32 || input_type == kTfLiteUInt8 || input_type == kTfLiteInt8 || input_type == kTfLiteInt16 was not true.Node number 1 (CONV_2D) failed to prepare.')",
+        "proprete_mobilenetv3l_float32.tflite": "s'exécute"
+      }
+    },
+    {
+      "outil": "onnx2tf 2.6.9 (TensorFlow 2.21.0), backend tf_converter",
+      "resultat": "réussi",
+      "fichiers_produits": [
+        "proprete_mobilenetv3l_dynamic_range_quant.tflite",
+        "proprete_mobilenetv3l_float16.tflite",
+        "proprete_mobilenetv3l_float32.tflite",
+        "proprete_mobilenetv3l_full_integer_quant.tflite",
+        "proprete_mobilenetv3l_full_integer_quant_with_int16_act.tflite",
+        "proprete_mobilenetv3l_integer_quant.tflite",
+        "proprete_mobilenetv3l_integer_quant_with_int16_act.tflite"
+      ]
+    }
+  ],
+  "quantification_int8": {
+    "mode": "onnx2tf integer_quant (TFLiteConverter, quantification post-entraînement par canal, poids et activations int8, entrée/sortie float32)",
+    "calibration": "300 images de TRAIN (jeu d'entraînement retenu : train ∩ sous_reel), graine 42, déjà normalisées (moyenne 0 / écart-type 1 passés à onnx2tf)",
+    "ids_calibration_10_premiers": [
+      "cd_cadrage_031",
+      "cd_cadrage_037",
+      "cd_cadrage_051",
+      "cd_cadrage_072",
+      "cd_cadrage_073",
+      "cd_cadrage_083",
+      "cd_cadrage_088",
+      "cd_cadrage_123",
+      "cd_cadrage_145",
+      "cd_cadrage_163"
+    ],
+    "avertissement": "NON UTILISABLE EN L'ÉTAT : concordance des classes avec PyTorch 38.3 %. Utiliser float16 ou float32.",
+    "diagnostic": {
+      "tfliteconverter_meme_calibration": {
+        "concordance_classes_pct": 38.333333333333336,
+        "diff_proba_max": 0.9591145515441895
+      },
+      "n_couches": 126,
+      "couches_rmse_sur_echelle_sup_0_7": 6,
+      "pires_couches": [
+        {
+          "op": "CONV_2D",
+          "tenseur": "model/tf.nn.relu_17/Relu;model/tf.math.add_69/Add;model/tf.nn.convolution_39/convolution;C",
+          "rmse_sur_echelle": 1.3413521200539962
+        },
+        {
+          "op": "CONV_2D",
+          "tenseur": "model/tf.nn.relu_18/Relu;model/tf.math.add_76/Add;model/tf.nn.convolution_43/convolution;C",
+          "rmse_sur_echelle": 0.8722484658721206
+        },
+        {
+          "op": "CONV_2D",
+          "tenseur": "model/tf.nn.relu_10/Relu;model/tf.math.add_20/Add;model/tf.nn.convolution_11/convolution;C",
+          "rmse_sur_echelle": 0.7838986518426194
+        },
+        {
+          "op": "CONV_2D",
+          "tenseur": "model/tf.nn.relu_14/Relu;model/tf.math.add_52/Add;model/tf.nn.convolution_27/convolution;C",
+          "rmse_sur_echelle": 0.7349990093547385
+        },
+        {
+          "op": "CONV_2D",
+          "tenseur": "model/tf.nn.relu_13/Relu;model/tf.math.add_27/Add;model/tf.nn.convolution_15/convolution;C",
+          "rmse_sur_echelle": 0.7170265897194836
+        },
+        {
+          "op": "CONV_2D",
+          "tenseur": "model/tf.nn.relu_15/Relu;model/tf.math.add_57/Add;model/tf.nn.convolution_31/convolution;C",
+          "rmse_sur_echelle": 0.7087863952965754
+        }
+      ],
+      "lecture": "les couches les plus dégradées sont les convolutions 1x1 suivies de ReLU des blocs squeeze-excitation de MobileNetV3 ; la même perte apparaît avec TFLiteConverter seul, la calibration d'onnx2tf n'est donc pas en cause",
+      "fichier": "resultats/int8_diagnostic_couches.csv"
+    }
+  },
+  "entrainement": {
+    "jeu": "train_sous_reel",
+    "n_images": 3388,
+    "pourquoi": "règle fixée à l'avance : macro-F1 valid ∩ sous_reel CLIP_all − CLIP_reel = -0.0118 ≤ 0,02 → train ∩ sous_reel (seuil 0,02 = proposition de départ, non démontrée)",
+    "lr_retenu": 0.0001,
+    "epoque_retenue": 12,
+    "graine": 42,
+    "poids_pretraines": "torchvision MobileNet_V3_Large_Weights.IMAGENET1K_V2 (download.pytorch.org ; code torchvision BSD-3-Clause ; poids appris sur ImageNet-1k, dont les conditions d'utilisation sont réservées à la recherche non commerciale)"
+  },
+  "donnees": {
+    "sources": [
+      "Kaggle / Roboflow (CC BY 4.0, attribution requise)",
+      "kabam / garbage_detection (CC BY 4.0, attribution requise)",
+      "GBS (CC BY 4.0, attribution requise)",
+      "images synthétiques CANNOT_DETERMINE dérivées des précédentes"
+    ],
+    "licence": "CC BY 4.0 : attribution requise pour Kaggle/Roboflow, kabam et GBS"
+  },
+  "avertissement": "Étiquettes en partie extrapolées à partir de boîtes englobantes, classe CANNOT_DETERMINE synthétique, images surtout issues du web chinois ; non validé sur le terrain."
+}

@@ -128,4 +128,17 @@ class TourneeWorkflowTest {
         assertFalse(visit.isLegacyProgressMissing());
         assertThrows(ResponseStatusException.class, () -> service.completeVisit("tour", "point", completion(VisitCompletionRequest.Outcome.COMPLETED, null)));
     }
+
+    @Test void localDecisionHasNoEffectOnVisitStateOrTourEnd() {
+        service.start("tour"); service.arrive("tour","point"); tour.getVisits().get(0).setAfterPhoto("after.jpg");
+        when(vision.analyzeStoredEvidence(anyString(),isNull(),eq("point"),eq("tour"),eq("driver")))
+                .thenReturn(ImageAnalysis.builder().id("analysis").status("NOT_CLEANED").decision("A_VERIFIER").build());
+        var visit = service.analyzeVisit("tour","point").getVisits().get(0);
+        assertEquals("A_VERIFIER", visit.getAnalysisDecision());
+        assertEquals(TourneeVisit.Status.ARRIVED, visit.getStatus());
+        service.completeVisit("tour","point",completion(VisitCompletionRequest.Outcome.COMPLETED,null));
+        var finished = service.finish("tour",true);
+        assertEquals(StatutTournee.TERMINEE, finished.getStatut());
+        assertEquals("A_VERIFIER", finished.getVisits().get(0).getAnalysisDecision());
+    }
 }
